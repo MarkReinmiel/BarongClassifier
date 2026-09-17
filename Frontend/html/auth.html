@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Login | Barong Classifier</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect"
+          href="https://fonts.googleapis.com">
+
+    <link rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap"
+          rel="stylesheet">
+
+    <!-- Authentication CSS -->
+    <link rel="stylesheet" href="../css/auth.css">
+
+</head>
+
+
+<body>
+
+
+    <!-- BACK TO HOME -->
+
+    <a href="index.html" class="back-home">
+        ← Back to Home
+    </a>
+
+
+    <!-- AUTHENTICATION PAGE -->
+
+    <main class="auth-page">
+
+
+        <!-- LEFT SIDE -->
+
+        <section class="auth-brand">
+
+            <div class="brand-symbol">
+                ◆
+            </div>
+
+            <h1>
+                BARONG
+                <span>CLASSIFIER</span>
+            </h1>
+
+            <p>
+                Preserving Philippine heritage
+                through technology.
+            </p>
+
+            <div class="brand-line"></div>
+
+            <small>
+                CULTURE · HERITAGE · INNOVATION
+            </small>
+
+        </section>
+
+
+        <!-- RIGHT SIDE -->
+
+        <section class="auth-card">
+
+
+            <!-- LOGIN -->
+
+            <div id="loginForm" class="auth-form active">
+
+                <p class="form-label">
+                    WELCOME BACK
+                </p>
+
+                <h2>
+                    Sign in to your account
+                </h2>
+
+                <p class="form-description">
+                    Login to continue using the
+                    Barong Tagalog Textile Classifier.
+                </p>
+
+
+                <form id="login">
+
+                    <div class="input-group">
+
+                        <label for="loginEmail">
+                            Email Address
+                        </label>
+
+                        <input
+                            type="email"
+                            id="loginEmail"
+                            placeholder="Enter your email"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div class="input-group">
+
+                        <label for="loginPassword">
+                            Password
+                        </label>
+
+                        <input
+                            type="password"
+                            id="loginPassword"
+                            placeholder="Enter your password"
+                            required
+                        >
+
+                    </div>
+
+
+                    <button type="submit"
+                            class="auth-button">
+
+                        Login
+
+                        <span>→</span>
+
+                    </button>
+
+                </form>
+
+
+                <p class="switch-form">
+
+                    Don't have an account?
+
+                    <button
+                        type="button"
+                        id="showSignup">
+
+                        Sign Up
+
+                    </button>
+
+                </p>
+
+            </div>
+
+
+            <!-- SIGN UP -->
+
+            <div id="signupForm" class="auth-form">
+
+                <p class="form-label">
+                    GET STARTED
+                </p>
+
+                <h2>
+                    Create an account
+                </h2>
+
+                <p class="form-description">
+                    Create an account to start
+                    classifying Barong Tagalog textiles.
+                </p>
+
+
+                <form id="signup">
+
+                    <div class="input-group">
+
+                        <label for="signupName">
+                            Full Name
+                        </label>
+
+                        <input
+                            type="text"
+                            id="signupName"
+                            placeholder="Enter your full name"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div class="input-group">
+
+                        <label for="signupEmail">
+                            Email Address
+                        </label>
+
+                        <input
+                            type="email"
+                            id="signupEmail"
+                            placeholder="Enter your email"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div class="input-group">
+
+                        <label for="signupPassword">
+                            Password
+                        </label>
+
+                        <input
+                            type="password"
+                            id="signupPassword"
+                            placeholder="Create a password"
+                            minlength="6"
+                            required
+                        >
+
+                    </div>
+
+
+                    <button type="submit"
+                            class="auth-button">
+
+                        Create Account
+
+                        <span>→</span>
+
+                    </button>
+
+                </form>
+
+
+                <p class="switch-form">
+
+                    Already have an account?
+
+                    <button
+                        type="button"
+                        id="showLogin">
+
+                        Login
+
+                    </button>
+
+                </p>
+
+            </div>
+
+
+        </section>
+
+    </main>
+
+
+    <!-- JavaScript -->
+
+    <script src="../js/auth.js"></script>
+
+</body>
+
+</html>
+
