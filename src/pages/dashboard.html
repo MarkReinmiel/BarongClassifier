@@ -10,7 +10,9 @@
 
     <title>Dashboard | Barong Classifier</title>
 
+
     <!-- Google Fonts -->
+
     <link rel="preconnect"
           href="https://fonts.googleapis.com">
 
@@ -22,9 +24,13 @@
         href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap"
         rel="stylesheet">
 
+
     <!-- CSS -->
+
     <link rel="stylesheet" href="../css/navbar.css">
+
     <link rel="stylesheet" href="../css/dashboard.css">
+
 
 </head>
 
@@ -32,19 +38,27 @@
 <body>
 
 
-    <!-- TOP NAVIGATION -->
+    <!-- ==============================
+         TOP NAVIGATION
+    =============================== -->
 
     <div id="navbar"></div>
 
 
-    <!-- DASHBOARD -->
+
+    <!-- ==============================
+         DASHBOARD
+    =============================== -->
 
     <main class="dashboard">
 
 
-        <!-- WELCOME -->
+        <!-- ==============================
+             WELCOME HERO
+        =============================== -->
 
         <section class="dashboard-hero">
+
 
             <div class="dashboard-content">
 
@@ -52,26 +66,42 @@
                     BARONG TAGALOG TEXTILE CLASSIFIER
                 </p>
 
+
                 <h1>
+
                     Welcome to
-                    <span>BarongClassifier</span>
+
+                    <span>
+                        BarongClassifier
+                    </span>
+
                 </h1>
 
+
                 <p class="dashboard-description">
+
                     Identify selected Barong Tagalog textiles
                     through image-based classification.
+
                 </p>
+
 
                 <a href="classifier.html"
                    class="classify-button">
 
                     Classify Textile
-                    <span>→</span>
+
+                    <span>
+                        →
+                    </span>
 
                 </a>
 
             </div>
 
+
+
+            <!-- HERO IMAGE -->
 
             <div class="dashboard-image">
 
@@ -86,137 +116,248 @@
 
             </div>
 
+
         </section>
 
 
-        <!-- QUICK ACCESS -->
 
-        <section class="quick-section">
+        <!-- ==============================
+             SYSTEM OVERVIEW
+        =============================== -->
+
+        <section class="overview-section">
+
 
             <div class="section-heading">
 
-                <p>EXPLORE</p>
+                <p>
+                    SYSTEM OVERVIEW
+                </p>
 
                 <h2>
-                    BarongClassifier
+                    BarongClassifier at a Glance
                 </h2>
 
             </div>
 
 
-            <div class="quick-cards">
 
-
-                <!-- CLASSIFY -->
-
-                <a href="classifier.html"
-                   class="quick-card">
-
-                    <div class="card-icon">
-                        ◆
-                    </div>
-
-                    <h3>
-                        Classify Textile
-                    </h3>
-
-                    <p>
-                        Upload an image of a Barong
-                        textile for classification.
-                    </p>
-
-                    <span class="card-link">
-                        Start →
-                    </span>
-
-                </a>
+            <div class="overview-cards">
 
 
                 <!-- TEXTILE TYPES -->
 
-                <a href="textiletypes.html"
-                   class="quick-card">
+                <div class="overview-card">
 
-                    <div class="card-icon">
-                        ◈
-                    </div>
-
-                    <h3>
-                        Textile Types
-                    </h3>
-
-                    <p>
-                        Learn about the textile classes
-                        supported by the system.
-                    </p>
-
-                    <span class="card-link">
-                        Explore →
-                    </span>
-
-                </a>
-
-
-                <!-- HISTORY -->
-
-                <a href="history.html"
-                   class="quick-card">
-
-                    <div class="card-icon">
-                        ◷
-                    </div>
-
-                    <h3>
-                        History
-                    </h3>
-
-                    <p>
-                        View your previous textile
-                        classification results.
-                    </p>
-
-                    <span class="card-link">
-                        View History →
-                    </span>
-
-                </a>
-
-
-                <!-- ABOUT -->
-
-                <a href="about.html"
-                   class="quick-card">
-
-                    <div class="card-icon">
+                    <div class="overview-icon">
                         ◆
                     </div>
 
-                    <h3>
-                        About
-                    </h3>
 
-                    <p>
-                        Learn more about BarongClassifier
-                        and its purpose.
-                    </p>
+                    <div class="overview-info">
 
-                    <span class="card-link">
-                        Learn More →
-                    </span>
+                        <span class="overview-number">
+                            —
+                        </span>
 
-                </a>
+                        <h3>
+                            Textile Types
+                        </h3>
+
+                        <p>
+                            Supported textile classes
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- MODEL ACCURACY -->
+
+                <div class="overview-card">
+
+                    <div class="overview-icon">
+                        ✦
+                    </div>
+
+
+                    <div class="overview-info">
+
+                        <span class="overview-number">
+                            —%
+                        </span>
+
+                        <h3>
+                            Model Accuracy
+                        </h3>
+
+                        <p>
+                            Evaluation accuracy
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- IMAGES CLASSIFIED -->
+
+                <div class="overview-card">
+
+                    <div class="overview-icon">
+                        ◈
+                    </div>
+
+
+                    <div class="overview-info">
+
+                        <span class="overview-number">
+                            0
+                        </span>
+
+                        <h3>
+                            Images Classified
+                        </h3>
+
+                        <p>
+                            Images processed by the system
+                        </p>
+
+                    </div>
+
+                </div>
+
 
             </div>
 
         </section>
 
 
+
+        <!-- ==============================
+             HOW IT WORKS
+        =============================== -->
+
+        <section class="how-section">
+
+
+            <div class="section-heading">
+
+                <p>
+                    HOW IT WORKS
+                </p>
+
+                <h2>
+                    From Image to Classification
+                </h2>
+
+            </div>
+
+
+
+            <div class="steps">
+
+
+                <!-- STEP 1 -->
+
+                <div class="step">
+
+                    <span class="step-number">
+                        01
+                    </span>
+
+                    <h3>
+                        Upload Image
+                    </h3>
+
+                    <p>
+                        Upload a clear image of the
+                        Barong Tagalog textile.
+                    </p>
+
+                </div>
+
+
+
+                <!-- STEP 2 -->
+
+                <div class="step">
+
+                    <span class="step-number">
+                        02
+                    </span>
+
+                    <h3>
+                        Image Processing
+                    </h3>
+
+                    <p>
+                        The image is prepared and
+                        processed for classification.
+                    </p>
+
+                </div>
+
+
+
+                <!-- STEP 3 -->
+
+                <div class="step">
+
+                    <span class="step-number">
+                        03
+                    </span>
+
+                    <h3>
+                        AI Classification
+                    </h3>
+
+                    <p>
+                        The trained deep-learning model
+                        analyzes the textile image.
+                    </p>
+
+                </div>
+
+
+
+                <!-- STEP 4 -->
+
+                <div class="step">
+
+                    <span class="step-number">
+                        04
+                    </span>
+
+                    <h3>
+                        View Result
+                    </h3>
+
+                    <p>
+                        The system displays the predicted
+                        textile type and confidence.
+                    </p>
+
+                </div>
+
+
+            </div>
+
+        </section>
+
     </main>
 
 
-    <!-- JAVASCRIPT -->
+
+    <!-- ==============================
+         JAVASCRIPT
+    =============================== -->
 
     <script src="../js/navbar.js"></script>
+
 
 </body>
 
