@@ -1,0 +1,164 @@
+/* =================================
+   NAVBAR
+================================= */
+
+.navbar {
+    width: 100%;
+    height: 80px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 0 60px;
+
+    background: #fffaf3;
+
+    border-bottom: 1px solid #eadfce;
+
+    box-shadow:
+        0 3px 15px rgba(65, 43, 20, 0.06);
+
+    box-sizing: border-box;
+}
+
+
+/* =================================
+   LOGO
+================================= */
+
+.navbar-logo {
+    display: flex;
+    align-items: center;
+
+    gap: 14px;
+}
+
+.logo-mark {
+    color: #a8752f;
+
+    font-size: 18px;
+
+    transform: rotate(45deg);
+}
+
+.logo-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.logo-title {
+    font-family: "Playfair Display", Georgia, serif;
+
+    font-size: 18px;
+    font-weight: 700;
+
+    letter-spacing: 1.5px;
+
+    color: #3b2919;
+}
+
+.logo-subtitle {
+    margin-top: 3px;
+
+    font-family: "DM Sans", Arial, sans-serif;
+
+    font-size: 8px;
+
+    letter-spacing: 1px;
+
+    color: #9d8465;
+}
+
+
+/* =================================
+   NAVIGATION LINKS
+================================= */
+
+.navbar-links {
+    display: flex;
+    align-items: center;
+
+    gap: 32px;
+}
+
+.navbar-links a {
+    position: relative;
+
+    padding: 30px 0;
+
+    color: #5d4934;
+
+    text-decoration: none;
+
+    font-family: "DM Sans", Arial, sans-serif;
+
+    font-size: 14px;
+    font-weight: 500;
+
+    transition: color 0.2s ease;
+}
+
+.navbar-links a:hover {
+    color: #a8752f;
+}
+
+
+/* =================================
+   ACTIVE LINK
+================================= */
+
+.navbar-links a.active {
+    color: #a8752f;
+}
+
+.navbar-links a.active::after {
+
+    content: "";
+
+    position: absolute;
+
+    left: 0;
+    right: 0;
+
+    bottom: 18px;
+
+    height: 2px;
+
+    background: #a8752f;
+}
+
+
+/* =================================
+   MOBILE
+================================= */
+
+@media (max-width: 850px) {
+
+    .navbar {
+        height: auto;
+
+        padding: 20px 25px;
+
+        flex-direction: column;
+
+        gap: 20px;
+    }
+
+    .navbar-links {
+        gap: 20px;
+
+        flex-wrap: wrap;
+
+        justify-content: center;
+    }
+
+    .navbar-links a {
+        padding: 8px 0;
+    }
+
+    .navbar-links a.active::after {
+        bottom: 0;
+    }
+
+}
