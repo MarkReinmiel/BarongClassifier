@@ -1,0 +1,223 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Classify Textile | Barong Classifier</title>
+
+
+    <!-- Google Fonts -->
+
+    <link rel="preconnect"
+          href="https://fonts.googleapis.com">
+
+    <link rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossorigin>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap"
+        rel="stylesheet">
+
+
+    <!-- CSS -->
+
+    <link rel="stylesheet" href="../css/navbar.css">
+
+    <link rel="stylesheet" href="../css/classify.css">
+
+
+</head>
+
+
+<body>
+
+
+    <!-- ==============================
+         TOP NAVIGATION
+    =============================== -->
+
+    <div id="navbar"></div>
+
+
+
+    <!-- ==============================
+         CLASSIFIER PAGE
+    =============================== -->
+
+    <main class="classifier-page">
+
+
+        <!-- PAGE HEADER -->
+
+        <section class="classifier-header">
+
+            <p class="classifier-label">
+                BARONG TAGALOG TEXTILE CLASSIFIER
+            </p>
+
+            <h1>
+                Classify Textile
+            </h1>
+
+            <p class="classifier-description">
+
+                Upload an image of a Barong Tagalog textile
+                to explore its possible textile classification.
+
+            </p>
+
+        </section>
+
+
+
+        <!-- ==============================
+             CLASSIFIER CONTENT
+        =============================== -->
+
+        <section class="classifier-card">
+
+
+            <!-- UPLOAD SECTION -->
+
+            <div class="upload-section">
+
+                <h2>
+                    Upload Textile Image
+                </h2>
+
+                <p>
+                    Select a clear image in JPG or PNG format.
+                </p>
+
+
+                <label
+                    for="textileImage"
+                    class="upload-area"
+                    id="uploadArea"
+                >
+
+                    <div class="upload-icon">
+                        ◆
+                    </div>
+
+
+                    <h3>
+                        Choose an image
+                    </h3>
+
+
+                    <span>
+                        JPG or PNG files
+                    </span>
+
+
+                    <div class="upload-button">
+                        Browse Image
+                    </div>
+
+
+                    <input
+                        type="file"
+                        id="textileImage"
+                        accept="image/jpeg, image/png"
+                        hidden
+                    >
+
+                </label>
+
+            </div>
+
+
+
+            <!-- IMAGE PREVIEW -->
+
+            <div
+                class="preview-section"
+                id="previewSection"
+                hidden
+            >
+
+                <h2>
+                    Image Preview
+                </h2>
+
+
+                <div class="preview-box">
+
+                    <img
+                        id="imagePreview"
+                        src=""
+                        alt="Selected textile preview"
+                    >
+
+                </div>
+
+
+                <p
+                    id="fileName"
+                    class="file-name"
+                ></p>
+
+
+                <button
+                    type="button"
+                    id="removeImage"
+                    class="remove-button"
+                >
+                    Remove Image
+                </button>
+
+            </div>
+
+
+
+            <!-- CLASSIFICATION ACTION -->
+
+            <div class="classify-section">
+
+                <button
+                    type="button"
+                    id="classifyButton"
+                    class="classify-button"
+                    disabled
+                >
+
+                    Classify Textile
+
+                    <span>
+                        →
+                    </span>
+
+                </button>
+
+
+                <p class="demo-note">
+                    Classification will be connected to the AI model later.
+                </p>
+
+            </div>
+
+
+        </section>
+
+
+    </main>
+
+
+
+    <!-- JAVASCRIPT -->
+
+    <script src="../js/navbar.js"></script>
+    <script src="../js/classify.js"></script>
+
+
+</body>
+
+</html>

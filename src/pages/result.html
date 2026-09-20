@@ -1,0 +1,247 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Classification Result | Barong Classifier</title>
+
+
+    <!-- Google Fonts -->
+
+    <link rel="preconnect"
+          href="https://fonts.googleapis.com">
+
+    <link rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossorigin>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap"
+        rel="stylesheet">
+
+
+    <!-- CSS -->
+
+    <link rel="stylesheet" href="../css/navbar.css">
+
+    <link rel="stylesheet" href="../css/classify.css">
+
+
+</head>
+
+
+<body>
+
+
+    <!-- ==============================
+         TOP NAVIGATION
+    =============================== -->
+
+    <div id="navbar"></div>
+
+
+
+    <!-- ==============================
+         RESULT PAGE
+    =============================== -->
+
+    <main class="classifier-page">
+
+
+        <!-- PAGE HEADER -->
+
+        <section class="classifier-header">
+
+            <button
+                type="button"
+                class="back-button"
+                id="backButton"
+            >
+                ← Back to Classify
+            </button>
+            
+
+            <p class="classifier-label">
+                BARONG TAGALOG TEXTILE CLASSIFIER
+            </p>
+
+            <h1>
+                Classification Result
+            </h1>
+
+            <p class="classifier-description">
+
+                Review the details of your submitted textile image.
+
+            </p>
+
+        </section>
+
+
+
+        <!-- ==============================
+             RESULT CONTENT
+        =============================== -->
+
+        <section class="classifier-card">
+
+
+            <!-- RESULT SECTION -->
+
+            <div class="result-section" id="resultSection">
+
+
+                <p class="result-label">
+                    CLASSIFICATION RESULT
+                </p>
+
+
+                <h2>
+                    Textile Analysis
+                </h2>
+
+
+
+                <!-- RESULT IMAGE -->
+
+                <div class="result-image-container">
+
+                    <img
+                        id="resultImage"
+                        src=""
+                        alt="Classified textile image"
+                    >
+
+                </div>
+
+
+
+                <!-- RESULT DETAILS -->
+
+                <div class="result-details">
+
+
+                    <!-- PREDICTED TEXTILE TYPE -->
+
+                    <div class="detail-item">
+
+                        <span class="detail-label">
+                            Predicted Textile Type
+                        </span>
+
+                        <strong id="predictedType">
+                            Pending AI Model
+                        </strong>
+
+                    </div>
+
+
+
+                    <!-- MODEL CONFIDENCE -->
+
+                    <div class="detail-item">
+
+                        <span class="detail-label">
+                            Model Confidence
+                        </span>
+
+                        <strong id="confidence">
+                            Not available
+                        </strong>
+
+                    </div>
+
+
+
+                    <!-- IMAGE NAME -->
+
+                    <div class="detail-item">
+
+                        <span class="detail-label">
+                            Image Name
+                        </span>
+
+                        <strong id="resultFileName">
+                            —
+                        </strong>
+
+                    </div>
+
+
+
+                    <!-- CLASSIFICATION STATUS -->
+
+                    <div class="detail-item">
+
+                        <span class="detail-label">
+                            Classification Status
+                        </span>
+
+                        <strong id="classificationStatus">
+                            Demo Result
+                        </strong>
+
+                    </div>
+
+
+                </div>
+
+
+
+                <!-- VIEW IMAGE BUTTON -->
+
+                <button
+                    type="button"
+                    id="viewImageButton"
+                    class="view-image-button"
+                >
+
+                    View Image
+
+                </button>
+
+
+
+                <!-- FULL IMAGE PREVIEW -->
+
+                <div
+                    id="resultPreview"
+                    class="result-preview"
+                    hidden
+                >
+
+                    <img
+                        id="fullResultImage"
+                        src=""
+                        alt="Full submitted textile image"
+                    >
+
+                </div>
+
+
+            </div>
+
+
+        </section>
+
+
+    </main>
+
+
+
+    <!-- JAVASCRIPT -->
+
+    <script src="../js/navbar.js"></script>
+
+    <script src="../js/result.js"></script>
+
+
+</body>
+
+</html>
