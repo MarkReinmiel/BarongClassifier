@@ -1,15 +1,13 @@
-
 document.addEventListener("DOMContentLoaded", function () {
-
-    // =================================
-    // GET HTML ELEMENTS
-    // =================================
 
     const textileImage =
         document.getElementById("textileImage");
 
     const uploadArea =
         document.getElementById("uploadArea");
+
+    const classifyButton =
+        document.getElementById("classifyButton");
 
     const previewSection =
         document.getElementById("previewSection");
@@ -23,12 +21,9 @@ document.addEventListener("DOMContentLoaded", function () {
     const removeImage =
         document.getElementById("removeImage");
 
-    const classifyButton =
-        document.getElementById("classifyButton");
-
 
     // =================================
-    // IMAGE UPLOAD AND PREVIEW
+    // SELECT IMAGE
     // =================================
 
     textileImage.addEventListener("change", function () {
@@ -53,27 +48,17 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        // Create image preview
-
         const imageURL =
             URL.createObjectURL(file);
 
         imagePreview.src = imageURL;
 
-        // Show file name
-
         fileName.textContent =
             "Selected file: " + file.name;
 
-        // Show preview section
-
         previewSection.hidden = false;
 
-        // Enable classify button
-
         classifyButton.disabled = false;
-
-        // Update upload text
 
         uploadArea.querySelector("h3").textContent =
             "Image selected";
@@ -100,8 +85,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
         classifyButton.disabled = true;
 
-        // Restore upload text
-
         uploadArea.querySelector("h3").textContent =
             "Choose an image";
 
@@ -112,7 +95,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     // =================================
-    // CLASSIFY IMAGE
+    // CLASSIFY AND OPEN RESULT PAGE
     // =================================
 
     classifyButton.addEventListener("click", function () {
@@ -126,28 +109,26 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        // Convert image to a format
-        // that can be used on the next page
-
         const reader = new FileReader();
 
         reader.onload = function (event) {
 
-            // Save the image
+            const imageData =
+                event.target.result;
+
+            // Save the selected image temporarily
 
             sessionStorage.setItem(
                 "classifiedImage",
-                event.target.result
+                imageData
             );
 
-            // Save the image file name
-
             sessionStorage.setItem(
-                "fileName",
+                "classifiedFileName",
                 file.name
             );
 
-            // Go to the result page
+            // Open the classification result page
 
             window.location.href = "result.html";
 

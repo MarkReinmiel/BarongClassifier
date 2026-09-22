@@ -1,0 +1,486 @@
+/* =================================
+   GENERAL
+================================= */
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+
+    background: #f7f1e7;
+
+    color: #2d2117;
+
+    font-family: "DM Sans", Arial, sans-serif;
+}
+
+
+/* =================================
+   CLASSIFIER PAGE
+================================= */
+
+.classifier-page {
+    min-height: calc(100vh - 68px);
+
+    padding: 58px 32px 70px;
+
+    background: #f7f1e7;
+}
+
+
+/* =================================
+   PAGE HEADER
+================================= */
+
+.classifier-header {
+    max-width: 1200px;
+
+    margin: 0 auto 40px;
+
+    text-align: center;
+}
+
+.classifier-label {
+    margin: 0 0 16px;
+
+    color: #a8752f;
+
+    font-size: 11px;
+
+    font-weight: 600;
+
+    letter-spacing: 4px;
+}
+
+.classifier-header h1 {
+    margin: 0;
+
+    color: #2d2117;
+
+    font-family: "Playfair Display", Georgia, serif;
+
+    font-size: clamp(38px, 4vw, 58px);
+
+    font-weight: 600;
+}
+
+.classifier-description {
+    margin: 20px auto 0;
+
+    color: #8b6d4d;
+
+    font-size: 16px;
+
+    line-height: 1.6;
+}
+
+
+/* =================================
+   TWO-COLUMN CLASSIFIER CARD
+================================= */
+
+.classifier-card {
+    display: grid;
+
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    gap: 24px;
+
+    width: 100%;
+
+    max-width: 1250px;
+
+    margin: 0 auto;
+
+    padding: 28px;
+
+    background: #fffaf3;
+
+    border: 1px solid #ead8bd;
+
+    border-radius: 16px;
+
+    box-shadow:
+        0 12px 30px rgba(65, 43, 20, 0.07);
+}
+
+
+/* =================================
+   UPLOAD AND PREVIEW PANELS
+================================= */
+
+.upload-section,
+.preview-section {
+    min-width: 0;
+
+    padding: 32px;
+
+    background: #fffaf3;
+
+    border: 1px solid #eadfce;
+
+    border-radius: 12px;
+}
+
+.upload-section h2,
+.preview-section h2 {
+    margin: 0 0 12px;
+
+    color: #3b2919;
+
+    font-family: "Playfair Display", Georgia, serif;
+
+    font-size: 28px;
+
+    font-weight: 600;
+}
+
+.upload-section > p,
+.preview-section > p {
+    margin: 0 0 24px;
+
+    color: #8b6d4d;
+
+    font-size: 14px;
+
+    line-height: 1.6;
+}
+
+
+/* =================================
+   UPLOAD AREA
+================================= */
+
+.upload-area {
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    justify-content: center;
+
+    min-height: 360px;
+
+    padding: 32px 20px;
+
+    background: #fdf8f0;
+
+    border: 1.5px dashed #c9a875;
+
+    border-radius: 10px;
+
+    text-align: center;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease;
+}
+
+.upload-area:hover {
+    background: #f8eddd;
+
+    border-color: #a8752f;
+}
+
+.upload-icon {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    width: 64px;
+
+    height: 64px;
+
+    margin-bottom: 24px;
+
+    background: #f3e5cf;
+
+    border-radius: 50%;
+
+    color: #a8752f;
+
+    font-size: 25px;
+}
+
+.upload-area h3 {
+    margin: 0 0 10px;
+
+    color: #3b2919;
+
+    font-family: "Playfair Display", Georgia, serif;
+
+    font-size: 23px;
+
+    font-weight: 600;
+}
+
+.upload-area span {
+    margin-bottom: 22px;
+
+    color: #9d8465;
+
+    font-size: 14px;
+}
+
+.upload-button {
+    padding: 14px 30px;
+
+    background: #80541c;
+
+    border-radius: 6px;
+
+    color: #ffffff;
+
+    font-size: 14px;
+
+    font-weight: 600;
+}
+
+
+/* =================================
+   IMAGE PREVIEW
+================================= */
+
+.preview-section[hidden] {
+    display: block;
+}
+
+.preview-box {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    width: 100%;
+
+    height: 360px;
+
+    padding: 18px;
+
+    background: #f8f1e7;
+
+    border: 1px solid #eadfce;
+
+    border-radius: 10px;
+
+    overflow: hidden;
+}
+
+.preview-box img {
+    display: block;
+
+    width: 100%;
+
+    height: 100%;
+
+    object-fit: contain;
+
+    border-radius: 6px;
+}
+
+.preview-box:has(img[src=""])::after {
+    content: "No image selected";
+
+    color: #9d8465;
+
+    font-size: 16px;
+}
+
+.file-name {
+    margin: 18px 0;
+
+    padding: 14px;
+
+    background: #f8f1e7;
+
+    border: 1px solid #eadfce;
+
+    border-radius: 6px;
+
+    color: #6e5437;
+
+    font-size: 13px;
+
+    overflow-wrap: anywhere;
+}
+
+
+/* =================================
+   REMOVE BUTTON
+================================= */
+
+.remove-button {
+    width: 100%;
+
+    padding: 13px 20px;
+
+    background: transparent;
+
+    border: 1px solid #c9b293;
+
+    border-radius: 6px;
+
+    color: #80541c;
+
+    font-family: "DM Sans", Arial, sans-serif;
+
+    font-size: 14px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+}
+
+.remove-button:hover {
+    background: #f5e9d8;
+}
+
+
+/* =================================
+   CLASSIFY ACTION
+================================= */
+
+.classify-section {
+    grid-column: 1 / -1;
+
+    text-align: center;
+
+    padding-top: 8px;
+}
+
+.classify-button {
+    padding: 17px 42px;
+
+    background: #80541c;
+
+    border: none;
+
+    border-radius: 6px;
+
+    color: #ffffff;
+
+    font-family: "DM Sans", Arial, sans-serif;
+
+    font-size: 15px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        transform 0.2s ease;
+}
+
+.classify-button:hover:not(:disabled) {
+    background: #633f13;
+
+    transform: translateY(-2px);
+}
+
+.classify-button:disabled {
+    background: #d6c8b5;
+
+    color: #ffffff;
+
+    cursor: not-allowed;
+}
+
+.classify-button span {
+    margin-left: 20px;
+
+    font-size: 18px;
+}
+
+.demo-note {
+    margin: 14px 0 0;
+
+    color: #9d8465;
+
+    font-size: 12px;
+}
+
+
+/* =================================
+   TABLET
+================================= */
+
+@media (max-width: 900px) {
+
+    .classifier-page {
+        padding: 45px 24px 60px;
+    }
+
+    .classifier-card {
+        padding: 20px;
+
+        gap: 18px;
+    }
+
+    .upload-section,
+    .preview-section {
+        padding: 24px;
+    }
+
+    .upload-area,
+    .preview-box {
+        min-height: 300px;
+
+        height: 300px;
+    }
+
+    .upload-section h2,
+    .preview-section h2 {
+        font-size: 24px;
+    }
+}
+
+
+/* =================================
+   MOBILE
+================================= */
+
+@media (max-width: 650px) {
+
+    .classifier-page {
+        padding: 35px 16px 50px;
+    }
+
+    .classifier-card {
+        grid-template-columns: 1fr;
+
+        padding: 16px;
+    }
+
+    .upload-section,
+    .preview-section {
+        padding: 22px;
+    }
+
+    .upload-area,
+    .preview-box {
+        min-height: 280px;
+
+        height: 280px;
+    }
+
+    .classify-section {
+        grid-column: auto;
+    }
+
+    .classifier-header h1 {
+        font-size: 38px;
+    }
+
+    .classifier-description {
+        font-size: 14px;
+    }
+}

@@ -30,8 +30,7 @@
 
     <link rel="stylesheet" href="../css/navbar.css">
 
-    <link rel="stylesheet" href="../css/classify.css">
-
+    <link rel="stylesheet" href="../css/result.css">
 
 </head>
 
@@ -89,48 +88,60 @@
              RESULT CONTENT
         =============================== -->
 
-        <section class="classifier-card">
+        <section class="classifier-card result-layout">
 
-
-            <!-- RESULT SECTION -->
-
-            <div class="result-section" id="resultSection">
-
+            <!-- LEFT SIDE: TEXTILE ANALYSIS -->
+            <div class="result-analysis">
 
                 <p class="result-label">
                     CLASSIFICATION RESULT
                 </p>
 
-
                 <h2>
                     Textile Analysis
                 </h2>
 
-
-
-                <!-- RESULT IMAGE -->
-
                 <div class="result-image-container">
-
                     <img
                         id="resultImage"
                         src=""
                         alt="Classified textile image"
                     >
-
                 </div>
 
+                <button
+                    type="button"
+                    id="viewImageButton"
+                    class="view-image-button"
+                >
+                    View Image
+                </button>
+
+                <div
+                    id="resultPreview"
+                    class="result-preview"
+                    hidden
+                >
+                    <img
+                        id="fullResultImage"
+                        src=""
+                        alt="Full submitted textile image"
+                    >
+                </div>
+
+            </div>
 
 
-                <!-- RESULT DETAILS -->
+            <!-- RIGHT SIDE: CLASSIFICATION DETAILS -->
+            <div class="result-details-panel">
+
+                <h2>
+                    Classification Details
+                </h2>
 
                 <div class="result-details">
 
-
-                    <!-- PREDICTED TEXTILE TYPE -->
-
                     <div class="detail-item">
-
                         <span class="detail-label">
                             Predicted Textile Type
                         </span>
@@ -138,15 +149,10 @@
                         <strong id="predictedType">
                             Pending AI Model
                         </strong>
-
                     </div>
 
 
-
-                    <!-- MODEL CONFIDENCE -->
-
                     <div class="detail-item">
-
                         <span class="detail-label">
                             Model Confidence
                         </span>
@@ -154,15 +160,10 @@
                         <strong id="confidence">
                             Not available
                         </strong>
-
                     </div>
 
 
-
-                    <!-- IMAGE NAME -->
-
                     <div class="detail-item">
-
                         <span class="detail-label">
                             Image Name
                         </span>
@@ -170,15 +171,10 @@
                         <strong id="resultFileName">
                             —
                         </strong>
-
                     </div>
 
 
-
-                    <!-- CLASSIFICATION STATUS -->
-
                     <div class="detail-item">
-
                         <span class="detail-label">
                             Classification Status
                         </span>
@@ -186,47 +182,11 @@
                         <strong id="classificationStatus">
                             Demo Result
                         </strong>
-
                     </div>
 
-
                 </div>
-
-
-
-                <!-- VIEW IMAGE BUTTON -->
-
-                <button
-                    type="button"
-                    id="viewImageButton"
-                    class="view-image-button"
-                >
-
-                    View Image
-
-                </button>
-
-
-
-                <!-- FULL IMAGE PREVIEW -->
-
-                <div
-                    id="resultPreview"
-                    class="result-preview"
-                    hidden
-                >
-
-                    <img
-                        id="fullResultImage"
-                        src=""
-                        alt="Full submitted textile image"
-                    >
-
-                </div>
-
 
             </div>
-
 
         </section>
 
