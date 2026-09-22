@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>History | Barong Classifier</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Playfair+Display:wght@600;700&display=swap"
+        rel="stylesheet"
+    >
+
+    <link rel="stylesheet" href="../css/navbar.css">
+    <link rel="stylesheet" href="../css/textiletypes.css">
+
+</head>
+
+
+<body>
+
+    <div id="navbar"></div>
+
+    <main class="textile-page">
+
+        <section class="textile-header">
+
+            <p class="eyebrow">
+                BARONG TAGALOG
+            </p>
+
+            <h1>
+                History
+            </h1>
+
+            <p class="page-description">
+                Review your previous textile classifications.
+                Classification history will appear here once the
+                AI model and database are connected.
+            </p>
+
+        </section>
+
+
+        <section class="textile-grid">
+
+            <article class="textile-card">
+
+                <div class="textile-icon">
+                    ◆
+                </div>
+
+                <h2>
+                    No Classifications Yet
+                </h2>
+
+                <p>
+                    Upload a textile image from the Classify Textile
+                    page to start building your classification history.
+                </p>
+
+                <span class="textile-status">
+                    Waiting for Records
+                </span>
+
+            </article>
+
+        </section>
+
+    </main>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../js/supabaseClient.js"></script>
+    <script src="../js/authGuard.js"></script>
+    <script src="../js/navbar.js"></script>
+
+</body>
+
+</html>

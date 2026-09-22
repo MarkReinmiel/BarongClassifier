@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     fetch("../components/navbar.html")
-        .then(response => {
+        .then(function (response) {
 
             if (!response.ok) {
                 throw new Error("Navbar could not be loaded.");
@@ -16,12 +16,25 @@ document.addEventListener("DOMContentLoaded", function () {
             return response.text();
 
         })
-        .then(data => {
+        .then(function (data) {
 
             navbarContainer.innerHTML = data;
 
+            const currentPage = window.location.pathname
+                .split("/")
+                .pop()
+                .replace(".html", "");
+
+            const activeLink = navbarContainer.querySelector(
+                '[data-nav="' + currentPage + '"]'
+            );
+
+            if (activeLink) {
+                activeLink.classList.add("active");
+            }
+
         })
-        .catch(error => {
+        .catch(function (error) {
 
             console.error("Navbar error:", error);
 

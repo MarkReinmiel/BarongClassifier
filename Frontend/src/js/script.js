@@ -1,14 +1,14 @@
 const getStartedBtn = document.getElementById("getStartedBtn");
 const navGetStarted = document.getElementById("navGetStarted");
 
+function goToAppEntry() {
+    window.location.href = "auth.html";
+}
+
 if (getStartedBtn) {
-    getStartedBtn.addEventListener("click", function () {
-        window.location.href = "auth.html";
-    });
+    getStartedBtn.addEventListener("click", goToAppEntry);
 }
 
 if (navGetStarted) {
-    navGetStarted.addEventListener("click", function () {
-        window.location.href = "auth.html";
-    });
+    navGetStarted.addEventListener("click", goToAppEntry);
 }

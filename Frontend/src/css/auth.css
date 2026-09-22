@@ -291,8 +291,49 @@ body {
     transform: translateY(-2px);
 }
 
+.auth-button:disabled {
+    opacity: 0.7;
+
+    cursor: not-allowed;
+
+    transform: none;
+}
+
 .auth-button:hover span {
     margin-left: 18px;
+}
+
+
+/* =========================================
+   AUTH MESSAGE
+========================================= */
+
+.auth-message {
+    margin-top: 22px;
+
+    padding: 12px 14px;
+
+    border-radius: 8px;
+
+    font-size: 14px;
+
+    line-height: 1.5;
+}
+
+.auth-message.error {
+    background: #f8e8e4;
+
+    color: #8a3b2d;
+
+    border: 1px solid #e4c4bb;
+}
+
+.auth-message.success {
+    background: #eaf3e6;
+
+    color: #3f6a32;
+
+    border: 1px solid #c7dbc0;
 }
 
 

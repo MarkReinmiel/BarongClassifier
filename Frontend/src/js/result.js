@@ -36,6 +36,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
         fullResultImage.src = imageData;
 
+    } else {
+
+        window.location.href = "classify.html";
+        return;
+
     }
 
 
