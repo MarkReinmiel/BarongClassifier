@@ -68,12 +68,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
     predictedType.textContent =
         "Pending AI Model";
+    predictedType.classList.add("is-pending");
 
     confidence.textContent =
         "Not available";
+    confidence.classList.add("is-pending");
 
     classificationStatus.textContent =
         "Waiting for AI Model";
+    classificationStatus.classList.add("is-pending");
 
 
     // =================================

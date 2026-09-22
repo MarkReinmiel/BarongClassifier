@@ -1,0 +1,85 @@
+/* Shared palette + motion — colors match existing brand */
+
+:root {
+    --bg: #f7f1e7;
+    --surface: #fffaf3;
+    --surface-soft: #fdf8f0;
+    --ink: #2d2117;
+    --ink-soft: #755f48;
+    --accent: #a8752f;
+    --accent-deep: #80541c;
+    --accent-deeper: #633f13;
+    --line: #eadfce;
+    --line-strong: #e7dac7;
+    --shadow: rgba(65, 43, 20, 0.08);
+    --ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    -webkit-font-smoothing: antialiased;
+}
+
+*:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+}
+
+@keyframes fade-up {
+    from {
+        opacity: 0;
+        transform: translateY(18px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fade-in {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.reveal {
+    animation: fade-up 0.7s var(--ease) both;
+}
+
+.reveal-delay-1 {
+    animation-delay: 0.08s;
+}
+
+.reveal-delay-2 {
+    animation-delay: 0.16s;
+}
+
+.reveal-delay-3 {
+    animation-delay: 0.24s;
+}
+
+.reveal-delay-4 {
+    animation-delay: 0.32s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+
+    .reveal,
+    .reveal-delay-1,
+    .reveal-delay-2,
+    .reveal-delay-3,
+    .reveal-delay-4 {
+        animation: none;
+    }
+}

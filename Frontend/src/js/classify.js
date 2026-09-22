@@ -21,60 +21,100 @@ document.addEventListener("DOMContentLoaded", function () {
     const removeImage =
         document.getElementById("removeImage");
 
+    const uploadFeedback =
+        document.getElementById("uploadFeedback");
 
-    // =================================
-    // SELECT IMAGE
-    // =================================
+    const allowedTypes = [
+        "image/jpeg",
+        "image/png"
+    ];
 
-    textileImage.addEventListener("change", function () {
+    function setFeedback(message, type) {
+        if (!uploadFeedback) {
+            return;
+        }
 
-        const file = textileImage.files[0];
+        uploadFeedback.textContent = message || "";
+        uploadFeedback.hidden = !message;
+        uploadFeedback.className =
+            "upload-feedback" + (type ? " " + type : "");
+    }
 
+    function resetUploadCopy() {
+        uploadArea.querySelector("h3").textContent =
+            "Choose an image";
+
+        uploadArea.querySelector("span").textContent =
+            "JPG or PNG files · drag & drop supported";
+    }
+
+    function applySelectedFile(file) {
         if (!file) {
             return;
         }
 
-        const allowedTypes = [
-            "image/jpeg",
-            "image/png"
-        ];
-
         if (!allowedTypes.includes(file.type)) {
-
-            alert("Please select a JPG or PNG image.");
-
+            setFeedback("Please select a JPG or PNG image.", "error");
             textileImage.value = "";
-
             return;
         }
 
-        const imageURL =
-            URL.createObjectURL(file);
+        const imageURL = URL.createObjectURL(file);
 
         imagePreview.src = imageURL;
 
-        fileName.textContent =
-            "Selected file: " + file.name;
+        fileName.textContent = "Selected file: " + file.name;
 
         previewSection.hidden = false;
 
         classifyButton.disabled = false;
 
+        uploadArea.classList.add("has-file");
+
         uploadArea.querySelector("h3").textContent =
             "Image selected";
 
         uploadArea.querySelector("span").textContent =
-            "You can review your image below";
+            "Review your image, then classify";
 
+        setFeedback("", "");
+    }
+
+    textileImage.addEventListener("change", function () {
+        applySelectedFile(textileImage.files[0]);
     });
 
+    ["dragenter", "dragover"].forEach(function (eventName) {
+        uploadArea.addEventListener(eventName, function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+            uploadArea.classList.add("is-dragging");
+        });
+    });
 
-    // =================================
-    // REMOVE IMAGE
-    // =================================
+    ["dragleave", "drop"].forEach(function (eventName) {
+        uploadArea.addEventListener(eventName, function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+            uploadArea.classList.remove("is-dragging");
+        });
+    });
+
+    uploadArea.addEventListener("drop", function (event) {
+        const file = event.dataTransfer.files[0];
+
+        if (!file) {
+            return;
+        }
+
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(file);
+        textileImage.files = dataTransfer.files;
+
+        applySelectedFile(file);
+    });
 
     removeImage.addEventListener("click", function () {
-
         textileImage.value = "";
 
         imagePreview.src = "";
@@ -85,42 +125,30 @@ document.addEventListener("DOMContentLoaded", function () {
 
         classifyButton.disabled = true;
 
-        uploadArea.querySelector("h3").textContent =
-            "Choose an image";
+        uploadArea.classList.remove("has-file");
 
-        uploadArea.querySelector("span").textContent =
-            "JPG or PNG files";
+        resetUploadCopy();
 
+        setFeedback("", "");
     });
 
-
-    // =================================
-    // CLASSIFY AND OPEN RESULT PAGE
-    // =================================
-
     classifyButton.addEventListener("click", function () {
-
         const file = textileImage.files[0];
 
         if (!file) {
-
-            alert("Please select an image first.");
-
+            setFeedback("Please select an image first.", "error");
             return;
         }
+
+        classifyButton.disabled = true;
+        classifyButton.textContent = "Preparing...";
 
         const reader = new FileReader();
 
         reader.onload = function (event) {
-
-            const imageData =
-                event.target.result;
-
-            // Save the selected image temporarily
-
             sessionStorage.setItem(
                 "classifiedImage",
-                imageData
+                event.target.result
             );
 
             sessionStorage.setItem(
@@ -128,14 +156,17 @@ document.addEventListener("DOMContentLoaded", function () {
                 file.name
             );
 
-            // Open the classification result page
-
             window.location.href = "result.html";
+        };
 
+        reader.onerror = function () {
+            classifyButton.disabled = false;
+            classifyButton.innerHTML =
+                'Classify Textile <span>→</span>';
+            setFeedback("Could not read that image. Try again.", "error");
         };
 
         reader.readAsDataURL(file);
-
     });
 
 });

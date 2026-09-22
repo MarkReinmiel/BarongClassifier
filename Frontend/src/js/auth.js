@@ -103,10 +103,32 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     const signupForm = document.getElementById("signup");
 
+    document.querySelectorAll(".password-toggle").forEach(function (button) {
+        button.addEventListener("click", function () {
+            const input = document.getElementById(button.dataset.target);
+
+            if (!input) {
+                return;
+            }
+
+            const showing = input.type === "text";
+            input.type = showing ? "password" : "text";
+            button.textContent = showing ? "Show" : "Hide";
+        });
+    });
+
     if (signupForm) {
         signupForm.addEventListener("submit", async function (event) {
             event.preventDefault();
             clearMessage();
+
+            if (typeof supabaseClient === "undefined") {
+                showMessage(
+                    "Supabase is not loaded. Serve the site over HTTP and refresh.",
+                    "error"
+                );
+                return;
+            }
 
             const fullName = document
                 .getElementById("signupName")

@@ -26,13 +26,10 @@ body {
 
     padding: 58px 32px 70px;
 
-    background: #f7f1e7;
+    background:
+        radial-gradient(circle at top right, rgba(168, 117, 47, 0.07), transparent 30%),
+        #f7f1e7;
 }
-
-
-/* =================================
-   PAGE HEADER
-================================= */
 
 .classifier-header {
     max-width: 1200px;
@@ -40,6 +37,35 @@ body {
     margin: 0 auto 40px;
 
     text-align: center;
+
+    animation: fade-up 0.65s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.classifier-card {
+    display: grid;
+
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    gap: 24px;
+
+    width: 100%;
+
+    max-width: 1250px;
+
+    margin: 0 auto;
+
+    padding: 28px;
+
+    background: #fffaf3;
+
+    border: 1px solid #ead8bd;
+
+    border-radius: 16px;
+
+    box-shadow:
+        0 12px 30px rgba(65, 43, 20, 0.07);
+
+    animation: fade-up 0.75s cubic-bezier(0.22, 1, 0.36, 1) 0.08s both;
 }
 
 .classifier-label {
@@ -74,36 +100,6 @@ body {
     font-size: 16px;
 
     line-height: 1.6;
-}
-
-
-/* =================================
-   TWO-COLUMN CLASSIFIER CARD
-================================= */
-
-.classifier-card {
-    display: grid;
-
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-
-    gap: 24px;
-
-    width: 100%;
-
-    max-width: 1250px;
-
-    margin: 0 auto;
-
-    padding: 28px;
-
-    background: #fffaf3;
-
-    border: 1px solid #ead8bd;
-
-    border-radius: 16px;
-
-    box-shadow:
-        0 12px 30px rgba(65, 43, 20, 0.07);
 }
 
 
@@ -177,14 +173,54 @@ body {
     cursor: pointer;
 
     transition:
-        background 0.2s ease,
-        border-color 0.2s ease;
+        background 0.25s ease,
+        border-color 0.25s ease,
+        transform 0.25s ease,
+        box-shadow 0.25s ease;
 }
 
 .upload-area:hover {
     background: #f8eddd;
 
     border-color: #a8752f;
+}
+
+.upload-area.is-dragging {
+    background: #f5e6cf;
+
+    border-color: #80541c;
+
+    border-style: solid;
+
+    transform: scale(1.01);
+
+    box-shadow: 0 0 0 4px rgba(168, 117, 47, 0.12);
+}
+
+.upload-area.has-file {
+    border-style: solid;
+
+    border-color: #a8752f;
+}
+
+.upload-feedback {
+    margin: 14px 0 0;
+
+    padding: 12px 14px;
+
+    border-radius: 8px;
+
+    font-size: 13px;
+
+    line-height: 1.5;
+}
+
+.upload-feedback.error {
+    background: #f8e8e4;
+
+    color: #8a3b2d;
+
+    border: 1px solid #e4c4bb;
 }
 
 .upload-icon {
@@ -482,5 +518,18 @@ body {
 
     .classifier-description {
         font-size: 14px;
+    }
+}
+
+
+@keyframes fade-up {
+    from {
+        opacity: 0;
+        transform: translateY(16px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 }

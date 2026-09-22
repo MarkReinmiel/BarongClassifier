@@ -33,6 +33,26 @@ document.addEventListener("DOMContentLoaded", function () {
                 activeLink.classList.add("active");
             }
 
+            const logoutButton =
+                document.getElementById("logoutButton");
+
+            if (logoutButton) {
+                logoutButton.addEventListener("click", async function () {
+                    logoutButton.disabled = true;
+                    logoutButton.textContent = "Signing out...";
+
+                    try {
+                        if (typeof supabaseClient !== "undefined") {
+                            await supabaseClient.auth.signOut();
+                        }
+                    } catch (error) {
+                        console.error("Logout error:", error);
+                    }
+
+                    window.location.href = "auth.html";
+                });
+            }
+
         })
         .catch(function (error) {
 
