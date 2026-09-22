@@ -391,6 +391,145 @@ body {
 
 
 /* =================================
+   IMAGE MODAL
+================================= */
+
+.image-modal {
+    position: fixed;
+
+    inset: 0;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    padding: 40px;
+
+    background: rgba(35, 25, 16, 0.82);
+
+    z-index: 1000;
+
+    box-sizing: border-box;
+}
+
+
+/* =================================
+   ENLARGED IMAGE
+================================= */
+
+.modal-image {
+    display: block;
+
+    max-width: 90vw;
+    max-height: 85vh;
+
+    width: auto;
+    height: auto;
+
+    object-fit: contain;
+
+    border: 2px solid #eadfce;
+    border-radius: 10px;
+
+    box-shadow:
+        0 12px 40px rgba(0, 0, 0, 0.35);
+
+    background: #fffaf3;
+}
+
+
+/* =================================
+   CLOSE BUTTON
+================================= */
+
+.close-image-modal {
+    position: absolute;
+
+    top: 22px;
+    right: 28px;
+
+    width: 42px;
+    height: 42px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid #eadfce;
+    border-radius: 50%;
+
+    background: #fffaf3;
+
+    color: #5d4934;
+
+    font-family: Arial, sans-serif;
+
+    font-size: 30px;
+    font-weight: 400;
+
+    line-height: 1;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.close-image-modal:hover {
+    background: #80541c;
+
+    color: #ffffff;
+
+    transform: scale(1.05);
+}
+
+
+/* =================================
+   PREVENT PAGE SCROLL
+================================= */
+
+body.modal-open {
+    overflow: hidden;
+}
+
+
+/* =================================
+   HIDDEN MODAL
+================================= */
+
+.image-modal[hidden] {
+    display: none;
+}
+
+
+/* =================================
+   MOBILE
+================================= */
+
+@media (max-width: 600px) {
+
+    .image-modal {
+        padding: 25px 15px;
+    }
+
+    .modal-image {
+        max-width: 95vw;
+        max-height: 80vh;
+    }
+
+    .close-image-modal {
+        top: 14px;
+        right: 16px;
+    }
+
+}
+
+
+/* =================================
    MOBILE AND TABLET
 ================================= */
 

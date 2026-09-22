@@ -260,6 +260,152 @@
 
 
 /* =================================
+   ACCOUNT MENU
+================================= */
+
+.account-menu {
+    position: relative;
+    margin-left: 8px;
+}
+
+.account-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+
+    padding: 10px 14px;
+
+    border: 1px solid #d9c6ac;
+    border-radius: 8px;
+
+    background: transparent;
+    color: #5d4934;
+
+    font-family: "DM Sans", Arial, sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        color 0.2s ease,
+        border-color 0.2s ease;
+}
+
+.account-button:hover {
+    background: #f4eadc;
+    border-color: #a8752f;
+    color: #80541c;
+}
+
+.account-arrow {
+    color: #a8752f;
+    font-size: 15px;
+}
+
+
+/* =================================
+   ACCOUNT DROPDOWN
+================================= */
+
+.account-dropdown {
+    position: absolute;
+
+    top: calc(100% + 12px);
+    right: 0;
+
+    min-width: 235px;
+    padding: 18px;
+
+    background: #fffaf3;
+
+    border: 1px solid #eadfce;
+    border-radius: 10px;
+
+    box-shadow: 0 8px 25px rgba(65, 43, 20, 0.14);
+
+    z-index: 100;
+    box-sizing: border-box;
+}
+
+.account-info {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+
+    padding-bottom: 15px;
+
+    border-bottom: 1px solid #eadfce;
+    overflow: hidden;
+}
+
+.account-label {
+    font-family: "DM Sans", Arial, sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+
+    letter-spacing: 1px;
+    color: #a8752f;
+}
+
+.account-info strong {
+    max-width: 100%;
+
+    overflow-wrap: anywhere;
+
+    font-family: "DM Sans", Arial, sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.5;
+
+    color: #5d4934;
+}
+
+
+/* =================================
+   DROPDOWN LOGOUT
+================================= */
+
+.account-dropdown .logout-button {
+    width: 100%;
+
+    margin-top: 15px;
+    margin-left: 0;
+
+    background: transparent;
+}
+
+.account-dropdown .logout-button:hover {
+    background: #80541c;
+    color: #ffffff;
+}
+
+
+/* =================================
+   MOBILE
+================================= */
+
+@media (max-width: 850px) {
+
+    .account-menu {
+        margin-left: 0;
+    }
+
+    .account-dropdown {
+        left: 50%;
+        right: auto;
+
+        transform: translateX(-50%);
+
+        min-width: 230px;
+    }
+
+}
+
+
+/* =================================
    SMALL MOBILE
 ================================= */
 

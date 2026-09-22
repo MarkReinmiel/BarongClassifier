@@ -119,18 +119,34 @@
                     View Image
                 </button>
 
+                <!-- IMAGE MODAL -->
+
                 <div
-                    id="resultPreview"
-                    class="result-preview"
+                    id="imageModal"
+                    class="image-modal"
                     hidden
+                    role="dialog"
+                    aria-modal="true"
+                    aria-label="Enlarged textile image"
                 >
+
+                    <button
+                        type="button"
+                        id="closeImageModal"
+                        class="close-image-modal"
+                        aria-label="Close enlarged image"
+                    >
+                        ×
+                    </button>
+
                     <img
                         id="fullResultImage"
                         src=""
                         alt="Full submitted textile image"
+                        class="modal-image"
                     >
-                </div>
 
+                </div>
             </div>
 
 

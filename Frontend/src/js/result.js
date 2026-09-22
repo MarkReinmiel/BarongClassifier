@@ -15,8 +15,11 @@ document.addEventListener("DOMContentLoaded", function () {
     const viewImageButton =
         document.getElementById("viewImageButton");
 
-    const resultPreview =
-        document.getElementById("resultPreview");
+    const imageModal =
+        document.getElementById("imageModal");
+
+    const closeImageModal =
+        document.getElementById("closeImageModal");
 
 
     // =================================
@@ -80,23 +83,61 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     // =================================
-    // VIEW FULL IMAGE
+    // VIEW IMAGE MODAL
     // =================================
+
+    function openImageModal() {
+
+        imageModal.hidden = false;
+
+        document.body.classList.add("modal-open");
+
+    }
+
+    function closeImageModalFunction() {
+
+        imageModal.hidden = true;
+
+        document.body.classList.remove("modal-open");
+
+    }
 
     viewImageButton.addEventListener("click", function () {
 
-        resultPreview.hidden =
-            !resultPreview.hidden;
+        openImageModal();
 
-        if (resultPreview.hidden) {
+    });
 
-            viewImageButton.textContent =
-                "View Image";
+    closeImageModal.addEventListener("click", function () {
 
-        } else {
+        closeImageModalFunction();
 
-            viewImageButton.textContent =
-                "Hide Image";
+    });
+
+
+    // Close when clicking outside the image
+
+    imageModal.addEventListener("click", function (event) {
+
+        if (event.target === imageModal) {
+
+            closeImageModalFunction();
+
+        }
+
+    });
+
+
+    // Close with Escape key
+
+    document.addEventListener("keydown", function (event) {
+
+        if (
+            event.key === "Escape" &&
+            !imageModal.hidden
+        ) {
+
+            closeImageModalFunction();
 
         }
 

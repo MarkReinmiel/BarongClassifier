@@ -448,6 +448,59 @@ body {
 }
 
 
+/* =================================
+   PASSWORD SHOW / HIDE BUTTON
+================================= */
+
+.password-field {
+    position: relative;
+}
+
+.password-field input {
+    padding-right: 75px;
+}
+
+.password-toggle {
+    position: absolute;
+
+    right: 12px;
+    top: 34px;
+
+    padding: 4px 6px;
+
+    border: none;
+
+    background: transparent;
+
+    color: #8a5a20;
+
+    font-family: "DM Sans", Arial, sans-serif;
+
+    font-size: 12px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+        color 0.2s ease,
+        background 0.2s ease;
+}
+
+.password-toggle:hover {
+    color: #a8752f;
+
+    background: #f4eadc;
+
+    border-radius: 5px;
+}
+
+.password-toggle:focus-visible {
+    outline: 2px solid #a8752f;
+
+    outline-offset: 2px;
+}
+
+
 /* =========================================
    MOBILE
 ========================================= */
