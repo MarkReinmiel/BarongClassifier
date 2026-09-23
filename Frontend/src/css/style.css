@@ -19,9 +19,9 @@ body {
     background:
         radial-gradient(circle at top left, rgba(168, 117, 47, 0.08), transparent 34%),
         radial-gradient(circle at 85% 20%, rgba(128, 84, 28, 0.05), transparent 28%),
-        #f7f1e7;
+        var(--bg);
 
-    color: #2d2117;
+    color: var(--ink);
 
     min-height: 100vh;
 
@@ -46,7 +46,7 @@ body {
 
     background: rgba(255, 250, 242, 0.92);
 
-    border-bottom: 1px solid #eadfce;
+    border-bottom: 1px solid var(--line);
 
     backdrop-filter: blur(10px);
 
@@ -78,7 +78,7 @@ body {
 
     justify-content: center;
 
-    color: #a8752f;
+    color: var(--accent);
 
     font-size: 25px;
 
@@ -92,13 +92,13 @@ body {
 
     letter-spacing: 2px;
 
-    color: #302319;
+    color: var(--ink);
 }
 
 .brand p {
     font-size: 12px;
 
-    color: #796b5c;
+    color: var(--ink-soft);
 
     margin-top: 2px;
 }
@@ -117,7 +117,7 @@ nav {
 nav a {
     text-decoration: none;
 
-    color: #3f342a;
+    color: var(--ink);
 
     font-size: 16px;
 
@@ -127,11 +127,11 @@ nav a {
 }
 
 nav a:hover {
-    color: #956523;
+    color: var(--accent-highlight);
 }
 
 nav a.active {
-    color: #80531c;
+    color: var(--accent);
 }
 
 nav a.active::after {
@@ -147,16 +147,18 @@ nav a.active::after {
 
     height: 2px;
 
-    background: #9b6b29;
+    background: var(--accent-highlight);
 }
 
 
-/* NAV BUTTON */
+/* =========================================
+   NAV BUTTON
+========================================= */
 
 .nav-button {
     border: none;
 
-    background: #7d531d;
+    background: var(--accent-deeper);
 
     color: white;
 
@@ -170,11 +172,15 @@ nav a.active::after {
 
     cursor: pointer;
 
-    transition: 0.3s;
+    transition:
+        background 0.3s ease,
+        transform 0.3s ease;
 }
 
 .nav-button:hover {
-    background: #5f3e16;
+    background: var(--accent-highlight);
+
+    color: white;
 
     transform: translateY(-2px);
 }
@@ -264,7 +270,7 @@ nav a.active::after {
 
     letter-spacing: 7px;
 
-    color: #9b6b29;
+    color: var(--accent-highlight);
 
     font-weight: 500;
 
@@ -283,7 +289,7 @@ h1 {
 
     font-weight: 700;
 
-    color: #2b2018;
+    color: var(--ink);
 
     margin-bottom: 25px;
 }
@@ -291,7 +297,7 @@ h1 {
 h1 span {
     display: block;
 
-    color: #a8752f;
+    color: var(--accent);
 }
 
 
@@ -316,13 +322,13 @@ h1 span {
 
     flex: 1;
 
-    background: #a8752f;
+    background: var(--accent);
 }
 
 .ornament b {
     font-size: 20px;
 
-    color: #a8752f;
+    color: var(--accent);
 
     transform: rotate(45deg);
 
@@ -341,7 +347,7 @@ h1 span {
 
     line-height: 1.65;
 
-    color: #5f554c;
+    color: var(--ink-soft);
 
     margin-bottom: 38px;
 }
@@ -354,7 +360,7 @@ h1 span {
 .get-started {
     border: none;
 
-    background: #80541c;
+    background: var(--accent-deeper);
 
     color: white;
 
@@ -372,7 +378,9 @@ h1 span {
 
     box-shadow: 0 12px 25px rgba(96, 61, 20, 0.18);
 
-    transition: 0.3s;
+    transition:
+        background 0.3s ease,
+        transform 0.3s ease;
 
     display: flex;
 
@@ -383,14 +391,10 @@ h1 span {
     gap: 25px;
 }
 
-.get-started span {
-    font-size: 27px;
-
-    transition: 0.3s;
-}
-
 .get-started:hover {
-    background: #623f13;
+    background: var(--accent-highlight);
+
+    color: white;
 
     transform: translateY(-3px);
 }
@@ -411,7 +415,7 @@ h1 span {
 
     letter-spacing: 6px;
 
-    color: #a18c75;
+    color: var(--ink-soft);
 }
 
 
@@ -447,7 +451,7 @@ h1 span {
 
     height: 650px;
 
-    border: 2px solid #c49a59;
+    border: 2px solid var(--accent-highlight);
 
     border-radius: 18px;
 
@@ -468,7 +472,7 @@ h1 span {
 
     border-radius: 18px;
 
-    background: #ddd;
+    background: var(--surface-soft);
 
     border: 4px solid rgba(255, 255, 255, 0.8);
 
@@ -534,13 +538,13 @@ h1 span {
 
     letter-spacing: 4px;
 
-    color: #a18c75;
+    color: var(--ink-soft);
 }
 
 .footer b {
     font-weight: 400;
 
-    color: #c5a779;
+    color: var(--line-strong);
 }
 
 

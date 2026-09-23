@@ -9,9 +9,9 @@
 body {
     margin: 0;
 
-    background: #f7f1e7;
+    background: var(--bg);
 
-    color: #2d2117;
+    color: var(--ink);
 
     font-family: "DM Sans", Arial, sans-serif;
 }
@@ -22,13 +22,17 @@ body {
 ================================= */
 
 .classifier-page {
-    min-height: calc(100vh - 68px);
+    min-height: 100vh;
 
-    padding: 58px 32px 70px;
+    padding: 140px 32px 70px;
 
     background:
-        radial-gradient(circle at top right, rgba(168, 117, 47, 0.07), transparent 30%),
-        #f7f1e7;
+    radial-gradient(
+        circle at top right,
+        rgba(196, 122, 192, 0.12),
+        transparent 30%
+    ),
+    var(--bg);
 }
 
 .classifier-header {
@@ -56,9 +60,9 @@ body {
 
     padding: 28px;
 
-    background: #fffaf3;
+    background: var(--surface);
 
-    border: 1px solid #ead8bd;
+    border: 1px solid var(--line-strong);
 
     border-radius: 16px;
 
@@ -71,7 +75,7 @@ body {
 .classifier-label {
     margin: 0 0 16px;
 
-    color: #a8752f;
+    color: var(--accent);
 
     font-size: 11px;
 
@@ -83,7 +87,7 @@ body {
 .classifier-header h1 {
     margin: 0;
 
-    color: #2d2117;
+    color: var(--ink);
 
     font-family: "Playfair Display", Georgia, serif;
 
@@ -95,7 +99,7 @@ body {
 .classifier-description {
     margin: 20px auto 0;
 
-    color: #8b6d4d;
+    color: var(--ink-soft);
 
     font-size: 16px;
 
@@ -107,24 +111,30 @@ body {
    UPLOAD AND PREVIEW PANELS
 ================================= */
 
-.upload-section,
-.preview-section {
+.upload-section {
     min-width: 0;
 
     padding: 32px;
 
-    background: #fffaf3;
+    background: linear-gradient(
+        145deg,
+        #ffffff,
+        #f7edf6
+    );
 
-    border: 1px solid #eadfce;
+    border: 1px solid var(--accent-highlight);
 
-    border-radius: 12px;
+    border-radius: 20px;
+
+    box-shadow:
+        0 10px 25px rgba(119, 86, 122, 0.12);
 }
 
 .upload-section h2,
 .preview-section h2 {
     margin: 0 0 12px;
 
-    color: #3b2919;
+    color: var(--ink);
 
     font-family: "Playfair Display", Georgia, serif;
 
@@ -137,7 +147,7 @@ body {
 .preview-section > p {
     margin: 0 0 24px;
 
-    color: #8b6d4d;
+    color: var(--ink-soft);
 
     font-size: 14px;
 
@@ -158,15 +168,15 @@ body {
 
     justify-content: center;
 
-    min-height: 360px;
+    min-height: 330px;
 
-    padding: 32px 20px;
+    padding: 35px 24px;
 
-    background: #fdf8f0;
+    background: #ffffff;
 
-    border: 1.5px dashed #c9a875;
+    border: 2px dashed var(--accent-highlight);
 
-    border-radius: 10px;
+    border-radius: 18px;
 
     text-align: center;
 
@@ -175,32 +185,34 @@ body {
     transition:
         background 0.25s ease,
         border-color 0.25s ease,
-        transform 0.25s ease,
         box-shadow 0.25s ease;
 }
 
 .upload-area:hover {
-    background: #f8eddd;
+    background: #fdf2fc;
 
-    border-color: #a8752f;
+    border-color: var(--accent);
+
+    box-shadow:
+        0 0 0 5px rgba(196, 122, 192, 0.12);
 }
 
 .upload-area.is-dragging {
-    background: #f5e6cf;
+    background: rgba(196, 122, 192, 0.18);
 
-    border-color: #80541c;
+    border-color: var(--accent);
 
     border-style: solid;
 
     transform: scale(1.01);
 
-    box-shadow: 0 0 0 4px rgba(168, 117, 47, 0.12);
+    box-shadow: 0 0 0 4px rgba(196, 122, 192, 0.12);
 }
 
 .upload-area.has-file {
     border-style: solid;
 
-    border-color: #a8752f;
+    border-color: var(--accent);
 }
 
 .upload-feedback {
@@ -227,28 +239,29 @@ body {
     display: flex;
 
     align-items: center;
-
     justify-content: center;
 
-    width: 64px;
+    width: 78px;
+    height: 78px;
 
-    height: 64px;
+    margin-bottom: 22px;
 
-    margin-bottom: 24px;
-
-    background: #f3e5cf;
+    background: var(--accent-highlight);
 
     border-radius: 50%;
 
-    color: #a8752f;
+    color: #ffffff;
 
-    font-size: 25px;
+    font-size: 30px;
+
+    box-shadow:
+        0 6px 15px rgba(196, 122, 192, 0.25);
 }
 
 .upload-area h3 {
     margin: 0 0 10px;
 
-    color: #3b2919;
+    color: var(--ink);
 
     font-family: "Playfair Display", Georgia, serif;
 
@@ -260,7 +273,7 @@ body {
 .upload-area span {
     margin-bottom: 22px;
 
-    color: #9d8465;
+    color: var(--ink-soft);
 
     font-size: 14px;
 }
@@ -268,15 +281,30 @@ body {
 .upload-button {
     padding: 14px 30px;
 
-    background: #80541c;
+    background: var(--accent-deeper);
 
+    border: none;
     border-radius: 6px;
 
     color: #ffffff;
 
+    font-family: "DM Sans", Arial, sans-serif;
     font-size: 14px;
-
     font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        transform 0.2s ease;
+}
+
+.upload-button:hover {
+    background: var(--accent-highlight);
+
+    color: #ffffff;
+
+    transform: translateY(-2px);
 }
 
 
@@ -301,9 +329,9 @@ body {
 
     padding: 18px;
 
-    background: #f8f1e7;
+    background: var(--surface-soft);
 
-    border: 1px solid #eadfce;
+    border: 1px solid var(--line);
 
     border-radius: 10px;
 
@@ -325,7 +353,7 @@ body {
 .preview-box:has(img[src=""])::after {
     content: "No image selected";
 
-    color: #9d8465;
+    color: var(--ink-soft);
 
     font-size: 16px;
 }
@@ -335,13 +363,13 @@ body {
 
     padding: 14px;
 
-    background: #f8f1e7;
+    background: var(--surface-soft);
 
-    border: 1px solid #eadfce;
+    border: 1px solid var(--line);
 
     border-radius: 6px;
 
-    color: #6e5437;
+    color: var(--ink-soft);
 
     font-size: 13px;
 
@@ -360,11 +388,11 @@ body {
 
     background: transparent;
 
-    border: 1px solid #c9b293;
+    border: 1px solid var(--line-strong);
 
     border-radius: 6px;
 
-    color: #80541c;
+    color: var(--accent);
 
     font-family: "DM Sans", Arial, sans-serif;
 
@@ -395,18 +423,14 @@ body {
 .classify-button {
     padding: 17px 42px;
 
-    background: #80541c;
-
+    background: var(--accent-deeper);
     border: none;
-
     border-radius: 6px;
 
     color: #ffffff;
 
     font-family: "DM Sans", Arial, sans-serif;
-
     font-size: 15px;
-
     font-weight: 600;
 
     cursor: pointer;
@@ -417,15 +441,15 @@ body {
 }
 
 .classify-button:hover:not(:disabled) {
-    background: #633f13;
+    background: var(--accent-highlight);
 
     transform: translateY(-2px);
 }
 
 .classify-button:disabled {
-    background: #d6c8b5;
+    background: var(--line-strong);
 
-    color: #ffffff;
+    color: var(--ink-soft);
 
     cursor: not-allowed;
 }
@@ -439,7 +463,7 @@ body {
 .demo-note {
     margin: 14px 0 0;
 
-    color: #9d8465;
+    color: var(--ink-soft);
 
     font-size: 12px;
 }
@@ -461,18 +485,65 @@ body {
         gap: 18px;
     }
 
-    .upload-section,
+   .upload-section,
     .preview-section {
-        padding: 24px;
+        min-width: 0;
+
+        padding: 30px;
+
+        background: var(--surface);
+
+        border: 1px solid var(--line);
+
+        border-radius: 16px;
+
+        box-shadow: 0 8px 24px rgba(47, 50, 58, 0.05);
     }
 
-    .upload-area,
-    .preview-box {
-        min-height: 300px;
+    .upload-area {
+        display: flex;
 
-        height: 300px;
+        flex-direction: column;
+
+        align-items: center;
+
+        justify-content: center;
+
+        min-height: 330px;
+
+        padding: 40px 24px;
+
+        background:
+            linear-gradient(
+                145deg,
+                rgba(196, 122, 192, 0.06),
+                var(--surface-soft)
+            );
+
+        border: 2px dashed var(--line-strong);
+
+        border-radius: 14px;
+
+        text-align: center;
+
+        cursor: pointer;
+
+        transition:
+            background 0.25s ease,
+            border-color 0.25s ease,
+            transform 0.25s ease,
+            box-shadow 0.25s ease;
     }
 
+    .upload-area:hover {
+        background: rgba(196, 122, 192, 0.12);
+
+        border-color: var(--accent-highlight);
+
+        transform: translateY(-2px);
+
+        box-shadow: 0 8px 20px rgba(196, 122, 192, 0.12);
+    }
     .upload-section h2,
     .preview-section h2 {
         font-size: 24px;

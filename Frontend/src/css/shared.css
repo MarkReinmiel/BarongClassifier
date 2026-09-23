@@ -1,17 +1,28 @@
 /* Shared palette + motion — colors match existing brand */
 
 :root {
-    --bg: #f7f1e7;
-    --surface: #fffaf3;
-    --surface-soft: #fdf8f0;
-    --ink: #2d2117;
-    --ink-soft: #755f48;
-    --accent: #a8752f;
-    --accent-deep: #80541c;
-    --accent-deeper: #633f13;
-    --line: #eadfce;
-    --line-strong: #e7dac7;
-    --shadow: rgba(65, 43, 20, 0.08);
+    /* =================================
+       NEW COLOR PALETTE
+    ================================= */
+
+    --bg: #E5DED4;
+    --surface: #FFFFFF;
+    --surface-soft: #F5F1EC;
+
+    --ink: #2F323A;
+    --ink-soft: #5D5B63;
+
+    --accent: #77567A;
+    --accent-deep: #624568;
+    --accent-deeper: #49344D;
+
+    --accent-highlight: #C47AC0;
+
+    --line: #D5CBD2;
+    --line-strong: #B9A9B9;
+
+    --shadow: rgba(47, 50, 58, 0.12);
+
     --ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 

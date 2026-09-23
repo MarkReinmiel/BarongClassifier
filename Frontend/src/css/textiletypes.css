@@ -1,19 +1,46 @@
 /* =================================
+   GENERAL RESET
+================================= */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html,
+body {
+    width: 100%;
+    min-height: 100%;
+    margin: 0;
+    padding: 0;
+
+    background: var(--bg);
+
+    border: none;
+}
+
+/* =================================
    TEXTILE TYPES PAGE
 ================================= */
 
 .textile-page {
-    min-height: calc(100vh - 80px);
+    min-height: 100vh;
 
-    padding: 70px 7% 90px;
-
+    padding: 140px 7% 90px;
     background:
-        radial-gradient(circle at top right, rgba(168, 117, 47, 0.07), transparent 28%),
-        #f7f1e7;
+        radial-gradient(
+            circle at top right,
+            rgba(196, 122, 192, 0.12),
+            transparent 28%
+        ),
+        var(--bg);
 
     box-sizing: border-box;
-}
 
+    border: none;
+    outline: none;
+}
 
 /* =================================
    PAGE HEADER
@@ -39,7 +66,7 @@
 
     letter-spacing: 3px;
 
-    color: #a8752f;
+    color: var(--accent);
 }
 
 .textile-header h1 {
@@ -50,7 +77,7 @@
     font-size: 48px;
     font-weight: 700;
 
-    color: #2d2117;
+    color: var(--ink);
 }
 
 .page-description {
@@ -63,7 +90,7 @@
     font-size: 15px;
     line-height: 1.8;
 
-    color: #755f48;
+   color: var(--ink-soft);
 }
 
 
@@ -93,16 +120,16 @@
 
     padding: 34px;
 
-    background: #fffaf3;
+    background: var(--surface);
 
-    border: 1px solid #e7dac7;
+    border: 1px solid var(--line-strong);
 
     border-radius: 14px;
 
     box-sizing: border-box;
 
     box-shadow:
-        0 8px 25px rgba(65, 43, 20, 0.05);
+        0 8px 25px rgba(47, 50, 58, 0.06);
 
     transition:
         transform 0.25s ease,
@@ -127,10 +154,10 @@
 .textile-card:hover {
     transform: translateY(-4px);
 
-    border-color: #d8bd91;
+    border-color: var(--accent-highlight);
 
     box-shadow:
-        0 14px 30px rgba(65, 43, 20, 0.09);
+        0 14px 30px rgba(47, 50, 58, 0.12);
 }
 
 
@@ -148,11 +175,11 @@
     align-items: center;
     justify-content: center;
 
-    background: #f2e5d1;
+    background: rgba(196, 122, 192, 0.18);
 
     border-radius: 50%;
 
-    color: #a8752f;
+    color: var(--accent);
 
     font-size: 16px;
 }
@@ -170,7 +197,7 @@
     font-size: 26px;
     font-weight: 700;
 
-    color: #3b2919;
+    color: var(--ink);
 }
 
 
@@ -186,7 +213,7 @@
     font-size: 14px;
     line-height: 1.8;
 
-    color: #755f48;
+    color: var(--ink-soft);
 }
 
 
@@ -199,7 +226,7 @@
 
     padding: 7px 12px;
 
-    background: #f5eadb;
+    background: rgba(119, 86, 122, 0.14);
 
     border-radius: 20px;
 
@@ -210,7 +237,7 @@
 
     letter-spacing: 0.5px;
 
-    color: #8b6028;
+    color: var(--accent);
 
     text-decoration: none;
 
@@ -218,11 +245,9 @@
 }
 
 a.textile-status:hover {
-    background: #80541c;
-
-    color: #ffffff;
+    background: var(--accent);
+    color: var(--surface);
 }
-
 
 /* =================================
    MOBILE

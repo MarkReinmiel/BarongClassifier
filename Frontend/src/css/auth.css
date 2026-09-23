@@ -19,11 +19,19 @@ body {
     min-height: 100vh;
 
     background:
-        radial-gradient(circle at 12% 18%, rgba(168, 117, 47, 0.10), transparent 32%),
-        radial-gradient(circle at 90% 80%, rgba(128, 84, 28, 0.06), transparent 28%),
-        #f7f1e7;
+    radial-gradient(
+        circle at 12% 18%,
+        rgba(196, 122, 192, 0.12),
+        transparent 32%
+    ),
+    radial-gradient(
+        circle at 90% 80%,
+        rgba(119, 86, 122, 0.10),
+        transparent 28%
+    ),
+    var(--bg);
 
-    color: #2d2117;
+    color: var(--ink);
 }
 
 
@@ -37,21 +45,31 @@ body {
     top: 30px;
     left: 5%;
 
+    display: inline-block;
+    padding: 8px 16px;
+
+    border: 1px solid var(--accent);
+    border-radius: 6px;
+
+    background: transparent;
+    color: var(--accent);
+
+    font-family: "DM Sans", Arial, sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+
     text-decoration: none;
-
-    color: #76501f;
-
-    font-size: 15px;
-
-    z-index: 10;
-
-    transition: color 0.2s ease, transform 0.2s ease;
+    transition:
+        background 0.2s ease,
+        color 0.2s ease,
+        transform 0.2s ease;
 }
 
 .back-home:hover {
-    color: #a8752f;
+    background: var(--accent);
+    color: var(--surface);
 
-    transform: translateX(-3px);
+    transform: translateY(-2px);
 }
 
 
@@ -85,7 +103,7 @@ body {
 }
 
 .brand-symbol {
-    color: #a8752f;
+    color: var(--accent);
 
     font-size: 55px;
 
@@ -105,13 +123,13 @@ body {
 
     margin-bottom: 25px;
 
-    color: #2c2118;
+    color: var(--ink);
 }
 
 .auth-brand h1 span {
     display: block;
 
-    color: #a8752f;
+    color: var(--accent);
 }
 
 .auth-brand p {
@@ -119,7 +137,7 @@ body {
 
     line-height: 1.7;
 
-    color: #6b5d50;
+    color: var(--ink-soft);
 
     max-width: 350px;
 }
@@ -129,7 +147,7 @@ body {
 
     height: 2px;
 
-    background: #a8752f;
+    background: var(--accent);
 
     margin: 35px 0 20px;
 }
@@ -139,7 +157,7 @@ body {
 
     letter-spacing: 4px;
 
-    color: #9d8b74;
+    color: var(--line-strong);
 }
 
 
@@ -150,16 +168,16 @@ body {
 .auth-card {
     width: 470px;
 
-    background: #fffaf3;
+    background: var(--surface);
 
-    border: 1px solid #eadfce;
+    border: 1px solid var(--line);
 
     border-radius: 16px;
 
     padding: 50px;
 
     box-shadow:
-        0 20px 60px rgba(65, 43, 20, 0.12);
+        0 20px 60px rgba(47, 50, 58, 0.14);
 
     animation: fade-up 0.75s cubic-bezier(0.22, 1, 0.36, 1) 0.08s both;
 }
@@ -201,9 +219,9 @@ body {
 
     border-radius: 6px;
 
-    background: #f2e5d1;
+    background: rgba(196, 122, 192, 0.18);
 
-    color: #80541c;
+    color: var(--accent);
 
     font-family: inherit;
 
@@ -214,7 +232,7 @@ body {
 }
 
 .password-toggle:hover {
-    background: #e8d5b8;
+    background: rgba(196, 122, 192, 0.28);
 }
 
 .form-label {
@@ -222,7 +240,7 @@ body {
 
     letter-spacing: 5px;
 
-    color: #a8752f;
+    color: var(--accent);
 
     margin-bottom: 15px;
 }
@@ -232,13 +250,13 @@ body {
 
     font-size: 34px;
 
-    color: #2d2117;
+    color: var(--ink);
 
     margin-bottom: 12px;
 }
 
 .form-description {
-    color: #75695e;
+    color: var(--ink-soft);
 
     line-height: 1.6;
 
@@ -263,7 +281,7 @@ body {
 
     font-weight: 600;
 
-    color: #43372d;
+    color: var(--ink);
 
     margin-bottom: 8px;
 }
@@ -275,11 +293,11 @@ body {
 
     padding: 0 15px;
 
-    border: 1px solid #d9cbb8;
+    border: 1px solid var(--line-strong);
 
     border-radius: 7px;
 
-    background: #fffdf9;
+    background: var(--surface-soft);
 
     font-family: inherit;
 
@@ -291,7 +309,7 @@ body {
 }
 
 .input-group input:focus {
-    border-color: #a8752f;
+    border-color: var(--accent);
 
     box-shadow:
         0 0 0 3px rgba(168, 117, 47, 0.10);
@@ -311,7 +329,7 @@ body {
 
     border-radius: 8px;
 
-    background: #80541c;
+    background: var(--accent);
 
     color: white;
 
@@ -337,7 +355,7 @@ body {
 }
 
 .auth-button:hover {
-    background: #633f13;
+    background: var(--accent-deeper);
 
     transform: translateY(-2px);
 }
@@ -399,7 +417,7 @@ body {
 
     margin-top: 25px;
 
-    color: #75695e;
+    color: var(--ink-soft);
 
     font-size: 14px;
 }
@@ -409,7 +427,7 @@ body {
 
     background: none;
 
-    color: #8b5b1f;
+    color: var(--accent);
 
     font-family: inherit;
 
@@ -472,7 +490,7 @@ body {
 
     background: transparent;
 
-    color: #8a5a20;
+    color: var(--accent);
 
     font-family: "DM Sans", Arial, sans-serif;
 
@@ -487,15 +505,15 @@ body {
 }
 
 .password-toggle:hover {
-    color: #a8752f;
+    color: var(--accent);
 
-    background: #f4eadc;
+    background: rgba(196, 122, 192, 0.18);
 
     border-radius: 5px;
 }
 
 .password-toggle:focus-visible {
-    outline: 2px solid #a8752f;
+    outline: 2px solid var(--accent);
 
     outline-offset: 2px;
 }

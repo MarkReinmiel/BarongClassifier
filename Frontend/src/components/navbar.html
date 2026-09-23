@@ -42,23 +42,46 @@
             About
         </a>
 
-        <div class="account-menu">
+       <div class="account-menu">
 
-        <button type="button" class="account-button" id="accountButton">
-            <span id="accountName">Account</span>
-            <span class="account-arrow">⌄</span>
-        </button>
-
-        <div class="account-dropdown" id="accountDropdown" hidden>
-
-            <div class="account-info">
-                <span class="account-label">SIGNED IN AS</span>
-                <strong id="accountEmail">Loading...</strong>
-            </div>
-
-            <button type="button" class="logout-button" id="logoutButton">
-                Log out
+            <!-- User icon button -->
+            <button
+                type="button"
+                class="account-button"
+                id="accountButton"
+                aria-label="Open account menu"
+            >
+                <span class="user-icon">♙</span>
             </button>
+
+            <!-- Account dropdown -->
+            <div
+                class="account-dropdown"
+                id="accountDropdown"
+                hidden
+            >
+
+                <div class="account-info">
+
+                    <span class="account-label">
+                        SIGNED IN AS
+                    </span>
+
+                    <strong id="accountEmail">
+                        Loading...
+                    </strong>
+
+                </div>
+
+                <button
+                    type="button"
+                    class="logout-button"
+                    id="logoutButton"
+                >
+                    Log out
+                </button>
+
+            </div>
 
         </div>
 
