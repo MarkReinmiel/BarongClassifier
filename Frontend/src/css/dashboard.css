@@ -1,38 +1,19 @@
 /* =================================
-   GENERAL RESET
-================================= */
-
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-html,
-body {
-    width: 100%;
-    min-height: 100%;
-    margin: 0;
-    padding: 0;
-}
-
-
-/* =================================
    DASHBOARD
 ================================= */
 
 .dashboard {
-    min-height: 100vh;
+    min-height: calc(100vh - 80px);
 
-    padding: 140px 32px 70px;
+    padding: 75px 5% 90px;
 
-      background:
-        radial-gradient(
-            circle at top right,
-            rgba(196, 122, 192, 0.12),
-            transparent 30%
-        ),
-        var(--bg);
+    background:
+    radial-gradient(
+        circle at top left,
+        rgba(196, 122, 192, 0.12),
+        transparent 28%
+    ),
+    var(--bg);
 
     box-sizing: border-box;
 }
@@ -43,7 +24,7 @@ body {
 ================================= */
 
 .dashboard-hero {
-    max-width: 1250px;
+    max-width: 1400px;
 
     margin: 0 auto 65px;
 
@@ -237,7 +218,7 @@ body {
 ================================= */
 
 .overview-section {
-    max-width: 1250px;
+    max-width: 1180px;
 
     margin: 0 auto 70px;
 }
@@ -577,7 +558,7 @@ body {
 @media (max-width: 1000px) {
 
     .dashboard {
-        padding: 45px 24px 60px;
+        padding: 40px 5% 70px;
     }
 
     .dashboard-hero {
@@ -614,7 +595,7 @@ body {
 @media (max-width: 700px) {
 
     .dashboard {
-        padding: 35px 16px 50px;
+        padding: 30px 20px 60px;
     }
 
     .dashboard-hero {

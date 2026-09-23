@@ -94,3 +94,16 @@ body {
         animation: none;
     }
 }
+
+/* =================================
+   DASHBOARD & CLASSIFY PAGE SPACING
+================================= */
+
+.dashboard-page,
+.classify-page {
+    min-height: 100vh;
+
+    padding: 55px 7% 90px;
+
+    box-sizing: border-box;
+}

@@ -3,97 +3,118 @@
    NAVBAR
 ================================= */
 
+/* =================================
+   NAVBAR
+================================= */
+
 .navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
     width: 100%;
-    min-height: 64px;
+    height: 85px;
 
     display: flex;
     align-items: center;
     justify-content: space-between;
 
-    padding: 0 32px;
-
-    background: var(--ink);
-    border-bottom: 1px solid var(--line);
-    box-shadow: 0 3px 15px rgba(47, 50, 58, 0.18);
-
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 1000;
-
+    padding: 0 90px;
     box-sizing: border-box;
+
+    background: #292b32;
+    z-index: 1000;
 }
 
+/* Prevent page content from hiding behind the navbar */
+body {
+    margin: 0;
+    padding-top: 70px;
+}
 
-/* =================================
-   LOGO
-================================= */
+/* LEFT: Logo */
 
 .navbar-logo {
     display: flex;
     align-items: center;
-
-    gap: 12px;
+    gap: 10px;
 
     flex-shrink: 0;
 
+    color: #ffffff;
     text-decoration: none;
-
-    color: inherit;
 }
+
+/* Logo diamond */
 
 .logo-mark {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
     color: var(--accent-highlight);
+    font-size: 20px;
 
-    font-size: 17px;
-
-    transform: rotate(45deg);
+    flex-shrink: 0;
 }
+
+/* Logo text container */
 
 .logo-text {
     display: flex;
     flex-direction: column;
+    justify-content: center;
+    gap: 2px;
 }
+
+/* Logo title */
 
 .logo-title {
-    font-family: "Playfair Display", Georgia, serif;
+    color: #ffffff;
 
-    font-size: 20px;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 18px;
     font-weight: 700;
+    letter-spacing: 1px;
 
-    letter-spacing: 1.2px;
-
-    color: var(--surface);
-
-    white-space: nowrap;
+    line-height: 1.2;
 }
+
+/* Logo subtitle */
 
 .logo-subtitle {
-    margin-top: 3px;
+    color: #b8b8bd;
 
     font-family: "DM Sans", Arial, sans-serif;
-
     font-size: 8px;
+    font-weight: 400;
+    letter-spacing: 0.3px;
 
-    letter-spacing: 0.8px;
-
-    color: var(--line-strong);
-
-    white-space: nowrap;
+    line-height: 1.2;
 }
 
+/* Right section: links + account */
 
-/* =================================
-   NAVIGATION LINKS
-================================= */
+
+.navbar-right {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+
+    gap: 35px;
+
+    flex-shrink: 0;
+}
+
+/* Navigation links */
 
 .navbar-links {
     display: flex;
     align-items: center;
-
-    gap: 32px;
+    gap: 28px;
 }
+/* =================================
+   NAVIGATION LINKS
+================================= */
 
 .navbar-links a {
     position: relative;
@@ -398,9 +419,8 @@
 ================================= */
 
 @media (max-width: 480px) {
-
     .navbar {
-        padding: 18px;
+        padding: 0 18px;
     }
 
     .logo-title {
@@ -414,5 +434,4 @@
     .navbar-links a {
         font-size: 12px;
     }
-
 }
