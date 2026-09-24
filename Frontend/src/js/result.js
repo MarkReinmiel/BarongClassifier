@@ -56,7 +56,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     // =================================
-    // TEMPORARY DEMO DETAILS
+    // CLASSIFY WITH THE TRAINED MODEL
     // =================================
 
     const predictedType =
@@ -68,18 +68,57 @@ document.addEventListener("DOMContentLoaded", function () {
     const classificationStatus =
         document.getElementById("classificationStatus");
 
+    const classifierUrl = "http://127.0.0.1:5501/predict";
 
-    predictedType.textContent =
-        "Pending AI Model";
-    predictedType.classList.add("is-pending");
+    function showDetail(element, text, pending) {
+        element.textContent = text;
+        element.classList.toggle("is-pending", pending);
+    }
 
-    confidence.textContent =
-        "Not available";
-    confidence.classList.add("is-pending");
+    showDetail(predictedType, "Classifying...", true);
+    showDetail(confidence, "Classifying...", true);
+    showDetail(classificationStatus, "Running the trained model", true);
 
-    classificationStatus.textContent =
-        "Waiting for AI Model";
-    classificationStatus.classList.add("is-pending");
+    fetch(classifierUrl, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            image: imageData
+        })
+    })
+        .then(function (response) {
+            return response.json().then(function (payload) {
+                return {
+                    ok: response.ok,
+                    payload: payload
+                };
+            });
+        })
+        .then(function (result) {
+            if (!result.ok) {
+                throw new Error(
+                    (result.payload && result.payload.error) ||
+                    "Classification failed."
+                );
+            }
+
+            const percent = Math.round(result.payload.confidence * 1000) / 10;
+
+            showDetail(predictedType, result.payload.display_name, false);
+            showDetail(confidence, percent.toFixed(1) + "%", false);
+            showDetail(classificationStatus, "Classified", false);
+        })
+        .catch(function () {
+            showDetail(predictedType, "Classifier unavailable", true);
+            showDetail(confidence, "Not available", true);
+            showDetail(
+                classificationStatus,
+                "The model server is not running",
+                true
+            );
+        });
 
 
     // =================================
