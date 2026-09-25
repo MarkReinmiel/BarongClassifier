@@ -68,7 +68,12 @@
 
             <!-- Card 1 -->
 
-            <article class="textile-card">
+            <article 
+                class="textile-card"
+                onclick="openTextileModal('pina')"
+                tabindex="0"
+                role="button"
+            >
 
                 <div class="textile-icon">
                     ◆
@@ -93,7 +98,12 @@
 
             <!-- Card 2 -->
 
-            <article class="textile-card">
+            <article
+                class="textile-card"
+                onclick="openTextileModal('jusi')"
+                tabindex="0"
+                role="button"
+            >
 
                 <div class="textile-icon">
                     ◇
@@ -117,7 +127,12 @@
 
             <!-- Card 3 -->
 
-            <article class="textile-card">
+            <article 
+                class="textile-card"
+                onclick="openTextileModal('pina-seda')"
+                tabindex="0"
+                role="button"
+            >
 
                 <div class="textile-icon">
                     ✦
@@ -142,31 +157,33 @@
 
             <!-- Card 4 -->
 
-            <article class="textile-card">
+            <!-- Card 4: Others -->
 
+            <article
+                class="textile-card"
+                onclick="openTextileModal('others')"
+                tabindex="0"
+                role="button"
+            >
                 <div class="textile-icon">
-                    ❖
+                    ✧
                 </div>
 
                 <h2>
-                    Other
+                    Others
                 </h2>
 
                 <p>
-                    Other textile materials that may be
-                    encountered in Barong Tagalog garments
-                    and related clothing.
+                    Other textile materials and fabric types
+                    that may be associated with traditional
+                    Filipino clothing.
                 </p>
 
                 <span class="textile-status">
-                    Other Classification
+                    Supported Textile
                 </span>
-
             </article>
-
-
         </section>
-
     </main>
 
 
@@ -176,7 +193,61 @@
     <script src="../js/supabaseClient.js"></script>
     <script src="../js/authGuard.js"></script>
     <script src="../js/navbar.js"></script>
+    <script src="../js/textiletype.js"></script>
 
+    <!-- Textile Information Modal -->
+    <div id="textileModal" class="textile-modal">
+
+        <div class="textile-modal-content">
+
+            <!-- Close button -->
+            <button
+                class="close-modal"
+                onclick="closeTextileModal()"
+            >
+                &times;
+            </button>
+
+            <!-- Textile title -->
+            <h2 id="modalTitle"></h2>
+
+            <!-- Sample images -->
+            <div
+                id="modalImages"
+                class="modal-images"
+            ></div>
+
+            <!-- Full description -->
+            <p id="modalDescription"></p>
+
+            <!-- Textile details -->
+            <div class="textile-details">
+
+                <p>
+                    <strong>Material:</strong>
+                    <span id="modalMaterial"></span>
+                </p>
+
+                <p>
+                    <strong>Origin:</strong>
+                    <span id="modalOrigin"></span>
+                </p>
+
+                <p>
+                    <strong>Common Uses:</strong>
+                    <span id="modalUses"></span>
+                </p>
+
+                <p>
+                    <strong>Characteristics:</strong>
+                    <span id="modalCharacteristics"></span>
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
 </body>
 
 </html>
