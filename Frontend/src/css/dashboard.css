@@ -233,17 +233,13 @@
 
 .overview-card {
     display: flex;
-
     align-items: center;
-
     gap: 18px;
 
     padding: 25px;
 
     background: #fffaf3;
-
     border: 1px solid #e7dac7;
-
     border-radius: 12px;
 
     box-sizing: border-box;
@@ -252,28 +248,22 @@
         0 8px 20px rgba(65, 43, 20, 0.04);
 
     transition:
-        transform 0.25s ease,
-        box-shadow 0.25s ease,
-        border-color 0.25s ease;
-
-    animation: fade-up 0.65s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-.overview-cards .overview-card:nth-child(2) {
-    animation-delay: 0.08s;
-}
-
-.overview-cards .overview-card:nth-child(3) {
-    animation-delay: 0.16s;
+        transform 0.3s ease,
+        box-shadow 0.3s ease,
+        border-color 0.3s ease;
 }
 
 .overview-card:hover {
-    transform: translateY(-3px);
+   /* Lift the card upward */
+    transform: translateY(-10px);
 
+    /* Highlight the border */
     border-color: #d8bd91;
 
+    /* Shadow becomes visible underneath */
     box-shadow:
-        0 12px 25px rgba(65, 43, 20, 0.08);
+        0 8px 15px rgba(65, 43, 20, 0.08),
+        0 20px 35px rgba(65, 43, 20, 0.15);
 }
 
 

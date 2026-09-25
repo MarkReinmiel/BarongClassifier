@@ -115,73 +115,58 @@ body {
    TEXTILE CARD
 ================================= */
 
+/* =================================
+   TEXTILE CARD
+================================= */
+
 .textile-card {
     position: relative;
-
     padding: 34px;
 
-    background: var(--surface);
-
-    border: 1px solid var(--line-strong);
-
-    border-radius: 14px;
-
+    background: #fffaf3;
+    border: 1px solid #e7dac7;
+    border-radius: 12px;
     box-sizing: border-box;
 
-    box-shadow:
-        0 8px 25px rgba(47, 50, 58, 0.06);
+    /* Normal card shadow */
+    box-shadow: 0 4px 8px rgba(65, 43, 20, 0.05);
 
     transition:
-        transform 0.25s ease,
-        box-shadow 0.25s ease,
-        border-color 0.25s ease;
-
-    animation: fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-.textile-grid .textile-card:nth-child(2) {
-    animation-delay: 0.08s;
-}
-
-.textile-grid .textile-card:nth-child(3) {
-    animation-delay: 0.16s;
-}
-
-.textile-grid .textile-card:nth-child(4) {
-    animation-delay: 0.24s;
+        transform 0.3s ease,
+        box-shadow 0.3s ease,
+        border-color 0.3s ease;
 }
 
 .textile-card:hover {
-    transform: translateY(-4px);
+    /* Lift the card upward */
+    transform: translateY(-10px);
 
-    border-color: var(--accent-highlight);
+    /* Highlight the border */
+    border-color: #d8bd91;
 
+    /* Shadow becomes visible underneath */
     box-shadow:
-        0 14px 30px rgba(47, 50, 58, 0.12);
+        0 8px 15px rgba(65, 43, 20, 0.08),
+        0 20px 35px rgba(65, 43, 20, 0.15);
 }
 
-
-/* =================================
-   ICON
-================================= */
-
 .textile-icon {
-    width: 46px;
-    height: 46px;
+    width: 34px;
+    height: 34px;
 
-    margin-bottom: 22px;
+    margin-bottom: 18px;
 
     display: flex;
     align-items: center;
     justify-content: center;
 
-    background: rgba(196, 122, 192, 0.18);
+    background: #f2e5d1;
 
     border-radius: 50%;
 
-    color: var(--accent);
+    color: #a8752f;
 
-    font-size: 16px;
+    font-size: 12px;
 }
 
 
@@ -190,14 +175,14 @@ body {
 ================================= */
 
 .textile-card h2 {
-    margin: 0 0 12px;
+    margin: 0 0 8px;
 
     font-family: "Playfair Display", Georgia, serif;
 
-    font-size: 26px;
+    font-size: 20px;
     font-weight: 700;
 
-    color: var(--ink);
+    color: #3b2919;
 }
 
 
@@ -206,14 +191,15 @@ body {
 ================================= */
 
 .textile-card p {
-    margin: 0 0 24px;
+    margin: 0 0 22px;
 
     font-family: "DM Sans", Arial, sans-serif;
 
-    font-size: 14px;
-    line-height: 1.8;
+    font-size: 12px;
 
-    color: var(--ink-soft);
+    line-height: 1.7;
+
+    color: #755f48;
 }
 
 
@@ -221,34 +207,43 @@ body {
    STATUS
 ================================= */
 
+/* =================================
+   CARD STATUS
+================================= */
+
 .textile-status {
     display: inline-block;
 
-    padding: 7px 12px;
+    width: fit-content;
 
-    background: rgba(119, 86, 122, 0.14);
+    margin-top: auto;
+
+    padding: 7px 11px;
+
+    background: #f2e5d1;
 
     border-radius: 20px;
 
     font-family: "DM Sans", Arial, sans-serif;
 
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 600;
 
-    letter-spacing: 0.5px;
+    letter-spacing: 0.4px;
 
-    color: var(--accent);
+    color: #8b5d22;
 
     text-decoration: none;
 
-    transition: background 0.2s ease, color 0.2s ease;
+    transition:
+        background 0.2s ease,
+        color 0.2s ease;
 }
 
-a.textile-status:hover {
-    background: var(--accent);
-    color: var(--surface);
+.textile-status:hover {
+    background: #a8752f;
+    color: #ffffff;
 }
-
 /* Textile Modal Background */
 .textile-modal {
     display: none;
