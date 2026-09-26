@@ -96,7 +96,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 };
             });
         })
-        .then(function (result) {
+        .then(async function (result) {
             if (!result.ok) {
                 throw new Error(
                     (result.payload && result.payload.error) ||
@@ -109,6 +109,32 @@ document.addEventListener("DOMContentLoaded", function () {
             showDetail(predictedType, result.payload.display_name, false);
             showDetail(confidence, percent.toFixed(1) + "%", false);
             showDetail(classificationStatus, "Classified", false);
+
+            if (typeof supabaseClient !== "undefined") {
+                try {
+                    const { data: sessionData } =
+                        await supabaseClient.auth.getSession();
+                    const user = sessionData.session && sessionData.session.user;
+
+                    if (user) {
+                        const { error: saveError } = await supabaseClient
+                            .from("classifications")
+                            .insert({
+                                user_id: user.id,
+                                file_name: savedFileName || null,
+                                predicted_label: result.payload.label,
+                                display_name: result.payload.display_name,
+                                confidence: result.payload.confidence
+                            });
+
+                        if (saveError) {
+                            console.error("Classification save error:", saveError);
+                        }
+                    }
+                } catch (saveError) {
+                    console.error("Classification save error:", saveError);
+                }
+            }
         })
         .catch(function () {
             showDetail(predictedType, "Classifier unavailable", true);

@@ -88,6 +88,20 @@ document.addEventListener("DOMContentLoaded", async function () {
                 }
 
                 if (data.session) {
+                    try {
+                        const user = data.session.user;
+                        await supabaseClient.from("profiles").upsert({
+                            id: user.id,
+                            email: user.email,
+                            full_name:
+                                (user.user_metadata &&
+                                    user.user_metadata.full_name) ||
+                                ""
+                        });
+                    } catch (profileError) {
+                        console.error("Profile save error:", profileError);
+                    }
+
                     window.location.href = "dashboard.html";
                 }
             } catch (error) {
@@ -159,17 +173,54 @@ document.addEventListener("DOMContentLoaded", async function () {
                 });
 
                 if (error) {
-                    showMessage(error.message, "error");
+                    const message = error.message || "";
+                    if (
+                        /rate limit/i.test(message) ||
+                        /over_email_send_rate_limit/i.test(message)
+                    ) {
+                        showMessage(
+                            "Supabase email limit reached. No confirmation email can be sent right now. In the project dashboard turn Confirm email OFF, or wait and try again later.",
+                            "error"
+                        );
+                        return;
+                    }
+                    showMessage(message, "error");
                     return;
                 }
 
+                const createdUser = data.user;
+                const identityCount =
+                    createdUser && createdUser.identities
+                        ? createdUser.identities.length
+                        : 0;
+
+                if (!createdUser || identityCount === 0) {
+                    showMessage(
+                        "No account was created. This email may already be registered, confirm your email first, or check Authentication > Users in the new Supabase project.",
+                        "error"
+                    );
+                    return;
+                }
+
+                // Keep a visible row in public.profiles (Table Editor).
+                // Auth itself already stores the account in Authentication > Users.
                 if (data.session) {
+                    try {
+                        await supabaseClient.from("profiles").upsert({
+                            id: createdUser.id,
+                            email: createdUser.email,
+                            full_name: fullName
+                        });
+                    } catch (profileError) {
+                        console.error("Profile save error:", profileError);
+                    }
+
                     window.location.href = "dashboard.html";
                     return;
                 }
 
                 showMessage(
-                    "Account created. Check your email to confirm, then sign in.",
+                    "Account created in Authentication. Confirm your email, then sign in. After confirmation it can also appear in the profiles table.",
                     "success"
                 );
 
