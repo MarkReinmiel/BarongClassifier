@@ -148,7 +148,13 @@ document.addEventListener("DOMContentLoaded", async function () {
                     options: {
                         data: {
                             full_name: fullName
-                        }
+                        },
+                        emailRedirectTo:
+                            window.location.origin +
+                            window.location.pathname.replace(
+                                /[^/]+$/,
+                                "auth.html"
+                            )
                     }
                 });
 
