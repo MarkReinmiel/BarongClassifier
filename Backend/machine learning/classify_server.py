@@ -5,7 +5,7 @@ here and receives the textile type and confidence.
 
 Run from the project root, and leave this window open:
 
-    python ml/classify_server.py
+    python "Backend/machine learning/classify_server.py"
 """
 
 from __future__ import annotations
@@ -24,8 +24,8 @@ import numpy as np
 import tensorflow as tf
 from PIL import Image, UnidentifiedImageError
 
-ROOT = Path(__file__).resolve().parents[1]
-ARTIFACT_DIR = ROOT / "ml" / "artifacts"
+SCRIPT_DIR = Path(__file__).resolve().parent
+ARTIFACT_DIR = SCRIPT_DIR / "artifacts"
 HOST = "127.0.0.1"
 PORT = 5501
 MAX_BODY_BYTES = 40 * 1024 * 1024
@@ -37,7 +37,8 @@ def load_classifier():
     model_path = ARTIFACT_DIR / "barong_mobilenetv2.keras"
     if not model_path.is_file() or not labels_path.is_file():
         raise FileNotFoundError(
-            "Trained model not found. Run python ml/train_cnn.py first."
+            "Trained model not found at "
+            f"{model_path}. Expected files under Backend/machine learning/artifacts/."
         )
     labels = json.loads(labels_path.read_text(encoding="utf-8"))
     model = tf.keras.models.load_model(model_path)

@@ -16,9 +16,10 @@
 
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-start;
+    gap: 24px;
 
-    padding: 0 140px;
+    padding: 0 48px 0 140px;
     box-sizing: border-box;
 
     background: #292b32;
@@ -92,25 +93,66 @@ body {
     line-height: 1.2;
 }
 
-/* Right section: links + account */
-
-
-.navbar-right {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-
-    gap: 35px;
-
-    flex-shrink: 0;
-}
-
-/* Navigation links */
-
 .navbar-links {
     display: flex;
     align-items: center;
     gap: 28px;
+
+    margin-left: auto;
+}
+
+.navbar-tools {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    flex-shrink: 0;
+}
+
+.menu-toggle {
+    display: none;
+
+    width: 44px;
+    height: 44px;
+
+    padding: 0;
+
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+
+    background: transparent;
+    color: #ffffff;
+
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    border-radius: 10px;
+
+    cursor: pointer;
+}
+
+.menu-toggle span {
+    display: block;
+
+    width: 18px;
+    height: 2px;
+
+    background: currentColor;
+    border-radius: 2px;
+
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.navbar.is-open .menu-toggle span:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+}
+
+.navbar.is-open .menu-toggle span:nth-child(2) {
+    opacity: 0;
+}
+
+.navbar.is-open .menu-toggle span:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
 }
 /* =================================
    NAVIGATION LINKS
@@ -199,57 +241,15 @@ body {
 @media (max-width: 1100px) {
 
     .navbar {
-        padding: 0 32px;
-    }
-
-    .navbar-links {
-        gap: 22px;
-    }
-
-    .navbar-links a {
-        font-size: 13px;
-    }
-
-    .logo-title {
-        font-size: 18px;
-    }
-
-}
-
-
-/* =================================
-   MOBILE
-================================= */
-
-@media (max-width: 850px) {
-
-    .navbar {
-        top: 0;
-        left: 0;
-
-        width: 100%;
-        height: 68px;
-        min-height: 68px;
-
-        z-index: 1000;
+        padding: 0 28px;
     }
 
     .navbar-links {
         gap: 18px;
-
-        flex-wrap: wrap;
-
-        justify-content: center;
     }
 
     .navbar-links a {
-        padding: 6px 0;
-
         font-size: 13px;
-    }
-
-    .navbar-links a.active::after {
-        bottom: 0;
     }
 
 }
@@ -369,7 +369,7 @@ body {
     font-weight: 500;
     line-height: 1.5;
 
-    color: var(--line);
+    color: var(--ink);
 }
 
 
@@ -393,158 +393,116 @@ body {
 
 
 /* =================================
-   MOBILE
+   PHONE AND SMALL TABLET
 ================================= */
 
-@media (max-width: 850px) {
+@media (max-width: 900px) {
 
-    .account-menu {
-        margin-left: 0;
+    body {
+        padding-top: calc(64px + env(safe-area-inset-top));
     }
 
-    .account-dropdown {
-        left: 50%;
-        right: auto;
-
-        transform: translateX(-50%);
-
-        min-width: 230px;
+    body.nav-open {
+        overflow: hidden;
     }
 
-}
-
-
-/* =================================
-   SMALL MOBILE
-================================= */
-
-@media (max-width: 480px) {
     .navbar {
-        padding: 0 18px;
+        height: calc(64px + env(safe-area-inset-top));
+
+        align-items: center;
+        justify-content: space-between;
+
+        padding:
+            env(safe-area-inset-top)
+            max(14px, env(safe-area-inset-right))
+            0
+            max(14px, env(safe-area-inset-left));
+    }
+
+    .navbar-logo {
+        min-width: 0;
+        max-width: calc(100% - 108px);
+    }
+
+    .logo-subtitle {
+        display: none;
     }
 
     .logo-title {
-        font-size: 17px;
+        font-size: 15px;
+        letter-spacing: 0.4px;
+    }
+
+    .menu-toggle {
+        display: flex;
     }
 
     .navbar-links {
-        gap: 12px 16px;
-    }
+        position: fixed;
 
-    .navbar-links a {
-        font-size: 12px;
-    }
-}
+        top: calc(64px + env(safe-area-inset-top));
+        right: 0;
+        bottom: 0;
+        left: 0;
 
-
-/* =========================================
-   RESPONSIVE NAVBAR
-========================================= */
-
-@media (max-width: 430px) {
-
-    /* Remove desktop body spacing when navbar
-       is part of the normal page flow */
-    body {
-        padding-top: 0;
-    }
-
-    /* MAIN NAVBAR */
-
-    .navbar {
-        position: relative !important;
-        top: auto !important;
-        left: auto !important;
-
-        width: 100%;
-        max-width: 100%;
-        height: auto !important;
-        min-height: 0;
-
-        display: flex !important;
-        flex-direction: column !important;
-        align-items: center;
-        justify-content: flex-start;
-
-        gap: 12px;
-        padding: 14px 16px 16px;
-
-        box-sizing: border-box;
-        overflow: visible !important;
-    }
-
-
-    /* LOGO */
-
-    .navbar-logo {
-        width: 100%;
-        max-width: 100%;
-        min-width: 0;
-
-        display: flex;
-        justify-content: center;
-        text-align: center;
-
-        margin: 0;
-    }
-
-
-    /* RIGHT SECTION */
-
-    .navbar-right {
-        width: 100%;
-        max-width: 100%;
-        min-width: 0;
+        z-index: 1000;
 
         display: flex;
         flex-direction: column;
-        align-items: center;
-        justify-content: center;
+        align-items: stretch;
 
-        gap: 12px;
+        gap: 6px;
+
+        margin: 0;
+        padding: 12px 16px calc(20px + env(safe-area-inset-bottom));
+
+        background: #292b32;
+
+        visibility: hidden;
+        transform: translateY(-12px);
+        opacity: 0;
+        pointer-events: none;
     }
 
-
-    /* NAVIGATION LINKS */
-
-    .navbar-links {
-        width: 100%;
-        max-width: 100%;
-        min-width: 0;
-
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        justify-content: center;
-
-        gap: 10px 18px;
+    .navbar.is-open .navbar-links {
+        visibility: visible;
+        transform: none;
+        opacity: 1;
+        pointer-events: auto;
     }
 
     .navbar-links a {
-        padding: 5px 0;
-        font-size: 12px;
-        white-space: nowrap;
+        padding: 16px 14px;
+
+        border-radius: 12px;
+
+        font-size: 17px;
+        line-height: 1.2;
     }
 
     .navbar-links a.active::after {
-        bottom: 0;
+        display: none;
     }
 
-
-    /* ACCOUNT MENU */
+    .navbar-links a.active {
+        background: rgba(196, 122, 192, 0.2);
+    }
 
     .account-menu {
-        position: absolute;
-        top: 14px;
-        right: 14px;
-
         margin-left: 0;
     }
 
     .account-button {
-        width: 36px;
-        height: 36px;
-        font-size: 18px;
+        width: 44px;
+        height: 44px;
+    }
+
+    .account-dropdown {
+        right: 0;
+        left: auto;
+
+        width: min(280px, calc(100vw - 28px));
+        min-width: 0;
     }
 
 }

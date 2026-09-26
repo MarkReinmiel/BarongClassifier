@@ -5,7 +5,7 @@ during training. Original dataset files, ZIP files, and the web app are not modi
 
 Run from the project root:
 
-    python ml/train_cnn.py
+    python "Backend/machine learning/train_cnn.py"
 """
 
 from __future__ import annotations
@@ -32,9 +32,9 @@ from sklearn.metrics import classification_report, confusion_matrix
 from sklearn.model_selection import train_test_split
 from sklearn.utils.class_weight import compute_class_weight
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 DATASET_DIR = ROOT / "dataset"
-ARTIFACT_DIR = ROOT / "ml" / "artifacts"
+ARTIFACT_DIR = Path(__file__).resolve().parent / "artifacts"
 
 CLASSES = ["cocoon", "jusi", "pina"]
 DISPLAY = {"cocoon": "Cocoon", "jusi": "Jusi", "pina": "Piña"}

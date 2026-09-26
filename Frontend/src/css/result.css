@@ -564,7 +564,7 @@ body.modal-open {
 @media (max-width: 600px) {
 
     .classifier-page {
-        padding: 30px 16px 45px;
+        padding: 16px 16px calc(28px + env(safe-area-inset-bottom));
     }
 
     .classifier-header {

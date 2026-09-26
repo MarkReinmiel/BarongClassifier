@@ -600,7 +600,7 @@ body {
 @media (max-width: 800px) {
 
     .textile-page {
-        padding: 50px 25px 70px;
+        padding: calc(84px + env(safe-area-inset-top)) 18px calc(48px + env(safe-area-inset-bottom));
     }
 
     .textile-header h1 {

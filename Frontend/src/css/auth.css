@@ -564,4 +564,68 @@ body {
 
         padding: 35px 25px;
     }
+
+    .input-group input {
+        min-height: 48px;
+        font-size: 16px;
+    }
+
+    .password-field input {
+        padding-right: 88px;
+    }
+
+    .password-toggle {
+        top: auto;
+        bottom: 6px;
+        height: 36px;
+        min-height: 36px;
+        min-width: 52px;
+    }
+}
+
+@media (max-width: 520px) {
+
+    .back-home {
+        position: static;
+
+        display: inline-flex;
+        align-items: center;
+
+        min-height: 44px;
+        margin: 16px 16px 0;
+    }
+
+    .auth-page {
+        gap: 24px;
+        padding: 24px 16px calc(32px + env(safe-area-inset-bottom));
+    }
+
+    .auth-brand h1 {
+        font-size: clamp(34px, 11vw, 42px);
+        margin-bottom: 10px;
+    }
+
+    .brand-symbol {
+        width: 28px;
+        margin-bottom: 6px;
+        font-size: 28px;
+    }
+
+    .auth-brand p {
+        font-size: 15px;
+    }
+
+    .brand-line {
+        margin: 16px auto 10px;
+    }
+
+    .auth-card {
+        padding: 28px 18px;
+    }
+
+    .auth-card .auth-button {
+        width: 100%;
+        min-height: 52px;
+    }
+
 }

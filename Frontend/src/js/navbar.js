@@ -36,6 +36,72 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
             // ==============================
+            // MOBILE MENU
+            // ==============================
+
+            const navbar =
+                navbarContainer.querySelector(".navbar");
+
+            const menuToggle =
+                document.getElementById("menuToggle");
+
+            function setMenuOpen(isOpen) {
+
+                if (!navbar || !menuToggle) {
+                    return;
+                }
+
+                navbar.classList.toggle("is-open", isOpen);
+                menuToggle.setAttribute(
+                    "aria-expanded",
+                    isOpen ? "true" : "false"
+                );
+                menuToggle.setAttribute(
+                    "aria-label",
+                    isOpen ? "Close menu" : "Open menu"
+                );
+                document.body.classList.toggle("nav-open", isOpen);
+
+            }
+
+            if (menuToggle && navbar) {
+
+                menuToggle.addEventListener("click", function (event) {
+
+                    event.stopPropagation();
+
+                    const accountDropdown =
+                        document.getElementById("accountDropdown");
+
+                    if (accountDropdown) {
+                        accountDropdown.hidden = true;
+                    }
+
+                    setMenuOpen(!navbar.classList.contains("is-open"));
+
+                });
+
+                navbar.querySelectorAll(".navbar-links a")
+                    .forEach(function (link) {
+
+                        link.addEventListener("click", function () {
+                            setMenuOpen(false);
+                        });
+
+                    });
+
+                document.addEventListener("keydown", function (event) {
+
+                    if (event.key === "Escape") {
+                        setMenuOpen(false);
+                    }
+
+                });
+
+            }
+
+
+            // ==============================
             // ACCOUNT DROPDOWN
             // ==============================
 
@@ -101,8 +167,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
                     event.stopPropagation();
 
-                    accountDropdown.hidden =
-                        !accountDropdown.hidden;
+                    const willOpen = accountDropdown.hidden;
+
+                    accountDropdown.hidden = !willOpen;
+                    accountButton.setAttribute(
+                        "aria-expanded",
+                        willOpen ? "true" : "false"
+                    );
+
+                    if (willOpen) {
+                        setMenuOpen(false);
+                    }
 
                 });
 

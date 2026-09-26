@@ -585,7 +585,7 @@
 @media (max-width: 700px) {
 
     .dashboard {
-        padding: 30px 20px 60px;
+        padding: 20px 16px calc(40px + env(safe-area-inset-bottom));
     }
 
     .dashboard-hero {

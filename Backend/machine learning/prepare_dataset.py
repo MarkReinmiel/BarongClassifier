@@ -17,7 +17,7 @@ from pathlib import Path
 
 from PIL import Image, UnidentifiedImageError
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 DATASET_DIR = ROOT / "dataset"
 
 # Actual archives in this project. They live inside class folders and use

@@ -1,7 +1,5 @@
-
 <nav class="navbar">
 
-    <!-- LEFT: Logo -->
     <a href="dashboard.html" class="navbar-logo">
 
         <div class="logo-mark">
@@ -22,51 +20,45 @@
 
     </a>
 
+    <div class="navbar-links" id="navbarLinks">
 
-    <!-- RIGHT: Navigation + Account -->
-    <div class="navbar-right">
+        <a href="dashboard.html" data-nav="dashboard">
+            Dashboard
+        </a>
 
-        <!-- Navigation links -->
-        <div class="navbar-links">
+        <a href="classify.html" data-nav="classify">
+            Classify Textile
+        </a>
 
-            <a href="dashboard.html" data-nav="dashboard">
-                Dashboard
-            </a>
+        <a href="textiletypes.html" data-nav="textiletypes">
+            Textile Types
+        </a>
 
-            <a href="classify.html" data-nav="classify">
-                Classify Textile
-            </a>
+        <a href="history.html" data-nav="history">
+            History
+        </a>
 
-            <a href="textiletypes.html" data-nav="textiletypes">
-                Textile Types
-            </a>
+        <a href="about.html" data-nav="about">
+            About
+        </a>
 
-            <a href="history.html" data-nav="history">
-                History
-            </a>
+    </div>
 
-            <a href="about.html" data-nav="about">
-                About
-            </a>
+    <div class="navbar-tools">
 
-        </div>
-
-
-        <!-- Account menu -->
         <div class="account-menu">
 
-            <!-- User icon button -->
             <button
                 type="button"
                 class="account-button"
                 id="accountButton"
                 aria-label="Open account menu"
+                aria-expanded="false"
+                aria-controls="accountDropdown"
             >
                 <span class="user-icon">♙</span>
             </button>
 
-
-            <!-- Account dropdown -->
             <div
                 class="account-dropdown"
                 id="accountDropdown"
@@ -85,7 +77,6 @@
 
                 </div>
 
-
                 <button
                     type="button"
                     class="logout-button"
@@ -97,6 +88,19 @@
             </div>
 
         </div>
+
+        <button
+            type="button"
+            class="menu-toggle"
+            id="menuToggle"
+            aria-label="Open menu"
+            aria-expanded="false"
+            aria-controls="navbarLinks"
+        >
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
 
     </div>
 

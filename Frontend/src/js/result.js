@@ -115,7 +115,7 @@ document.addEventListener("DOMContentLoaded", function () {
             showDetail(confidence, "Not available", true);
             showDetail(
                 classificationStatus,
-                "The model server is not running",
+                "Start: python \"Backend/machine learning/classify_server.py\"",
                 true
             );
         });

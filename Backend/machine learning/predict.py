@@ -2,7 +2,7 @@
 
 Run from the project root:
 
-    python ml/predict.py path\\to\\photo.jpg
+    python "Backend/machine learning/predict.py" path\\to\\photo.jpg
 
 This does not modify the photo or the web app.
 """
@@ -17,8 +17,8 @@ import numpy as np
 import tensorflow as tf
 from PIL import Image
 
-ROOT = Path(__file__).resolve().parents[1]
-ARTIFACT_DIR = ROOT / "ml" / "artifacts"
+SCRIPT_DIR = Path(__file__).resolve().parent
+ARTIFACT_DIR = SCRIPT_DIR / "artifacts"
 DISPLAY = {"cocoon": "Cocoon", "jusi": "Jusi", "pina": "Piña"}
 
 
@@ -27,7 +27,7 @@ def main() -> int:
         sys.stdout.reconfigure(encoding="utf-8")
 
     if len(sys.argv) != 2:
-        print("Usage: python ml/predict.py <image.jpg>")
+        print('Usage: python "Backend/machine learning/predict.py" <image.jpg>')
         return 1
 
     image_path = Path(sys.argv[1])
@@ -38,7 +38,7 @@ def main() -> int:
     labels_path = ARTIFACT_DIR / "labels.json"
     model_path = ARTIFACT_DIR / "barong_mobilenetv2.keras"
     if not model_path.is_file() or not labels_path.is_file():
-        print("Trained model not found. Run python ml/train_cnn.py first.")
+        print("Trained model not found. Run train_cnn.py first.")
         return 1
 
     labels = json.loads(labels_path.read_text(encoding="utf-8"))
