@@ -146,6 +146,12 @@ document.addEventListener("DOMContentLoaded", function () {
         const reader = new FileReader();
 
         reader.onload = function (event) {
+
+            // New classification
+            sessionStorage.removeItem(
+                "classificationSaved"
+            );
+
             sessionStorage.setItem(
                 "classifiedImage",
                 event.target.result

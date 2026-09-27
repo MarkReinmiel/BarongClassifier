@@ -48,10 +48,123 @@
 
         </section>
 
+       <!-- HISTORY FILTER -->
+        <section class="history-filter">
+
+            <!-- FROM -->
+            <div class="history-filter-field">
+
+                <label for="historyFrom">
+                    From
+                </label>
+
+                <input
+                    type="date"
+                    id="historyFrom"
+                >
+
+            </div>
+
+
+            <!-- TO -->
+            <div class="history-filter-field">
+
+                <label for="historyTo">
+                    To
+                </label>
+
+                <input
+                    type="date"
+                    id="historyTo"
+                >
+
+            </div>
+
+
+            <!-- FABRIC TYPE -->
+            <div class="history-filter-field">
+
+                <label for="fabricFilter">
+                    Fabric Type
+                </label>
+
+                <select id="fabricFilter">
+
+                    <option value="">
+                        All Fabric Types
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <!-- SEARCH -->
+           <div class="history-filter-field">
+
+                <label for="historySearchDate">
+                    Search Date
+                </label>
+
+                <input
+                    type="date"
+                    id="historySearchDate"
+                >
+
+            </div>
+
+
+            <!-- BUTTONS -->
+            <div class="history-filter-actions">
+
+                <button
+                    type="button"
+                    id="todayHistoryButton"
+                    class="history-today-button"
+                >
+                    Today
+                </button>
+
+                <button
+                    type="button"
+                    id="filterHistoryButton"
+                    class="history-filter-button"
+                >
+                    Filter
+                </button>
+
+                <button
+                    type="button"
+                    id="clearHistoryButton"
+                    class="history-clear-button"
+                >
+                    Clear
+                </button>
+
+            </div>
+
+        </section>
 
         <section class="textile-grid">
 
-            <article class="textile-card">
+            <!-- Loading -->
+            <article id="historyLoading" class="textile-card">
+                <div class="textile-icon">
+                    ◆
+                </div>
+
+                <h2>
+                    Loading History...
+                </h2>
+
+                <p>
+                    Please wait while we load your classification history.
+                </p>
+            </article>
+
+
+            <!-- Empty State -->
+            <article id="historyEmpty" class="textile-card" hidden>
 
                 <div class="textile-icon">
                     ◆
@@ -72,6 +185,33 @@
 
             </article>
 
+
+            <!-- Error State -->
+            <article id="historyError" class="textile-card" hidden>
+
+                <div class="textile-icon">
+                    ◆
+                </div>
+
+                <h2>
+                    Unable to Load History
+                </h2>
+
+                <p>
+                    Something went wrong while loading your
+                    classification history.
+                </p>
+
+            </article>
+
+
+            <!-- Classification History -->
+            <div
+                id="historyList"
+                class="history-list"
+                hidden
+            ></div>
+
         </section>
 
     </main>
@@ -81,6 +221,7 @@
     <script src="../js/supabaseClient.js?v=8"></script>
     <script src="../js/authGuard.js"></script>
     <script src="../js/navbar.js"></script>
+    <script src="../js/history.js"></script>
 
 </body>
 

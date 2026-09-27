@@ -1,0 +1,147 @@
+/* =================================
+   CLASSIFICATION HISTORY
+================================= */
+
+.history-list {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    grid-column: 1 / -1;
+}
+
+.history-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 30px;
+
+    padding: 26px;
+
+    background: #fffaf3;
+
+    border: 1px solid #e7dac7;
+
+    border-radius: 12px;
+
+    box-shadow:
+        0 8px 20px rgba(65, 43, 20, 0.04);
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.history-card:hover {
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 12px 25px rgba(65, 43, 20, 0.08);
+}
+
+.history-card-main {
+    min-width: 0;
+}
+
+.history-label {
+    display: block;
+
+    margin-bottom: 8px;
+
+    color: #a8752f;
+
+    font-family: "DM Sans", Arial, sans-serif;
+
+    font-size: 10px;
+
+    font-weight: 600;
+
+    letter-spacing: 2px;
+}
+
+.history-card h2 {
+    margin: 0 0 8px;
+
+    color: #2d2117;
+
+    font-family: "Playfair Display", Georgia, serif;
+
+    font-size: 24px;
+}
+
+.history-file-name {
+    margin: 0;
+
+    color: #8b765e;
+
+    font-family: "DM Sans", Arial, sans-serif;
+
+    font-size: 12px;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+}
+
+.history-card-details {
+    display: flex;
+
+    gap: 30px;
+
+    flex-shrink: 0;
+}
+
+.history-detail {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 5px;
+}
+
+.history-detail span {
+    color: #8b765e;
+
+    font-family: "DM Sans", Arial, sans-serif;
+
+    font-size: 10px;
+
+    text-transform: uppercase;
+
+    letter-spacing: 1px;
+}
+
+.history-detail strong {
+    color: #80541c;
+
+    font-family: "DM Sans", Arial, sans-serif;
+
+    font-size: 14px;
+}
+
+
+/* =================================
+   HISTORY MOBILE
+================================= */
+
+@media (max-width: 700px) {
+
+    .history-card {
+        flex-direction: column;
+
+        align-items: flex-start;
+    }
+
+    .history-card-details {
+        width: 100%;
+
+        display: grid;
+
+        grid-template-columns:
+            repeat(3, 1fr);
+
+        gap: 15px;
+    }
+
+}

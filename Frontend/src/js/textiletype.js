@@ -62,26 +62,26 @@ const textileData1 = {
 const textileData2 = {
     "pina-seda": {
 
-        title: "Piña-Seda",
+        title: "Cocoon",
 
         images: [
-            "../assets/images/pina-seda.png"
+            "../assets/images/cocoon.jpg"
         ],
 
         description:
-            "Piña-Seda is a textile associated with Filipino formal clothing. It combines the appearance of Piña with silk-related fibers, creating a fabric used for elegant and traditional garments.",
+            "Cocoon is a textile associated with Filipino formal clothing. It provides a smooth appearance and elegant finish, creating a fabric suitable for traditional and formal garments.",
 
         material:
-            "Pineapple fibers and silk-related fibers. Verify the exact composition for your reference.",
+            "Silk-related fibers.",
 
         origin:
             "The Philippines",
 
         uses:
-            "Formal clothing, Barong Tagalog, and traditional garments",
+            "Barong Tagalog, formal clothing, and traditional garments",
 
         characteristics:
-            "Lightweight appearance, delicate texture, and an elegant finish"
+            "Lightweight appearance, smooth texture, subtle sheen, and an elegant finish"
 
     }
 };
@@ -92,7 +92,7 @@ const textileData3 = {
         title: "Other Textiles",
 
         images: [
-            "../assets/images/others.jpg"
+            "../assets/images/others.png"
         ],
 
         description:

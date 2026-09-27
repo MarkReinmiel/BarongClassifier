@@ -1,3 +1,5 @@
+console.log("Current URL:", window.location.href);
+
 document.addEventListener("DOMContentLoaded", function () {
 
     const resultImage =
@@ -8,9 +10,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const resultFileName =
         document.getElementById("resultFileName");
-
-    const backButton =
-        document.getElementById("backButton");
 
     const viewImageButton =
         document.getElementById("viewImageButton");
@@ -70,6 +69,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const classifierUrl = "http://127.0.0.1:5501/predict";
 
+    const classificationSaved =
+    sessionStorage.getItem("classificationSaved") === "true";
+
     function showDetail(element, text, pending) {
         element.textContent = text;
         element.classList.toggle("is-pending", pending);
@@ -110,7 +112,10 @@ document.addEventListener("DOMContentLoaded", function () {
             showDetail(confidence, percent.toFixed(1) + "%", false);
             showDetail(classificationStatus, "Classified", false);
 
-            if (typeof supabaseClient !== "undefined") {
+            if (
+                typeof supabaseClient !== "undefined" &&
+                !classificationSaved
+            ) {
                 try {
                     const { data: sessionData } =
                         await supabaseClient.auth.getSession();
@@ -129,6 +134,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
                         if (saveError) {
                             console.error("Classification save error:", saveError);
+                        }  else {
+                            sessionStorage.setItem(
+                                "classificationSaved",
+                                "true"
+                            );
                         }
                     }
                 } catch (saveError) {
@@ -205,17 +215,6 @@ document.addEventListener("DOMContentLoaded", function () {
             closeImageModalFunction();
 
         }
-
-    });
-
-
-    // =================================
-    // BACK TO CLASSIFY PAGE
-    // =================================
-
-    backButton.addEventListener("click", function () {
-
-        window.location.href = "classify.html";
 
     });
 
