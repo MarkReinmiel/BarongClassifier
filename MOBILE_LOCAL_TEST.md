@@ -15,6 +15,8 @@ Laptop ── Backend/machine learning/artifacts/barong_mobilenetv2.keras
 | --- | --- | --- |
 | Website (HTML/CSS/JS, Supabase login) | `python -m http.server 5500` from the project root | 5500 |
 | CNN classifier | `python "Backend/machine learning/classify_server.py" --host 0.0.0.0` | 5501 |
+| Website over HTTPS (live phone camera) | `python local_https/serve_frontend.py` | 5443 |
+| CNN classifier over HTTPS | add `--https` to the classifier command | 5502 |
 
 The site works out the classifier address from the address in the browser bar
 (`Frontend/src/js/apiConfig.js`), so nothing needs editing when your laptop's IP changes.
@@ -117,9 +119,10 @@ Tap **Camera**.
   tap **Capture**, check the preview, then tap **Classify Textile**.
 - **If you see "Camera access may require HTTPS on this device/browser":** this is
   expected on `http://192.168.x.x`. Phone browsers (Chrome on Android, Safari on iPhone)
-  only allow live camera access on HTTPS pages or `localhost`. Use
-  **Upload from Gallery** instead — on most phones the gallery picker also offers
-  "Take photo", which uses the normal camera app (including its own zoom/Pro mode).
+  only allow live camera access on HTTPS pages or `localhost`. Use the
+  **local HTTPS mode** below, or use **Upload from Gallery**. On most phones the
+  gallery picker also offers "Take photo", which uses the normal camera app
+  (including its own zoom/Pro mode).
 
 ### Zoom
 
@@ -133,11 +136,51 @@ device allows) and shows what was actually applied:
 Browser zoom may be digital cropping and is not the same as your camera app's Pro Mode
 optical zoom.
 
-### Optional: live camera on the phone over HTTPS
+### Live camera on the phone: local HTTPS mode
 
-Only needed if you want the in-page camera instead of the gallery. Two options:
+Use this when you want the in-page camera on the phone. It uses a self-signed
+certificate that is created automatically in `local_https/certs/` (not committed) for
+`localhost` and your laptop's current Wi-Fi IP. It is recreated when the IP changes.
 
-- **Android + USB (easiest):** enable USB debugging, connect the phone, open
+One-time setup (already done on this laptop):
+
+```powershell
+python -m pip install cryptography
+```
+
+Instead of steps 3 and 4 above, use these two terminals:
+
+```powershell
+# Terminal 1 — classifier (HTTP on 5501 for desktop, HTTPS on 5502 for the phone)
+python "Backend/machine learning/classify_server.py" --host 0.0.0.0 --https
+```
+
+```powershell
+# Terminal 2 — website over HTTPS on port 5443
+python local_https/serve_frontend.py
+```
+
+On the phone (Chrome), in this order:
+
+1. Open `https://<LAPTOP_IP>:5502/health`. Chrome warns "Your connection is not
+   private". Tap **Advanced → Proceed to <LAPTOP_IP> (unsafe)**. You should see
+   `{"status": "ok", ...}`. This lets the site talk to the classifier.
+2. Open `https://<LAPTOP_IP>:5443/Frontend/src/pages/index.html`, tap
+   **Advanced → Proceed** again, and log in. The phone uses a separate login session
+   for the `https://` address, so log in again.
+3. Go to **Classify** → **Camera** → allow camera access → **Capture** →
+   **Classify Textile**.
+
+The warning appears because the certificate is made by your laptop, not a public
+authority. That is expected for local testing. The normal `http://` addresses keep
+working at the same time.
+
+If Classify says it cannot connect over HTTPS, repeat step 1. Chrome needs the
+certificate accepted for port 5502 as well.
+
+### Other options for the live camera
+
+- **Android + USB:** enable USB debugging, connect the phone, open
   `chrome://inspect/#devices` on the laptop, and add port forwarding for
   `5500 → localhost:5500` and `5501 → localhost:5501`. Then open
   `http://localhost:5500/Frontend/src/pages/index.html` on the phone. `localhost` is

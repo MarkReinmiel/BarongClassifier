@@ -3,3 +3,4 @@ pillow>=10
 numpy
 scikit-learn
 matplotlib
+cryptography

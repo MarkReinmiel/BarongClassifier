@@ -22,6 +22,7 @@ import ipaddress
 import json
 import os
 import socket
+import ssl
 import sys
 import threading
 import traceback
@@ -39,6 +40,7 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 ARTIFACT_DIR = SCRIPT_DIR / "artifacts"
 DEFAULT_HOST = "127.0.0.1"
 DEFAULT_PORT = 5501
+DEFAULT_HTTPS_PORT = 5502
 MAX_BODY_BYTES = 40 * 1024 * 1024
 DISPLAY = {"cocoon": "Cocoon", "jusi": "Jusi", "pina": "Piña"}
 
@@ -214,7 +216,35 @@ def parse_args() -> argparse.Namespace:
         help="Use 0.0.0.0 to allow phones on the same Wi-Fi (default: 127.0.0.1)",
     )
     parser.add_argument("--port", type=int, default=DEFAULT_PORT)
+    parser.add_argument(
+        "--https",
+        action="store_true",
+        help="Also listen over HTTPS (for the phone camera) using local_https/ certificates",
+    )
+    parser.add_argument("--https-port", type=int, default=DEFAULT_HTTPS_PORT)
     return parser.parse_args()
+
+
+def start_https_server(host: str, port: int) -> None:
+    sys.path.insert(0, str(SCRIPT_DIR.parents[1] / "local_https"))
+    from local_cert import ensure_certificate
+
+    cert_path, key_path, addresses = ensure_certificate()
+    context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+    context.load_cert_chain(cert_path, key_path)
+
+    https_server = ThreadingHTTPServer((host, port), ClassifierHandler)
+    https_server.socket = context.wrap_socket(https_server.socket, server_side=True)
+    threading.Thread(target=https_server.serve_forever, daemon=True).start()
+
+    print(f"HTTPS classifier ready at https://localhost:{port}/predict", flush=True)
+    if host in ("0.0.0.0", ""):
+        for address in addresses:
+            print(
+                f"Phone HTTPS check (open once, tap Advanced > Proceed): "
+                f"https://{address}:{port}/health",
+                flush=True,
+            )
 
 
 def main() -> None:
@@ -236,6 +266,8 @@ def main() -> None:
             "Only this laptop can connect. Add --host 0.0.0.0 to test from a phone.",
             flush=True,
         )
+    if args.https:
+        start_https_server(args.host, args.https_port)
     print("Leave this running while you use the result page.", flush=True)
     server.serve_forever()
 
