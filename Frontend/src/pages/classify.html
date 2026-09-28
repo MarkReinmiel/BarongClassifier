@@ -125,14 +125,47 @@
 
                 <div id="cameraPanel" class="camera-panel" hidden>
 
-                    <div class="camera-frame">
+                    <div class="camera-frame" id="cameraFrame">
                         <video
                             id="cameraPreview"
                             autoplay
                             muted
                             playsinline
                         ></video>
+
+                        <div
+                            id="cameraGuide"
+                            class="camera-guide is-red"
+                            aria-hidden="true"
+                        >
+                            <span class="camera-guide-label">
+                                Fill with textile
+                            </span>
+                        </div>
+
+                        <pre
+                            id="cameraCalibration"
+                            class="camera-calibration"
+                            hidden
+                        ></pre>
                     </div>
+
+                    <p
+                        id="cameraGuidanceHeadline"
+                        class="camera-guidance-headline is-red"
+                        role="status"
+                        aria-live="polite"
+                    >
+                        Starting camera…
+                    </p>
+
+                    <ul id="cameraChecklist" class="camera-checklist">
+                        <li data-check="distance"><span aria-hidden="true">…</span> Distance</li>
+                        <li data-check="lighting"><span aria-hidden="true">…</span> Lighting</li>
+                        <li data-check="focus"><span aria-hidden="true">…</span> Focus</li>
+                        <li data-check="stability"><span aria-hidden="true">…</span> Stability</li>
+                        <li data-check="glare" hidden><span aria-hidden="true">△</span> Glare</li>
+                    </ul>
 
                     <div id="cameraZoomControls" class="camera-zoom" hidden>
                         <label for="cameraZoom">Zoom</label>
@@ -152,8 +185,9 @@
                             type="button"
                             id="captureButton"
                             class="capture-button"
+                            disabled
                         >
-                            Capture
+                            Capture Image
                         </button>
 
                         <button
@@ -240,13 +274,26 @@
                 ></p>
 
 
-                <button
-                    type="button"
-                    id="removeImage"
-                    class="remove-button"
-                >
-                    Remove Image
-                </button>
+                <div class="preview-actions">
+
+                    <button
+                        type="button"
+                        id="retakeImage"
+                        class="remove-button"
+                        hidden
+                    >
+                        Retake
+                    </button>
+
+                    <button
+                        type="button"
+                        id="removeImage"
+                        class="remove-button"
+                    >
+                        Remove Image
+                    </button>
+
+                </div>
 
             </div>
 
@@ -263,7 +310,7 @@
                     disabled
                 >
 
-                    Classify Textile
+                    Analyze Textile
 
                     <span>
                         →
@@ -273,7 +320,7 @@
 
 
                 <p class="demo-note">
-                    Tap Classify after the photo appears in the preview.
+                    Tap Analyze after the photo appears in the preview.
                 </p>
 
                 <p id="serverStatus" class="server-status" role="status">
@@ -298,7 +345,8 @@
     <script src="../js/navbar.js"></script>
     <script src="../js/apiConfig.js?v=2"></script>
     <script src="../js/imageStore.js?v=1"></script>
-    <script src="../js/classify.js?v=2"></script>
+    <script src="../js/cameraGuidance.js?v=3"></script>
+    <script src="../js/classify.js?v=4"></script>
 
 
 </body>

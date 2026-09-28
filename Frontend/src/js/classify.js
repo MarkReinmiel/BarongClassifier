@@ -21,6 +21,9 @@ document.addEventListener("DOMContentLoaded", function () {
     const removeImage =
         document.getElementById("removeImage");
 
+    const retakeImage =
+        document.getElementById("retakeImage");
+
     const uploadFeedback =
         document.getElementById("uploadFeedback");
 
@@ -50,7 +53,7 @@ document.addEventListener("DOMContentLoaded", function () {
             "JPG or PNG files · drag & drop supported";
     }
 
-    function applySelectedFile(file) {
+    function applySelectedFile(file, fromCamera) {
         if (!file) {
             return;
         }
@@ -78,6 +81,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
         previewSection.hidden = false;
 
+        retakeImage.hidden = !fromCamera;
+
         classifyButton.disabled = false;
 
         uploadArea.classList.add("has-file");
@@ -86,13 +91,13 @@ document.addEventListener("DOMContentLoaded", function () {
             "Image selected";
 
         uploadArea.querySelector("span").textContent =
-            "Review your image, then classify";
+            "Review your image, then analyze";
 
         setFeedback("", "");
     }
 
     textileImage.addEventListener("change", function () {
-        applySelectedFile(textileImage.files[0]);
+        applySelectedFile(textileImage.files[0], false);
     });
 
     ["dragenter", "dragover"].forEach(function (eventName) {
@@ -118,10 +123,10 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        applySelectedFile(file);
+        applySelectedFile(file, false);
     });
 
-    removeImage.addEventListener("click", function () {
+    function clearSelection() {
         selectedFile = null;
 
         textileImage.value = "";
@@ -132,6 +137,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
         previewSection.hidden = true;
 
+        retakeImage.hidden = true;
+
         classifyButton.disabled = true;
 
         uploadArea.classList.remove("has-file");
@@ -139,12 +146,14 @@ document.addEventListener("DOMContentLoaded", function () {
         resetUploadCopy();
 
         setFeedback("", "");
-    });
+    }
+
+    removeImage.addEventListener("click", clearSelection);
 
     function resetClassifyButton() {
         classifyButton.disabled = false;
         classifyButton.innerHTML =
-            'Classify Textile <span>→</span>';
+            'Analyze Textile <span>→</span>';
     }
 
     classifyButton.addEventListener("click", function () {
@@ -195,26 +204,43 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     // =================================
-    // LIVE CAMERA
+    // LIVE CAMERA WITH CAPTURE GUIDANCE
     // =================================
+
+    const config = CAMERA_GUIDANCE_CONFIG;
 
     const openCamera = document.getElementById("openCamera");
     const cameraPanel = document.getElementById("cameraPanel");
+    const cameraFrame = document.getElementById("cameraFrame");
     const cameraPreview = document.getElementById("cameraPreview");
+    const cameraGuide = document.getElementById("cameraGuide");
     const cameraNotice = document.getElementById("cameraNotice");
+    const guidanceHeadline = document.getElementById("cameraGuidanceHeadline");
+    const checklist = document.getElementById("cameraChecklist");
+    const calibrationPanel = document.getElementById("cameraCalibration");
     const captureButton = document.getElementById("captureButton");
     const closeCamera = document.getElementById("closeCamera");
     const zoomControls = document.getElementById("cameraZoomControls");
     const zoomSlider = document.getElementById("cameraZoom");
     const zoomStatus = document.getElementById("cameraZoomStatus");
 
-    const TARGET_ZOOM = 10;
     const HTTPS_MESSAGE =
         "Camera access may require HTTPS on this device/browser. " +
         "You can still upload an image from your gallery.";
 
+    const calibrationMode =
+        config.CALIBRATION_MODE_ALLOWED &&
+        new URLSearchParams(window.location.search).get("calibrate") === "1";
+
+    const guidance = createCameraGuidance(config);
+
+    const CHECK_SYMBOLS = { good: "✓", adjust: "△", bad: "✕" };
+    const LEVEL_CLASSES = ["is-red", "is-yellow", "is-green"];
+
     let cameraStream = null;
     let zoomRange = null;
+    let analysisTimer = null;
+    let lastStatus = null;
 
     function showCameraNotice(message) {
         cameraNotice.textContent = message || "";
@@ -225,7 +251,21 @@ document.addEventListener("DOMContentLoaded", function () {
         return (Math.round(value * 10) / 10).toString() + "x";
     }
 
+    function setLevel(element, level) {
+        element.classList.remove.apply(element.classList, LEVEL_CLASSES);
+        element.classList.add("is-" + level);
+    }
+
+    function stopAnalysis() {
+        if (analysisTimer !== null) {
+            clearTimeout(analysisTimer);
+            analysisTimer = null;
+        }
+    }
+
     function stopCamera() {
+        stopAnalysis();
+
         if (cameraStream) {
             cameraStream.getTracks().forEach(function (track) {
                 track.stop();
@@ -234,38 +274,126 @@ document.addEventListener("DOMContentLoaded", function () {
 
         cameraStream = null;
         zoomRange = null;
+        lastStatus = null;
+        guidance.reset();
         cameraPreview.srcObject = null;
         cameraPanel.hidden = true;
         uploadArea.hidden = false;
         openCamera.disabled = false;
+        captureButton.disabled = true;
     }
 
-    function cameraErrorMessage(error) {
-        const name = error && error.name;
+    // Maps the on-screen guide rectangle to pixels of the camera video,
+    // accounting for object-fit: cover cropping of the preview.
+    function guideRegionInVideo() {
+        const videoWidth = cameraPreview.videoWidth;
+        const videoHeight = cameraPreview.videoHeight;
 
-        if (name === "NotAllowedError" || name === "PermissionDeniedError") {
-            return window.isSecureContext
-                ? "Camera permission was denied. Allow camera access for this site in your browser settings, or upload an image from your gallery."
-                : HTTPS_MESSAGE;
+        if (!videoWidth || !videoHeight) {
+            return null;
         }
 
-        if (name === "SecurityError") {
-            return HTTPS_MESSAGE;
+        const frameBox = cameraFrame.getBoundingClientRect();
+        const guideBox = cameraGuide.getBoundingClientRect();
+
+        if (!frameBox.width || !frameBox.height) {
+            return null;
         }
 
-        if (
-            name === "NotFoundError" ||
-            name === "DevicesNotFoundError" ||
-            name === "OverconstrainedError"
-        ) {
-            return "No camera was found on this device. You can still upload an image from your gallery.";
+        const scale = Math.max(
+            frameBox.width / videoWidth,
+            frameBox.height / videoHeight
+        );
+        const offsetX = (videoWidth * scale - frameBox.width) / 2;
+        const offsetY = (videoHeight * scale - frameBox.height) / 2;
+
+        const x = Math.max(0, (guideBox.left - frameBox.left + offsetX) / scale);
+        const y = Math.max(0, (guideBox.top - frameBox.top + offsetY) / scale);
+        const width = Math.min(videoWidth - x, guideBox.width / scale);
+        const height = Math.min(videoHeight - y, guideBox.height / scale);
+
+        return {
+            x: Math.round(x),
+            y: Math.round(y),
+            width: Math.round(width),
+            height: Math.round(height)
+        };
+    }
+
+    function renderStatus(status) {
+        setLevel(cameraGuide, status.level === "green" ? "green" : status.level);
+        setLevel(guidanceHeadline, status.level);
+        guidanceHeadline.textContent = status.headline;
+
+        Object.keys(status.checks).forEach(function (name) {
+            const item = checklist.querySelector('[data-check="' + name + '"]');
+
+            if (!item) {
+                return;
+            }
+
+            const state = status.checks[name].state;
+            item.className = "check-" + state;
+            item.querySelector("span").textContent = CHECK_SYMBOLS[state];
+            item.title = status.checks[name].message;
+
+            if (name === "glare") {
+                item.hidden = state === "good";
+            }
+        });
+
+        captureButton.disabled = !(status.canCapture || calibrationMode);
+    }
+
+    function renderCalibration(metrics, region, elapsedMs) {
+        const settings = cameraStream
+            ? cameraStream.getVideoTracks()[0].getSettings()
+            : {};
+
+        calibrationPanel.textContent = [
+            "CALIBRATION MODE",
+            "Coverage:   " + Math.round(metrics.coverage * 100) + "%  (good ≥ " +
+                Math.round(config.COVERAGE_GOOD_MIN * 100) + "%)",
+            "Scale:      " + metrics.scale.toFixed(3) + "  (good " +
+                config.SCALE_GOOD_MIN + "–" + config.SCALE_GOOD_MAX + ")",
+            "Sharpness:  " + metrics.sharpness.toFixed(1) + "  (good ≥ " +
+                config.SHARPNESS_GOOD_MIN + ")",
+            "Brightness: " + metrics.brightness.toFixed(0) + "  (good " +
+                config.BRIGHTNESS_DIM + "–" + config.BRIGHTNESS_BRIGHT + ")",
+            "Glare:      " + (metrics.glare * 100).toFixed(1) + "%",
+            "Motion:     " + (metrics.motion === null ? "–" : metrics.motion.toFixed(3)) +
+                "  (stable ≤ " + config.MOTION_STABLE_MAX + ")",
+            "Texture:    " + metrics.texture.toFixed(1),
+            "Video:      " + cameraPreview.videoWidth + "×" + cameraPreview.videoHeight +
+                (settings.zoom ? "  zoom " + formatZoom(settings.zoom) : ""),
+            "Guide:      " + region.width + "×" + region.height + " px",
+            "Analysis:   " + elapsedMs.toFixed(0) + " ms"
+        ].join("\n");
+    }
+
+    function analysisLoop() {
+        analysisTimer = null;
+
+        if (!cameraStream || document.hidden) {
+            return;
         }
 
-        if (name === "NotReadableError" || name === "TrackStartError") {
-            return "The camera is being used by another app. Close it and try again, or upload an image from your gallery.";
+        const region = guideRegionInVideo();
+
+        if (region && region.width > 0 && region.height > 0) {
+            const started = performance.now();
+            const metrics = guidance.analyze(cameraPreview, region);
+            const status = guidance.evaluate(metrics, started);
+
+            lastStatus = status;
+            renderStatus(status);
+
+            if (calibrationMode) {
+                renderCalibration(metrics, region, performance.now() - started);
+            }
         }
 
-        return "The camera could not be started. You can still upload an image from your gallery.";
+        analysisTimer = setTimeout(analysisLoop, config.ANALYSIS_INTERVAL_MS);
     }
 
     async function applyZoom(track, requested) {
@@ -287,13 +415,16 @@ document.addEventListener("DOMContentLoaded", function () {
             typeof settings.zoom === "number" ? settings.zoom : value;
 
         zoomSlider.value = applied;
+        guidance.reset();
 
-        if (zoomRange.max >= TARGET_ZOOM) {
+        const target = config.MAX_REQUESTED_ZOOM;
+
+        if (zoomRange.max >= target) {
             zoomStatus.textContent =
-                applied >= TARGET_ZOOM - 0.05
+                applied >= target - 0.05
                     ? "Zoom: " + formatZoom(applied) + " ✓"
                     : "Zoom: " + formatZoom(applied) +
-                      " (up to " + formatZoom(TARGET_ZOOM) + " available)";
+                      " (up to " + formatZoom(target) + " available)";
         } else {
             zoomStatus.textContent =
                 "Maximum supported browser zoom: " +
@@ -324,7 +455,7 @@ document.addEventListener("DOMContentLoaded", function () {
         zoomRange = {
             min: zoom.min,
             max: zoom.max,
-            allowedMax: Math.min(zoom.max, TARGET_ZOOM)
+            allowedMax: Math.min(zoom.max, config.MAX_REQUESTED_ZOOM)
         };
 
         zoomSlider.min = zoomRange.min;
@@ -332,7 +463,7 @@ document.addEventListener("DOMContentLoaded", function () {
         zoomSlider.step = zoom.step || 0.1;
         zoomControls.hidden = false;
 
-        applyZoom(track, zoomRange.allowedMax);
+        applyZoom(track, config.INITIAL_ZOOM);
     }
 
     zoomSlider.addEventListener("change", function () {
@@ -343,7 +474,35 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    openCamera.addEventListener("click", async function () {
+    function cameraErrorMessage(error) {
+        const name = error && error.name;
+
+        if (name === "NotAllowedError" || name === "PermissionDeniedError") {
+            return window.isSecureContext
+                ? "Camera permission was denied. Allow camera access for this site in your browser settings, or upload an image from your gallery."
+                : HTTPS_MESSAGE;
+        }
+
+        if (name === "SecurityError") {
+            return HTTPS_MESSAGE;
+        }
+
+        if (
+            name === "NotFoundError" ||
+            name === "DevicesNotFoundError" ||
+            name === "OverconstrainedError"
+        ) {
+            return "No camera was found on this device. You can still upload an image from your gallery.";
+        }
+
+        if (name === "NotReadableError" || name === "TrackStartError") {
+            return "The camera is being used by another app. Close it and try again, or upload an image from your gallery.";
+        }
+
+        return "The camera could not be started. You can still upload an image from your gallery.";
+    }
+
+    async function startCamera() {
         showCameraNotice("");
 
         if (
@@ -352,7 +511,7 @@ document.addEventListener("DOMContentLoaded", function () {
         ) {
             showCameraNotice(
                 window.isSecureContext
-                    ? "Camera is not available in this browser. You can still upload an image from your gallery."
+                    ? "Camera access is unavailable in this browser. You can still upload an image from your gallery."
                     : HTTPS_MESSAGE
             );
             return;
@@ -365,8 +524,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 audio: false,
                 video: {
                     facingMode: { ideal: "environment" },
-                    width: { ideal: 1920 },
-                    height: { ideal: 1080 }
+                    width: { ideal: 2560 },
+                    height: { ideal: 1440 }
                 }
             });
         } catch (error) {
@@ -378,6 +537,12 @@ document.addEventListener("DOMContentLoaded", function () {
         cameraPreview.srcObject = cameraStream;
         cameraPanel.hidden = false;
         uploadArea.hidden = true;
+        calibrationPanel.hidden = !calibrationMode;
+        captureButton.disabled = !calibrationMode;
+        guidanceHeadline.textContent = "Point the camera at the textile";
+        setLevel(guidanceHeadline, "red");
+        setLevel(cameraGuide, "red");
+        guidance.reset();
 
         try {
             await cameraPreview.play();
@@ -386,21 +551,48 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         setupZoom(cameraStream.getVideoTracks()[0]);
+
+        stopAnalysis();
+        analysisTimer = setTimeout(analysisLoop, config.ANALYSIS_INTERVAL_MS);
+    }
+
+    openCamera.addEventListener("click", startCamera);
+
+    retakeImage.addEventListener("click", function () {
+        clearSelection();
+        startCamera();
     });
 
     captureButton.addEventListener("click", function () {
-        const width = cameraPreview.videoWidth;
-        const height = cameraPreview.videoHeight;
+        const videoWidth = cameraPreview.videoWidth;
+        const videoHeight = cameraPreview.videoHeight;
 
-        if (!cameraStream || !width || !height) {
+        if (!cameraStream || !videoWidth || !videoHeight) {
+            showCameraNotice("The camera is not ready yet. Wait a moment and try again.");
+            return;
+        }
+
+        if (!calibrationMode && !(lastStatus && lastStatus.canCapture)) {
+            return;
+        }
+
+        const region = config.CROP_TO_GUIDE
+            ? guideRegionInVideo()
+            : { x: 0, y: 0, width: videoWidth, height: videoHeight };
+
+        if (!region || !region.width || !region.height) {
             showCameraNotice("The camera is not ready yet. Wait a moment and try again.");
             return;
         }
 
         const canvas = document.createElement("canvas");
-        canvas.width = width;
-        canvas.height = height;
-        canvas.getContext("2d").drawImage(cameraPreview, 0, 0, width, height);
+        canvas.width = region.width;
+        canvas.height = region.height;
+        canvas.getContext("2d").drawImage(
+            cameraPreview,
+            region.x, region.y, region.width, region.height,
+            0, 0, region.width, region.height
+        );
 
         canvas.toBlob(function (blob) {
             if (!blob) {
@@ -417,13 +609,27 @@ document.addEventListener("DOMContentLoaded", function () {
             stopCamera();
             showCameraNotice("");
             textileImage.value = "";
-            applySelectedFile(capturedFile);
+            applySelectedFile(capturedFile, true);
+            previewSection.scrollIntoView({ behavior: "smooth", block: "start" });
         }, "image/jpeg", 0.92);
     });
 
     closeCamera.addEventListener("click", stopCamera);
 
     window.addEventListener("pagehide", stopCamera);
+
+    document.addEventListener("visibilitychange", function () {
+        if (!cameraStream) {
+            return;
+        }
+
+        if (document.hidden) {
+            stopAnalysis();
+        } else if (analysisTimer === null) {
+            guidance.reset();
+            analysisTimer = setTimeout(analysisLoop, config.ANALYSIS_INTERVAL_MS);
+        }
+    });
 
 
     // =================================

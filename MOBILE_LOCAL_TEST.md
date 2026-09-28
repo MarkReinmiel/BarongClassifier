@@ -103,7 +103,7 @@ has its own session, so you log in once per device.
 1. Go to **Classify**. Under the Classify button it should say
    `Classification server connected (<LAPTOP_IP>:5501)`.
 2. Tap **Upload from Gallery** and choose a JPG or PNG photo.
-3. Tap **Classify Textile**.
+3. Tap **Analyze Textile**.
 4. The Result page shows the photo, **Predicted Textile Type**, **Model Confidence**,
    and **Classification Status: Classified**. The result is saved to History as before.
 
@@ -115,8 +115,10 @@ close-up photos both work.
 
 Tap **Camera**.
 
-- **If the camera opens:** point the rear camera at the fabric, adjust **Zoom** if shown,
-  tap **Capture**, check the preview, then tap **Classify Textile**.
+- **If the camera opens:** fill the on-screen guide with the fabric and follow the
+  guidance until the guide turns green, then tap **Capture Image**, check the preview,
+  and tap **Analyze Textile** (or **Retake**). See
+  [MOBILE_CAMERA_GUIDANCE.md](MOBILE_CAMERA_GUIDANCE.md) for how the guide works.
 - **If you see "Camera access may require HTTPS on this device/browser":** this is
   expected on `http://192.168.x.x`. Phone browsers (Chrome on Android, Safari on iPhone)
   only allow live camera access on HTTPS pages or `localhost`. Use the
@@ -168,8 +170,8 @@ On the phone (Chrome), in this order:
 2. Open `https://<LAPTOP_IP>:5443/Frontend/src/pages/index.html`, tap
    **Advanced → Proceed** again, and log in. The phone uses a separate login session
    for the `https://` address, so log in again.
-3. Go to **Classify** → **Camera** → allow camera access → **Capture** →
-   **Classify Textile**.
+3. Go to **Classify** → **Camera** → allow camera access → wait for the green guide →
+   **Capture Image** → **Analyze Textile**.
 
 The warning appears because the certificate is made by your laptop, not a public
 authority. That is expected for local testing. The normal `http://` addresses keep
@@ -204,18 +206,19 @@ certificate accepted for port 5502 as well.
    already has an inbound "python.exe" Allow rule for Public networks. If the phone
    still can't connect, make the network **Private** (Settings → Network & internet →
    Wi-Fi → your network → Network profile type → Private) and add a rule that only opens
-   the two ports on private networks. Run PowerShell **as Administrator**:
+   the test ports on private networks (5500/5501 for HTTP, 5443/5502 for HTTPS mode).
+   Run PowerShell **as Administrator**:
 
    ```powershell
-   New-NetFirewallRule -DisplayName "BarongClassifier LAN test (5500, 5501)" `
-       -Direction Inbound -Action Allow -Protocol TCP -LocalPort 5500,5501 `
+   New-NetFirewallRule -DisplayName "BarongClassifier LAN test" `
+       -Direction Inbound -Action Allow -Protocol TCP -LocalPort 5500,5501,5443,5502 `
        -Profile Private
    ```
 
    Remove it after testing:
 
    ```powershell
-   Remove-NetFirewallRule -DisplayName "BarongClassifier LAN test (5500, 5501)"
+   Remove-NetFirewallRule -DisplayName "BarongClassifier LAN test"
    ```
 
    Do not turn Windows Firewall off.
