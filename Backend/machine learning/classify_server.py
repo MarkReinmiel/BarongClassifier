@@ -6,17 +6,28 @@ here and receives the textile type and confidence.
 Run from the project root, and leave this window open:
 
     python "Backend/machine learning/classify_server.py"
+
+To test from a phone on the same Wi-Fi, listen on the local network too:
+
+    python "Backend/machine learning/classify_server.py" --host 0.0.0.0
 """
 
 from __future__ import annotations
 
+import argparse
 import base64
+import binascii
 import io
+import ipaddress
 import json
 import os
+import socket
+import sys
 import threading
+import traceback
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from urllib.parse import urlsplit
 
 os.environ.setdefault("TF_CPP_MIN_LOG_LEVEL", "2")
 
@@ -26,8 +37,8 @@ from PIL import Image, UnidentifiedImageError
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 ARTIFACT_DIR = SCRIPT_DIR / "artifacts"
-HOST = "127.0.0.1"
-PORT = 5501
+DEFAULT_HOST = "127.0.0.1"
+DEFAULT_PORT = 5501
 MAX_BODY_BYTES = 40 * 1024 * 1024
 DISPLAY = {"cocoon": "Cocoon", "jusi": "Jusi", "pina": "Piña"}
 
@@ -76,49 +87,117 @@ def predict_image(payload: str) -> dict:
     }
 
 
+def is_local_origin(origin: str) -> bool:
+    """Allow the website only when it is opened from this laptop or the home network."""
+    try:
+        host = urlsplit(origin).hostname or ""
+    except ValueError:
+        return False
+    if host == "localhost":
+        return True
+    try:
+        address = ipaddress.ip_address(host)
+    except ValueError:
+        return False
+    return address.is_loopback or address.is_private
+
+
+def lan_addresses() -> list[str]:
+    addresses = set()
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as probe:
+            # UDP connect sends no packets; it only picks the outgoing interface.
+            probe.connect(("8.8.8.8", 80))
+            addresses.add(probe.getsockname()[0])
+    except OSError:
+        pass
+    try:
+        for info in socket.getaddrinfo(socket.gethostname(), None, socket.AF_INET):
+            addresses.add(info[4][0])
+    except OSError:
+        pass
+    return sorted(
+        address
+        for address in addresses
+        if ipaddress.ip_address(address).is_private
+        and not ipaddress.ip_address(address).is_loopback
+    )
+
+
 class ClassifierHandler(BaseHTTPRequestHandler):
+    def _send_cors_headers(self) -> None:
+        origin = self.headers.get("Origin", "")
+        if origin and is_local_origin(origin):
+            self.send_header("Access-Control-Allow-Origin", origin)
+            self.send_header("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
+            self.send_header("Access-Control-Allow-Headers", "Content-Type")
+            if self.headers.get("Access-Control-Request-Private-Network") == "true":
+                self.send_header("Access-Control-Allow-Private-Network", "true")
+        self.send_header("Vary", "Origin")
+
     def _send_json(self, status: int, payload: dict) -> None:
         body = json.dumps(payload).encode("utf-8")
         self.send_response(status)
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Content-Length", str(len(body)))
-        self.send_header("Access-Control-Allow-Origin", "*")
-        self.send_header("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
-        self.send_header("Access-Control-Allow-Headers", "Content-Type")
+        self._send_cors_headers()
         self.end_headers()
         self.wfile.write(body)
 
     def do_OPTIONS(self) -> None:
-        self._send_json(204, {})
+        self.send_response(204)
+        self._send_cors_headers()
+        self.send_header("Content-Length", "0")
+        self.end_headers()
 
     def do_GET(self) -> None:
         if self.path.split("?", 1)[0] != "/health":
             self._send_json(404, {"error": "Not found"})
             return
-        self._send_json(200, {"status": "ready", "classes": CLASSES})
+        self._send_json(200, {"status": "ok", "classes": CLASSES})
 
     def do_POST(self) -> None:
         if self.path.split("?", 1)[0] != "/predict":
             self._send_json(404, {"error": "Not found"})
             return
 
-        length = int(self.headers.get("Content-Length", "0"))
-        if length <= 0 or length > MAX_BODY_BYTES:
-            self._send_json(400, {"error": "Image payload is missing or too large."})
+        try:
+            length = int(self.headers.get("Content-Length", "0"))
+        except ValueError:
+            length = 0
+        if length <= 0:
+            self._send_json(400, {"error": "No image was received."})
+            return
+        if length > MAX_BODY_BYTES:
+            self._send_json(413, {"error": "That image is too large. Try a smaller photo."})
             return
 
         try:
             message = json.loads(self.rfile.read(length).decode("utf-8"))
-            image = message.get("image", "")
+            image = message.get("image", "") if isinstance(message, dict) else ""
             if not image:
                 raise ValueError("Missing image")
             result = predict_image(image)
-        except (ValueError, UnidentifiedImageError, OSError, json.JSONDecodeError) as exc:
-            self._send_json(400, {"error": f"Could not read that image. {exc}"})
+        except UnidentifiedImageError:
+            self._send_json(
+                415,
+                {"error": "Unsupported image format. Use a JPG or PNG photo."},
+            )
+            return
+        except (ValueError, OSError, binascii.Error, UnicodeDecodeError):
+            self._send_json(400, {"error": "Could not read that image. Try another photo."})
+            return
+        except Exception:
+            traceback.print_exc()
+            self._send_json(
+                500,
+                {"error": "The classifier could not process this image. Please try again."},
+            )
             return
 
         print(
-            f"{result['display_name']} {result['confidence'] * 100:.1f}%",
+            f"{result['display_name']} {result['confidence'] * 100:.1f}% "
+            f"(from {self.client_address[0]})",
             flush=True,
         )
         self._send_json(200, result)
@@ -127,9 +206,36 @@ class ClassifierHandler(BaseHTTPRequestHandler):
         return
 
 
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Barong textile classifier server")
+    parser.add_argument(
+        "--host",
+        default=DEFAULT_HOST,
+        help="Use 0.0.0.0 to allow phones on the same Wi-Fi (default: 127.0.0.1)",
+    )
+    parser.add_argument("--port", type=int, default=DEFAULT_PORT)
+    return parser.parse_args()
+
+
 def main() -> None:
-    server = ThreadingHTTPServer((HOST, PORT), ClassifierHandler)
-    print(f"Classifier ready at http://{HOST}:{PORT}/predict", flush=True)
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stderr.reconfigure(encoding="utf-8")
+
+    args = parse_args()
+    server = ThreadingHTTPServer((args.host, args.port), ClassifierHandler)
+    print(f"Classifier ready at http://127.0.0.1:{args.port}/predict", flush=True)
+    if args.host in ("0.0.0.0", ""):
+        for address in lan_addresses():
+            print(
+                f"Phone check (same Wi-Fi): http://{address}:{args.port}/health",
+                flush=True,
+            )
+    else:
+        print(
+            "Only this laptop can connect. Add --host 0.0.0.0 to test from a phone.",
+            flush=True,
+        )
     print("Leave this running while you use the result page.", flush=True)
     server.serve_forever()
 

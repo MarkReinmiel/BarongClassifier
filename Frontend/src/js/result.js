@@ -1,6 +1,4 @@
-console.log("Current URL:", window.location.href);
-
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", async function () {
 
     const resultImage =
         document.getElementById("resultImage");
@@ -26,7 +24,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // =================================
 
     const imageData =
-        sessionStorage.getItem("classifiedImage");
+        await loadClassifiedImage();
 
     const savedFileName =
         sessionStorage.getItem("classifiedFileName");
@@ -67,7 +65,9 @@ document.addEventListener("DOMContentLoaded", function () {
     const classificationStatus =
         document.getElementById("classificationStatus");
 
-    const classifierUrl = "http://127.0.0.1:5501/predict";
+    const classifierUrl = CLASSIFIER_BASE_URL + "/predict";
+
+    const classifierTimeoutMs = 90000;
 
     const classificationSaved =
     sessionStorage.getItem("classificationSaved") === "true";
@@ -77,9 +77,24 @@ document.addEventListener("DOMContentLoaded", function () {
         element.classList.toggle("is-pending", pending);
     }
 
+    function classificationError(kind, message) {
+        const error = new Error(message);
+        error.kind = kind;
+        return error;
+    }
+
     showDetail(predictedType, "Classifying...", true);
     showDetail(confidence, "Classifying...", true);
     showDetail(classificationStatus, "Running the trained model", true);
+
+    const abortController =
+        typeof AbortController !== "undefined" ? new AbortController() : null;
+
+    const timeoutId = setTimeout(function () {
+        if (abortController) {
+            abortController.abort();
+        }
+    }, classifierTimeoutMs);
 
     fetch(classifierUrl, {
         method: "POST",
@@ -88,21 +103,54 @@ document.addEventListener("DOMContentLoaded", function () {
         },
         body: JSON.stringify({
             image: imageData
-        })
+        }),
+        signal: abortController ? abortController.signal : undefined
     })
+        .catch(function (error) {
+            if (error && error.name === "AbortError") {
+                throw classificationError(
+                    "timeout",
+                    "The classification server took too long to respond. " +
+                    "Check that the laptop is awake and try again."
+                );
+            }
+
+            throw classificationError("offline", classifierOfflineMessage());
+        })
         .then(function (response) {
-            return response.json().then(function (payload) {
-                return {
-                    ok: response.ok,
-                    payload: payload
-                };
-            });
+            return response.json()
+                .catch(function () {
+                    return {};
+                })
+                .then(function (payload) {
+                    return {
+                        ok: response.ok,
+                        status: response.status,
+                        payload: payload
+                    };
+                });
         })
         .then(async function (result) {
             if (!result.ok) {
-                throw new Error(
-                    (result.payload && result.payload.error) ||
-                    "Classification failed."
+                const serverMessage = result.payload && result.payload.error;
+
+                if (result.status === 415) {
+                    throw classificationError(
+                        "format",
+                        serverMessage || "Unsupported image format. Use a JPG or PNG photo."
+                    );
+                }
+
+                if (result.status === 400 || result.status === 413) {
+                    throw classificationError(
+                        "image",
+                        serverMessage || "Could not read that image. Try another photo."
+                    );
+                }
+
+                throw classificationError(
+                    "prediction",
+                    serverMessage || "The classifier could not process this image. Please try again."
                 );
             }
 
@@ -146,14 +194,28 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
             }
         })
-        .catch(function () {
-            showDetail(predictedType, "Classifier unavailable", true);
+        .catch(function (error) {
+            const kind = error && error.kind;
+
+            const headline = {
+                offline: "Classifier unavailable",
+                timeout: "Server timeout",
+                format: "Unsupported image",
+                image: "Invalid image",
+                prediction: "Prediction failed"
+            }[kind] || "Classification failed";
+
+            showDetail(predictedType, headline, true);
             showDetail(confidence, "Not available", true);
             showDetail(
                 classificationStatus,
-                "Start: python \"Backend/machine learning/classify_server.py\"",
+                (error && error.kind && error.message) ||
+                    "Something went wrong. Please try again.",
                 true
             );
+        })
+        .finally(function () {
+            clearTimeout(timeoutId);
         });
 
 

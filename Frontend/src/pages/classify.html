@@ -95,8 +95,78 @@
                 </h2>
 
                 <p>
-                    Select a clear image in JPG or PNG format.
+                    Take a close-up photo or select a clear image in JPG or PNG format.
                 </p>
+
+
+                <div class="capture-options">
+
+                    <button
+                        type="button"
+                        id="openCamera"
+                        class="capture-option"
+                    >
+                        Camera
+                    </button>
+
+                    <label
+                        for="textileImage"
+                        class="capture-option secondary"
+                    >
+                        Upload from Gallery
+                    </label>
+
+                </div>
+
+                <p id="cameraNotice" class="camera-notice" role="status" hidden></p>
+
+
+                <!-- LIVE CAMERA -->
+
+                <div id="cameraPanel" class="camera-panel" hidden>
+
+                    <div class="camera-frame">
+                        <video
+                            id="cameraPreview"
+                            autoplay
+                            muted
+                            playsinline
+                        ></video>
+                    </div>
+
+                    <div id="cameraZoomControls" class="camera-zoom" hidden>
+                        <label for="cameraZoom">Zoom</label>
+                        <input type="range" id="cameraZoom">
+                    </div>
+
+                    <p id="cameraZoomStatus" class="camera-zoom-status"></p>
+
+                    <p class="camera-zoom-note">
+                        Browser zoom may be digital and is not the same as
+                        your camera app's Pro Mode optical zoom.
+                    </p>
+
+                    <div class="camera-actions">
+
+                        <button
+                            type="button"
+                            id="captureButton"
+                            class="capture-button"
+                        >
+                            Capture
+                        </button>
+
+                        <button
+                            type="button"
+                            id="closeCamera"
+                            class="remove-button"
+                        >
+                            Close Camera
+                        </button>
+
+                    </div>
+
+                </div>
 
 
                 <label
@@ -206,6 +276,10 @@
                     Tap Classify after the photo appears in the preview.
                 </p>
 
+                <p id="serverStatus" class="server-status" role="status">
+                    Checking classification server...
+                </p>
+
             </div>
 
 
@@ -222,7 +296,9 @@
     <script src="../js/supabaseClient.js?v=8"></script>
     <script src="../js/authGuard.js"></script>
     <script src="../js/navbar.js"></script>
-    <script src="../js/classify.js"></script>
+    <script src="../js/apiConfig.js?v=1"></script>
+    <script src="../js/imageStore.js?v=1"></script>
+    <script src="../js/classify.js?v=2"></script>
 
 
 </body>

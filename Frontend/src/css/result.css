@@ -571,6 +571,24 @@ body.modal-open {
         margin-bottom: 28px;
     }
 
+    .backbutton {
+        position: static;
+
+        display: inline-flex;
+
+        align-items: center;
+
+        min-height: 44px;
+
+        margin-bottom: 18px;
+    }
+
+    .view-image-button {
+        width: 100%;
+
+        min-height: 48px;
+    }
+
     .classifier-label {
         font-size: 9px;
 
