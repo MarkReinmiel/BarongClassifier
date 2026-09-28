@@ -35,39 +35,44 @@ const CAMERA_GUIDANCE_CONFIG = {
     TEXTURE_MIN: 5,
     COVERAGE_CELL_ABS_MIN: 4,
     COVERAGE_CELL_RELATIVE: 0.45,
-    COVERAGE_GOOD_MIN: 0.875,
-    COVERAGE_ADJUST_MIN: 0.625,
+    COVERAGE_GOOD_MIN: 0.75,
+    COVERAGE_ADJUST_MIN: 0.5,
 
     // Texture scale (0..1): smaller = texture looks smaller (too far),
     // larger = texture looks bigger (too close). Training photos: p1 0.461,
     // p5 0.474, median 0.546, p95 0.664, p99 0.715 (jusi ~0.49, pina ~0.55,
     // cocoon ~0.65). The same photos simulated 2x farther read ~0.35,
-    // 1.4x farther ~0.45, 1.4x closer ~0.67, 2x closer ~0.79.
-    SCALE_ADJUST_MIN: 0.40,
-    SCALE_GOOD_MIN: 0.46,
-    SCALE_GOOD_MAX: 0.70,
-    SCALE_ADJUST_MAX: 0.78,
+    // 1.4x farther ~0.45, 1.4x closer ~0.67, 2x closer ~0.79, 3x closer ~0.82-0.91.
+    // The band is set closer than the training photos on purpose.
+    SCALE_ADJUST_MIN: 0.45,
+    SCALE_GOOD_MIN: 0.53,
+    SCALE_GOOD_MAX: 0.88,
+    SCALE_ADJUST_MAX: 0.95,
 
     // Laplacian variance on the 224x224 view. Training photos: cocoon p1 86,
     // jusi/pina p1 > 890. Live video is softer than still photos.
-    SHARPNESS_MIN: 35,
-    SHARPNESS_GOOD_MIN: 70,
+    SHARPNESS_MIN: 20,
+    SHARPNESS_GOOD_MIN: 40,
 
     // Mean brightness 0..255. Training photos: 168 - 179.
-    BRIGHTNESS_DARK: 70,
-    BRIGHTNESS_DIM: 105,
-    BRIGHTNESS_BRIGHT: 215,
-    BRIGHTNESS_TOO_BRIGHT: 238,
+    BRIGHTNESS_DARK: 60,
+    BRIGHTNESS_DIM: 90,
+    BRIGHTNESS_BRIGHT: 225,
+    BRIGHTNESS_TOO_BRIGHT: 245,
 
     // Fraction of near-white pixels. Advisory only; never blocks capture.
     GLARE_WARN: 0.02,
 
     // Frame-to-frame change of a 28x28 thumbnail, divided by texture strength so
     // fine and coarse fabrics compare. On training photos a 0.1% shift between
-    // frames reads ~0.01-0.03 and a 1% shift ~0.18-0.29.
-    MOTION_STABLE_MAX: 0.10,
-    MOTION_HIGH: 0.25,
-    STABLE_HOLD_MS: 700
+    // frames reads ~0.01-0.03, but on close-up fabric any shift of 1% or more
+    // reads ~0.5-0.8 (the same as panning across the fabric), while pointing
+    // away from the fabric reads 2-33. So this only catches large movements;
+    // blur from hand shake is caught by the sharpness check instead.
+    MOTION_STABLE_MAX: 1.0,
+    MOTION_HIGH: 2.0,
+    MOTION_SMOOTHING_FRAMES: 5,
+    STABLE_HOLD_MS: 200
 };
 
 function createCameraGuidance(config) {
@@ -96,10 +101,28 @@ function createCameraGuidance(config) {
     let previousThumb = new Float32Array(thumbSize * thumbSize);
     let hasPreviousThumb = false;
     let stableSince = null;
+    let recentMotion = [];
 
     function reset() {
         hasPreviousThumb = false;
         stableSince = null;
+        recentMotion = [];
+    }
+
+    // Median of the last few readings, so a single jumpy frame (autofocus,
+    // exposure change, small tremor) does not break "stable".
+    function smoothedMotion(motion) {
+        if (motion === null) {
+            return null;
+        }
+        recentMotion.push(motion);
+        if (recentMotion.length > config.MOTION_SMOOTHING_FRAMES) {
+            recentMotion.shift();
+        }
+        const sorted = recentMotion.slice().sort(function (a, b) {
+            return a - b;
+        });
+        return sorted[Math.floor((sorted.length - 1) / 2)];
     }
 
     function drawRegion(source, region) {
@@ -332,11 +355,12 @@ function createCameraGuidance(config) {
     }
 
     function stabilityCheck(m, now) {
-        if (m.motion === null || m.motion > config.MOTION_HIGH) {
+        const motion = smoothedMotion(m.motion);
+        if (motion === null || motion > config.MOTION_HIGH) {
             stableSince = null;
             return check("bad", "Hold steady");
         }
-        if (m.motion > config.MOTION_STABLE_MAX) {
+        if (motion > config.MOTION_STABLE_MAX) {
             stableSince = null;
             return check("adjust", "Hold steady");
         }

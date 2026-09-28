@@ -35,7 +35,7 @@ aiming. All checks use that 224×224 grey image:
 | **Sharpness** | Variance of the Laplacian (a standard focus measure; blur lowers it). | "Image blurry — hold steady", "Image slightly soft — hold steady", "Focus OK" |
 | **Lighting** | Average brightness, 0–255. | "Too dark — improve lighting", "Lighting is dim — add light", "Very bright — reduce light", "Too bright — reduce glare", "Lighting OK" |
 | **Glare** | Share of almost-white pixels (≥ 250). Advisory only, never blocks capture. | "Reduce glare / change angle" |
-| **Stability** | Difference between a 28×28 thumbnail of this frame and the previous one, relative to texture strength, then the frame must stay stable for 0.7 s. | "Hold steady", "Hold steady…", then green |
+| **Stability** | Difference between a 28×28 thumbnail of this frame and the previous one, relative to texture strength, smoothed over the last 5 frames. Normal hand tremor is allowed; it blocks when the camera moves off the fabric. Must stay stable for 0.2 s. | "Hold steady", "Hold steady…", then green |
 
 ## Red / yellow / green
 
@@ -52,21 +52,23 @@ Glare only adds a warning to the checklist and never changes the colour.
 
 ## Thresholds (all in `CAMERA_GUIDANCE_CONFIG`)
 
-Defaults were measured on all 277 photos in `dataset/` with the same browser code that
-runs on the phone:
+Values were measured on all 277 photos in `dataset/` with the same browser code that
+runs on the phone. The defaults are deliberately relaxed (less sensitive) and the
+distance band asks for a closer shot than the training photos:
 
 | Setting | Default | Why |
 | --- | --- | --- |
-| `SCALE_GOOD_MIN` / `SCALE_GOOD_MAX` | 0.46 / 0.70 | Training photos: p1 0.461, median 0.546, p99 0.715 |
-| `SCALE_ADJUST_MIN` / `SCALE_ADJUST_MAX` | 0.40 / 0.78 | Red below / above. Photos simulated 2× farther ≈ 0.35, 2× closer ≈ 0.79 |
-| `SHARPNESS_GOOD_MIN` / `SHARPNESS_MIN` | 70 / 35 | Lowest training photo (cocoon) p1 ≈ 86; live video is softer than photos |
-| `BRIGHTNESS_DIM` / `BRIGHTNESS_BRIGHT` | 105 / 215 | Training photos are 168–181 |
-| `BRIGHTNESS_DARK` / `BRIGHTNESS_TOO_BRIGHT` | 70 / 238 | Red limits |
-| `COVERAGE_GOOD_MIN` / `COVERAGE_ADJUST_MIN` | 0.875 / 0.625 | At most 2 / 6 empty cells out of 16 |
+| `SCALE_GOOD_MIN` / `SCALE_GOOD_MAX` | 0.53 / 0.88 | Closer than training (p1 0.461, median 0.546, p99 0.715). Photos simulated 1.4× closer ≈ 0.67, 2× ≈ 0.79, 3× ≈ 0.82–0.91 |
+| `SCALE_ADJUST_MIN` / `SCALE_ADJUST_MAX` | 0.45 / 0.95 | Red below / above |
+| `SHARPNESS_GOOD_MIN` / `SHARPNESS_MIN` | 40 / 20 | Lowest training photo (cocoon) p1 ≈ 86; live video is softer than photos |
+| `BRIGHTNESS_DIM` / `BRIGHTNESS_BRIGHT` | 90 / 225 | Training photos are 168–181 |
+| `BRIGHTNESS_DARK` / `BRIGHTNESS_TOO_BRIGHT` | 60 / 245 | Red limits |
+| `COVERAGE_GOOD_MIN` / `COVERAGE_ADJUST_MIN` | 0.75 / 0.5 | At most 4 / 8 empty cells out of 16 |
 | `TEXTURE_MIN` | 5 | Below this there is no fabric detail (blank wall, very blurry) |
 | `GLARE_WARN` | 0.02 | Warn when > 2% of pixels are almost white |
-| `MOTION_STABLE_MAX` / `MOTION_HIGH` | 0.10 / 0.25 | A 1% shift between frames reads ≈ 0.18–0.29; a 0.1% shift ≈ 0.01–0.03 |
-| `STABLE_HOLD_MS` | 700 | How long it must stay stable before green |
+| `MOTION_STABLE_MAX` / `MOTION_HIGH` | 1.0 / 2.0 | On close-up fabric any hand tremor or pan reads ≈ 0.5–0.8, pointing away from the fabric reads 2–33. Only large movements block; shake blur is caught by the sharpness check |
+| `MOTION_SMOOTHING_FRAMES` | 5 | Stability uses the median of the last 5 readings, so one jumpy frame is ignored |
+| `STABLE_HOLD_MS` | 200 | How long it must stay stable before green |
 
 Other options: `ANALYSIS_INTERVAL_MS`, `GUIDE_ASPECT` (3:4), `CROP_TO_GUIDE`,
 `INITIAL_ZOOM`, `MAX_REQUESTED_ZOOM` (10), `CALIBRATION_MODE_ALLOWED`.
