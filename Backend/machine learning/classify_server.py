@@ -54,8 +54,46 @@ def load_classifier():
             f"{model_path}. Expected files under Backend/machine learning/artifacts/."
         )
     labels = json.loads(labels_path.read_text(encoding="utf-8"))
-    model = tf.keras.models.load_model(model_path)
+    model = load_keras_model(model_path)
     return model, labels["classes"], int(labels["image_size"])
+
+
+def load_keras_model(model_path):
+    try:
+        return tf.keras.models.load_model(model_path)
+    except (TypeError, ValueError) as error:
+        if "renorm" not in str(error):
+            raise
+        return _load_without_renorm(model_path)
+
+
+def _load_without_renorm(model_path):
+    """Load a model saved with Keras >= 3.14 on an older Keras 3 release.
+
+    Keras 3.14 added renorm options to BatchNormalization and writes them into
+    the saved config. This model has renorm=False, and renorm never affects
+    inference, so the options are dropped while loading.
+    """
+    batch_norm = tf.keras.layers.BatchNormalization
+    own_attribute = batch_norm.__dict__.get("from_config")
+    inherited = batch_norm.from_config.__func__
+
+    def from_config(cls, config):
+        config = dict(config)
+        if config.pop("renorm", False):
+            raise ValueError("This model uses batch renormalization; install keras>=3.14.")
+        config.pop("renorm_clipping", None)
+        config.pop("renorm_momentum", None)
+        return inherited(cls, config)
+
+    batch_norm.from_config = classmethod(from_config)
+    try:
+        return tf.keras.models.load_model(model_path)
+    finally:
+        if own_attribute is None:
+            del batch_norm.from_config
+        else:
+            batch_norm.from_config = own_attribute
 
 
 MODEL, CLASSES, IMAGE_SIZE = load_classifier()

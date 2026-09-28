@@ -14,8 +14,9 @@ import sys
 from pathlib import Path
 
 import numpy as np
-import tensorflow as tf
 from PIL import Image
+
+from classify_server import load_keras_model
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 ARTIFACT_DIR = SCRIPT_DIR / "artifacts"
@@ -51,7 +52,7 @@ def main() -> int:
         )
         batch = np.asarray(resized, dtype=np.uint8)[None, ...]
 
-    model = tf.keras.models.load_model(model_path)
+    model = load_keras_model(model_path)
     probabilities = model.predict(batch, verbose=0)[0]
     best = int(np.argmax(probabilities))
 

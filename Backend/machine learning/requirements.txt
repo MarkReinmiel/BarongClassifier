@@ -1,4 +1,6 @@
 tensorflow>=2.16
+# The saved model (artifacts/barong_mobilenetv2.keras) was written by Keras 3.14.
+keras>=3.14
 pillow>=10
 numpy
 scikit-learn
