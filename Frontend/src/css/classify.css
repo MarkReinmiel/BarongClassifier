@@ -962,6 +962,85 @@ body {
     }
 }
 
+/* Hide the original capture button.
+   JavaScript still uses it internally. */
+
+#captureButton {
+    display: none !important;
+}
+
+.camera-guidance-headline.is-red {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+
+    width: calc(100% - 40px) !important;
+    max-width: 520px;
+
+    margin: 12px auto !important;
+    padding: 14px 20px;
+
+    box-sizing: border-box;
+    text-align: center !important;
+
+    align-self: center !important;
+}
+
+/* Center ONLY yellow guidance */
+#cameraGuidanceHeadline.is-yellow {
+    display: block;
+    width: fit-content;
+    max-width: 90%;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+}
+
+/* =========================================
+   READY TO CAPTURE BUTTON
+   ========================================= */
+
+.camera-guidance-headline.is-ready {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 100%;
+    min-height: 52px;
+
+    padding: 14px 20px;
+    margin: 12px 0;
+
+    border: none;
+    border-radius: 12px;
+
+    background: #2f7d32;
+    color: #ffffff;
+
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+
+    cursor: pointer;
+
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+
+    transition:
+        transform 0.15s ease,
+        box-shadow 0.15s ease,
+        background 0.15s ease;
+}
+
+.camera-guidance-headline.is-ready:hover {
+    background: #256628;
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.18);
+}
+
+.camera-guidance-headline.is-ready:active {
+    transform: scale(0.98);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
 
 /* =================================
    MOBILE

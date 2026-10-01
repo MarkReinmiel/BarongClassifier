@@ -398,7 +398,7 @@ function createCameraGuidance(config) {
         });
 
         let level = "green";
-        let headline = "Ready to capture";
+        let headline = "Click this to Capture";
 
         if (firstBad) {
             level = "red";

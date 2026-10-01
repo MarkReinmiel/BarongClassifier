@@ -34,6 +34,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     let selectedFile = null;
 
+
+
     function setFeedback(message, type) {
         if (!uploadFeedback) {
             return;
@@ -242,6 +244,28 @@ document.addEventListener("DOMContentLoaded", function () {
     let analysisTimer = null;
     let lastStatus = null;
 
+    // Make READY TO CAPTURE clickable
+    guidanceHeadline.addEventListener("click", function () {
+
+        if (lastStatus && lastStatus.canCapture) {
+            captureButton.click();
+        }
+
+    });
+
+    guidanceHeadline.addEventListener("keydown", function (event) {
+
+        if (
+            (event.key === "Enter" || event.key === " ") &&
+            lastStatus &&
+            lastStatus.canCapture
+        ) {
+            event.preventDefault();
+            captureButton.click();
+        }
+
+    });
+
     function showCameraNotice(message) {
         cameraNotice.textContent = message || "";
         cameraNotice.hidden = !message;
@@ -321,20 +345,46 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function renderStatus(status) {
-        setLevel(cameraGuide, status.level === "green" ? "green" : status.level);
+        setLevel(
+            cameraGuide,
+            status.level === "green" ? "green" : status.level
+        );
+
         setLevel(guidanceHeadline, status.level);
+
+        // Show the normal guidance message
         guidanceHeadline.textContent = status.headline;
 
+        // Make READY TO CAPTURE behave like a button
+        if (status.canCapture || calibrationMode) {
+            guidanceHeadline.textContent = "Click This to Capture";
+            guidanceHeadline.classList.add("is-ready");
+            guidanceHeadline.setAttribute("role", "button");
+            guidanceHeadline.setAttribute("tabindex", "0");
+            guidanceHeadline.setAttribute("aria-label", "Capture image");
+        } else {
+            guidanceHeadline.classList.remove("is-ready");
+            guidanceHeadline.removeAttribute("role");
+            guidanceHeadline.removeAttribute("tabindex");
+            guidanceHeadline.removeAttribute("aria-label");
+        }
+
         Object.keys(status.checks).forEach(function (name) {
-            const item = checklist.querySelector('[data-check="' + name + '"]');
+            const item = checklist.querySelector(
+                '[data-check="' + name + '"]'
+            );
 
             if (!item) {
                 return;
             }
 
             const state = status.checks[name].state;
+
             item.className = "check-" + state;
-            item.querySelector("span").textContent = CHECK_SYMBOLS[state];
+
+            item.querySelector("span").textContent =
+                CHECK_SYMBOLS[state];
+
             item.title = status.checks[name].message;
 
             if (name === "glare") {
@@ -342,7 +392,8 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
 
-        captureButton.disabled = !(status.canCapture || calibrationMode);
+        captureButton.disabled =
+            !(status.canCapture || calibrationMode);
     }
 
     function renderCalibration(metrics, region, elapsedMs) {
