@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Barong Classifier — UI design format</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #E5DED4;
+      --surface: #FFFFFF;
+      --surface-soft: #F5F1EC;
+      --ink: #2F323A;
+      --ink-soft: #5D5B63;
+      --accent: #77567A;
+      --accent-deep: #624568;
+      --accent-deeper: #49344D;
+      --accent-highlight: #C47AC0;
+      --line: #D5CBD2;
+      --line-strong: #B9A9B9;
+      --shadow: rgba(47, 50, 58, 0.12);
+      --ease: cubic-bezier(0.22, 1, 0.36, 1);
+      --serif: "Playfair Display", Georgia, serif;
+      --sans: "DM Sans", Arial, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--sans);
+      line-height: 1.5;
+    }
+    .wrap { max-width: 1080px; margin: 0 auto; padding: 40px 24px 80px; }
+    .eyebrow {
+      margin: 0 0 8px;
+      letter-spacing: 0.18em;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent);
+    }
+    h1, h2, h3 { font-family: var(--serif); font-weight: 600; margin: 0; }
+    h1 { font-size: clamp(36px, 5vw, 56px); line-height: 1.05; }
+    h1 span { display: block; color: var(--accent); font-style: italic; }
+    h2 { font-size: 28px; margin-bottom: 14px; }
+    p { color: var(--ink-soft); }
+    section { margin-top: 48px; }
+    .ornament { display: flex; align-items: center; gap: 12px; margin: 18px 0; color: var(--accent-highlight); }
+    .ornament span { height: 1px; width: 72px; background: var(--line-strong); }
+
+    .swatches, .type-row, .btn-row, .cards, .pages { display: grid; gap: 14px; }
+    .swatches { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+    .swatch {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 8px 24px var(--shadow);
+    }
+    .chip { height: 72px; }
+    .swatch div:last-child { padding: 10px 12px 12px; }
+    .swatch strong { display: block; font-size: 13px; }
+    .swatch code { font-size: 12px; color: var(--ink-soft); }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--line-strong);
+      border-radius: 20px;
+      padding: 22px;
+      box-shadow: 0 10px 28px var(--shadow);
+    }
+    .btn-row { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); align-items: center; }
+    button, .btn {
+      font-family: var(--sans);
+      border-radius: 999px;
+      border: 1px solid transparent;
+      padding: 12px 18px;
+      font-weight: 600;
+      cursor: default;
+    }
+    .btn-primary { background: var(--accent); color: var(--surface); }
+    .btn-deep { background: var(--accent-deeper); color: var(--surface); }
+    .btn-highlight { background: var(--accent-highlight); color: var(--surface); }
+    .btn-ghost { background: transparent; color: var(--accent); border-color: var(--accent); }
+    .btn-soft { background: var(--surface-soft); color: var(--ink-soft); border-color: var(--line-strong); }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 14px 18px;
+    }
+    .brand { display: flex; gap: 10px; align-items: center; }
+    .mark {
+      width: 36px; height: 36px; border-radius: 10px;
+      display: grid; place-items: center;
+      background: var(--accent-deeper); color: var(--accent-highlight);
+    }
+    .brand b { display: block; letter-spacing: 0.08em; font-size: 13px; }
+    .brand small { color: var(--ink-soft); }
+    .nav a { color: var(--ink-soft); text-decoration: none; font-size: 14px; margin-left: 14px; }
+    .nav a.active { color: var(--accent); font-weight: 700; }
+
+    .cards { grid-template-columns: repeat(3, 1fr); }
+    .card {
+      background: var(--surface-soft);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 18px;
+    }
+    .num { font-family: var(--serif); font-size: 40px; color: var(--accent-deep); display: block; }
+    .upload {
+      margin-top: 14px;
+      border: 2px dashed var(--accent-highlight);
+      border-radius: 18px;
+      padding: 28px;
+      text-align: center;
+      background: var(--surface-soft);
+    }
+    .pages { grid-template-columns: 1fr 1fr; }
+    .page h3 { margin-bottom: 6px; }
+    .page ol, .page ul { margin: 8px 0 0; padding-left: 18px; color: var(--ink-soft); }
+    pre {
+      white-space: pre-wrap;
+      background: var(--accent-deeper);
+      color: #F5F1EC;
+      border-radius: 18px;
+      padding: 20px;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+    .phones {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 18px;
+      align-items: start;
+    }
+    .phone {
+      width: 100%;
+      max-width: 320px;
+      margin: 0 auto;
+      background: var(--bg);
+      border: 8px solid var(--ink);
+      border-radius: 28px;
+      overflow: hidden;
+      box-shadow: 0 16px 36px var(--shadow);
+    }
+    .phone-label {
+      margin: 0 0 8px;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--ink);
+    }
+    .m-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      height: 56px;
+      padding: 0 12px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--line);
+    }
+    .m-bar b { font-size: 10px; letter-spacing: 0.04em; }
+    .m-bar .btn-primary { white-space: nowrap; font-size: 11px; padding: 8px 8px; }
+    .burger, .acct {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      border: 1px solid var(--line-strong);
+      background: var(--surface);
+      color: var(--ink);
+      display: grid;
+      place-items: center;
+      font-size: 14px;
+    }
+    .m-body { padding: 16px 14px 18px; text-align: center; }
+    .m-body h3 { font-size: 26px; line-height: 1.1; }
+    .m-body p { font-size: 13px; margin: 8px 0; }
+    .m-photo {
+      height: 150px;
+      margin: 14px auto 0;
+      width: min(180px, 70%);
+      border-radius: 16px;
+      background:
+        linear-gradient(160deg, #cbb8c4, #8d6d86 55%, #49344d);
+      border: 1px solid var(--line-strong);
+    }
+    .m-foot {
+      margin-top: 14px;
+      font-size: 9px;
+      letter-spacing: 0.14em;
+      color: var(--ink-soft);
+    }
+    .m-stack { display: grid; gap: 8px; text-align: left; }
+    .m-card, .m-field {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 12px;
+    }
+    .m-field { color: var(--ink-soft); font-size: 13px; background: var(--surface-soft); }
+    .m-card strong { display: block; font-family: var(--serif); font-size: 22px; color: var(--accent-deep); }
+    .m-card span, .m-meta { font-size: 12px; color: var(--ink-soft); }
+    .full { width: 100%; }
+    .sticky {
+      margin: 12px -14px -18px;
+      padding: 10px 14px 14px;
+      background: var(--surface);
+      border-top: 1px solid var(--line);
+    }
+    .menu {
+      background: #292b32;
+      color: var(--surface);
+      display: grid;
+      gap: 6px;
+      padding: 12px;
+    }
+    .menu a {
+      color: var(--surface);
+      text-decoration: none;
+      padding: 12px;
+      border-radius: 12px;
+      font-size: 15px;
+    }
+    .menu a.on { background: rgba(196, 122, 192, 0.2); }
+    .guide {
+      position: relative;
+      height: 220px;
+      border-radius: 16px;
+      background: #2a2428;
+      border: 4px solid #e5484d;
+      display: grid;
+      place-items: end center;
+      color: #fff;
+      font-size: 12px;
+      padding-bottom: 10px;
+    }
+    .checks { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 8px; }
+    .checks span {
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+    }
+    @media (max-width: 800px) {
+      .cards, .pages, .nav { grid-template-columns: 1fr; display: grid; }
+      .nav a { margin: 0 12px 0 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <p class="eyebrow">UI DESIGN FORMAT · FOR PROMPTING</p>
+    <h1>Barong Classifier<span>heritage textile interface</span></h1>
+    <div class="ornament"><span></span><b>◆</b><span></span></div>
+    <p>Warm stone background, white cards, plum accent, and a diamond mark. Headlines are Playfair Display. Everything else is DM Sans. Tone is formal, cultural, and calm — Philippine Barong Tagalog heritage, not a generic SaaS dashboard.</p>
+
+    <section>
+      <h2>Color</h2>
+      <div class="swatches">
+        <div class="swatch"><div class="chip" style="background:#E5DED4"></div><div><strong>Background</strong><code>#E5DED4</code></div></div>
+        <div class="swatch"><div class="chip" style="background:#FFFFFF;border-bottom:1px solid #D5CBD2"></div><div><strong>Surface</strong><code>#FFFFFF</code></div></div>
+        <div class="swatch"><div class="chip" style="background:#F5F1EC"></div><div><strong>Surface soft</strong><code>#F5F1EC</code></div></div>
+        <div class="swatch"><div class="chip" style="background:#2F323A"></div><div><strong>Ink</strong><code>#2F323A</code></div></div>
+        <div class="swatch"><div class="chip" style="background:#5D5B63"></div><div><strong>Ink soft</strong><code>#5D5B63</code></div></div>
+        <div class="swatch"><div class="chip" style="background:#77567A"></div><div><strong>Accent</strong><code>#77567A</code></div></div>
+        <div class="swatch"><div class="chip" style="background:#624568"></div><div><strong>Accent deep</strong><code>#624568</code></div></div>
+        <div class="swatch"><div class="chip" style="background:#49344D"></div><div><strong>Accent deeper</strong><code>#49344D</code></div></div>
+        <div class="swatch"><div class="chip" style="background:#C47AC0"></div><div><strong>Highlight</strong><code>#C47AC0</code></div></div>
+        <div class="swatch"><div class="chip" style="background:#D5CBD2"></div><div><strong>Line</strong><code>#D5CBD2</code></div></div>
+        <div class="swatch"><div class="chip" style="background:#B9A9B9"></div><div><strong>Line strong</strong><code>#B9A9B9</code></div></div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Type</h2>
+      <div class="panel type-row">
+        <p class="eyebrow">EYEBROW · DM SANS 600 · TRACKING 0.18EM · ACCENT</p>
+        <h1 style="font-size:42px">Playfair Display headline</h1>
+        <p>Body copy is DM Sans, color #5D5B63, on #E5DED4 or inside a white card. Buttons are pill-shaped DM Sans 600. The symbol ◆ is the brand mark.</p>
+      </div>
+    </section>
+
+    <section>
+      <h2>Buttons</h2>
+      <div class="btn-row">
+        <button class="btn-primary">Get Started →</button>
+        <button class="btn-deep">Analyze Textile</button>
+        <button class="btn-highlight">Filter</button>
+        <button class="btn-ghost">← Back to Home</button>
+        <button class="btn-soft">Clear</button>
+      </div>
+    </section>
+
+    <section>
+      <h2>Signed-in navigation</h2>
+      <div class="nav">
+        <div class="brand">
+          <div class="mark">◆</div>
+          <div><b>BARONG CLASSIFIER</b><small>Preserving Heritage Through Technology</small></div>
+        </div>
+        <div>
+          <a class="active" href="#">Dashboard</a>
+          <a href="#">Classify Textile</a>
+          <a href="#">Textile Types</a>
+          <a href="#">History</a>
+          <a href="#">About</a>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Dashboard cards</h2>
+      <div class="cards">
+        <article class="card"><span class="num">3</span><h3>Textile Types</h3><p>Cocoon, Jusi, and Piña</p></article>
+        <article class="card"><span class="num">84%</span><h3>Model Accuracy</h3><p>MobileNetV2 test accuracy</p></article>
+        <article class="card"><span class="num">0</span><h3>Images Classified</h3><p>Saved in your classification history</p></article>
+      </div>
+    </section>
+
+    <section>
+      <h2>Classify upload</h2>
+      <div class="panel">
+        <p class="eyebrow">BARONG TAGALOG TEXTILE CLASSIFIER</p>
+        <h2>Classify Textile</h2>
+        <div class="btn-row" style="margin-top:12px">
+          <button class="btn-deep">Camera</button>
+          <button class="btn-ghost">Upload from Gallery</button>
+        </div>
+        <div class="upload">
+          <div class="mark" style="margin:0 auto 8px">◆</div>
+          <h3>Choose an image</h3>
+          <p>JPG or PNG files · drag & drop supported</p>
+          <button class="btn-highlight">Browse Image</button>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Screens</h2>
+      <div class="pages">
+        <article class="panel page">
+          <p class="eyebrow">PUBLIC</p>
+          <h3>Home</h3>
+          <p>Split hero. Left: “WELCOME TO THE”, title “Barong Tagalog / Textile Classifier”, ornament, short description, Get Started. Right: framed photo of a Barong. Footer: CULTURE | HERITAGE | INNOVATION.</p>
+        </article>
+        <article class="panel page">
+          <p class="eyebrow">PUBLIC</p>
+          <h3>Sign in / Sign up</h3>
+          <p>Split page. Left plum brand panel with ◆, BARONG CLASSIFIER, heritage line. Right white card: email, password, Show toggle, Login →, switch to Sign Up. Fields: full name, email, password.</p>
+        </article>
+        <article class="panel page">
+          <p class="eyebrow">APP</p>
+          <h3>Dashboard</h3>
+          <p>Welcome hero plus Classify Textile button, three overview cards, then four steps: Upload Image, Image Processing, AI Classification, View Result.</p>
+        </article>
+        <article class="panel page">
+          <p class="eyebrow">APP</p>
+          <h3>Classify Textile</h3>
+          <p>Camera or gallery. Dashed upload area. Preview, then Analyze Textile. Camera guide colors: red too far, amber adjust, green ready. Checks: distance, lighting, focus, stability, glare.</p>
+        </article>
+        <article class="panel page">
+          <p class="eyebrow">APP</p>
+          <h3>Classification Result</h3>
+          <p>Back link, submitted image, View Image. Details: Predicted Textile Type, Model Confidence, Image Name, Classification Status.</p>
+        </article>
+        <article class="panel page">
+          <p class="eyebrow">APP</p>
+          <h3>Textile Types</h3>
+          <p>Three cards: Piña ◆, Jusi ◇, Cocoon ✦. Each says Supported Textile and opens a detail modal.</p>
+        </article>
+        <article class="panel page">
+          <p class="eyebrow">APP</p>
+          <h3>History</h3>
+          <p>Filters: From, To, Fabric Type, Search Date. Actions: Today, Filter, Clear. Cards show file name, label, confidence, and date.</p>
+        </article>
+        <article class="panel page">
+          <p class="eyebrow">APP</p>
+          <h3>About</h3>
+          <p>Dataset information and model information. Model is MobileNetV2. Classes are Piña, Jusi, and Cocoon.</p>
+        </article>
+      </div>
+    </section>
+
+    <section>
+      <h2>Mobile layout</h2>
+      <p>Below 800px the public pages stack and center. Below 900px the signed-in bar is 64px tall, hides the tagline, and opens a full-screen dark menu. Content becomes one column. Inputs and main buttons are at least 48px tall. The Analyze button sticks to the bottom. The camera frame is portrait 3:4.</p>
+      <div class="phones">
+        <div>
+          <p class="phone-label">Home</p>
+          <div class="phone">
+            <div class="m-bar">
+              <div class="brand"><div class="mark">◆</div><b>BARONG CLASSIFIER</b></div>
+              <div style="display:flex;gap:6px"><button class="btn-primary" style="padding:8px 10px;font-size:12px">Get Started</button><button class="burger" aria-hidden="true">☰</button></div>
+            </div>
+            <div class="m-body">
+              <p class="eyebrow">WELCOME TO THE</p>
+              <h3>Barong Tagalog<span style="display:block;color:var(--accent);font-style:italic">Textile Classifier</span></h3>
+              <p>Discover and identify selected Barong Tagalog textiles.</p>
+              <button class="btn-primary full">Get Started →</button>
+              <div class="m-photo"></div>
+              <div class="m-foot">CULTURE | HERITAGE | INNOVATION</div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <p class="phone-label">Sign in</p>
+          <div class="phone">
+            <div class="m-body" style="text-align:center">
+              <p class="eyebrow" style="text-align:left">← Back to Home</p>
+              <div class="mark" style="margin:8px auto">◆</div>
+              <h3>BARONG<span style="display:block;color:var(--accent)">CLASSIFIER</span></h3>
+              <p>Preserving Philippine heritage through technology.</p>
+              <div class="m-stack">
+                <div class="m-field">Email Address</div>
+                <div class="m-field">Password · Show</div>
+                <button class="btn-primary full">Login →</button>
+              </div>
+              <p>Don't have an account? <strong style="color:var(--accent)">Sign Up</strong></p>
+            </div>
+          </div>
+        </div>
+        <div>
+          <p class="phone-label">App menu open</p>
+          <div class="phone">
+            <div class="m-bar">
+              <div class="brand"><div class="mark">◆</div><b>BARONG CLASSIFIER</b></div>
+              <div style="display:flex;gap:6px"><button class="acct">♙</button><button class="burger">✕</button></div>
+            </div>
+            <div class="menu">
+              <a class="on" href="#">Dashboard</a>
+              <a href="#">Classify Textile</a>
+              <a href="#">Textile Types</a>
+              <a href="#">History</a>
+              <a href="#">About</a>
+            </div>
+          </div>
+        </div>
+        <div>
+          <p class="phone-label">Dashboard</p>
+          <div class="phone">
+            <div class="m-bar">
+              <div class="brand"><div class="mark">◆</div><b>BARONG CLASSIFIER</b></div>
+              <div style="display:flex;gap:6px"><button class="acct">♙</button><button class="burger">☰</button></div>
+            </div>
+            <div class="m-body">
+              <p class="eyebrow">BARONG TAGALOG TEXTILE CLASSIFIER</p>
+              <h3>Welcome to <span style="color:var(--accent);font-style:italic">BarongClassifier</span></h3>
+              <button class="btn-primary full">Classify Textile →</button>
+              <div class="m-photo"></div>
+              <div class="m-stack" style="margin-top:12px">
+                <article class="m-card"><strong>3</strong><span>Textile Types</span></article>
+                <article class="m-card"><strong>84%</strong><span>Model Accuracy</span></article>
+                <article class="m-card"><strong>0</strong><span>Images Classified</span></article>
+                <article class="m-card"><span>01 Upload Image</span></article>
+                <article class="m-card"><span>02 Image Processing</span></article>
+                <article class="m-card"><span>03 AI Classification</span></article>
+                <article class="m-card"><span>04 View Result</span></article>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <p class="phone-label">Classify</p>
+          <div class="phone">
+            <div class="m-bar">
+              <div class="brand"><div class="mark">◆</div><b>BARONG CLASSIFIER</b></div>
+              <button class="burger">☰</button>
+            </div>
+            <div class="m-body" style="text-align:left">
+              <p class="eyebrow">BARONG TAGALOG TEXTILE CLASSIFIER</p>
+              <h3>Classify Textile</h3>
+              <div class="m-stack">
+                <button class="btn-deep full">Camera</button>
+                <button class="btn-ghost full">Upload from Gallery</button>
+              </div>
+              <div class="upload" style="padding:18px">
+                <h3>Choose an image</h3>
+                <p>JPG or PNG</p>
+              </div>
+              <div class="sticky"><button class="btn-deep full">Analyze Textile</button></div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <p class="phone-label">Camera</p>
+          <div class="phone">
+            <div class="m-bar">
+              <div class="brand"><div class="mark">◆</div><b>BARONG CLASSIFIER</b></div>
+              <button class="burger">☰</button>
+            </div>
+            <div class="m-body">
+              <div class="guide">Fill with textile</div>
+              <p style="color:#e5484d;font-weight:700">Move closer</p>
+              <div class="checks"><span>Distance</span><span>Lighting</span><span>Focus</span><span>Stability</span></div>
+              <button class="btn-deep full" style="margin-top:10px;min-height:52px">Capture Image</button>
+              <button class="btn-soft full">Close Camera</button>
+            </div>
+          </div>
+        </div>
+        <div>
+          <p class="phone-label">Result</p>
+          <div class="phone">
+            <div class="m-bar">
+              <div class="brand"><div class="mark">◆</div><b>BARONG CLASSIFIER</b></div>
+              <button class="burger">☰</button>
+            </div>
+            <div class="m-body" style="text-align:left">
+              <p class="eyebrow">← Back to Classify</p>
+              <h3>Classification Result</h3>
+              <div class="m-photo" style="width:100%;height:160px;margin:0"></div>
+              <button class="btn-ghost full" style="margin-top:8px">View Image</button>
+              <div class="m-stack" style="margin-top:10px">
+                <article class="m-card"><span>Predicted Textile Type</span><strong>Piña</strong></article>
+                <article class="m-card"><span>Model Confidence</span><strong>96.2%</strong></article>
+                <article class="m-card"><span>Image Name</span><strong style="font-size:16px">textile.jpg</strong></article>
+                <article class="m-card"><span>Classification Status</span><strong style="font-size:18px">Classified</strong></article>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <p class="phone-label">Textile Types</p>
+          <div class="phone">
+            <div class="m-bar">
+              <div class="brand"><div class="mark">◆</div><b>BARONG CLASSIFIER</b></div>
+              <button class="burger">☰</button>
+            </div>
+            <div class="m-body" style="text-align:left">
+              <p class="eyebrow">BARONG TAGALOG</p>
+              <h3>Textile Types</h3>
+              <div class="m-stack">
+                <article class="m-card"><strong>◆ Piña</strong><span>Supported Textile</span></article>
+                <article class="m-card"><strong>◇ Jusi</strong><span>Supported Textile</span></article>
+                <article class="m-card"><strong>✦ Cocoon</strong><span>Supported Textile</span></article>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <p class="phone-label">History</p>
+          <div class="phone">
+            <div class="m-bar">
+              <div class="brand"><div class="mark">◆</div><b>BARONG CLASSIFIER</b></div>
+              <button class="burger">☰</button>
+            </div>
+            <div class="m-body" style="text-align:left">
+              <p class="eyebrow">BARONG TAGALOG</p>
+              <h3>History</h3>
+              <div class="m-stack">
+                <div class="m-field">From</div>
+                <div class="m-field">To</div>
+                <div class="m-field">Fabric Type</div>
+                <div class="m-field">Search Date</div>
+              </div>
+              <div class="btn-row" style="grid-template-columns:1fr 1fr 1fr;margin-top:8px">
+                <button class="btn-soft">Today</button>
+                <button class="btn-highlight">Filter</button>
+                <button class="btn-soft">Clear</button>
+              </div>
+              <article class="m-card" style="margin-top:10px">
+                <strong style="font-size:18px">Piña</strong>
+                <span>fabric-01.jpg</span>
+                <div class="checks"><span>96%</span><span>Oct 7</span></div>
+              </article>
+            </div>
+          </div>
+        </div>
+        <div>
+          <p class="phone-label">About</p>
+          <div class="phone">
+            <div class="m-bar">
+              <div class="brand"><div class="mark">◆</div><b>BARONG CLASSIFIER</b></div>
+              <button class="burger">☰</button>
+            </div>
+            <div class="m-body" style="text-align:left">
+              <p class="eyebrow">BARONG TAGALOG</p>
+              <h3>About</h3>
+              <article class="m-card"><strong style="font-size:18px">Dataset Information</strong><span>Piña, Jusi, and Cocoon images.</span></article>
+              <article class="m-card" style="margin-top:8px"><strong style="font-size:18px">Model Information</strong><span>MobileNetV2 image classification.</span></article>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Copy this into a prompt</h2>
+      <pre>Design a screen for Barong Classifier, a web app that identifies Barong Tagalog textiles (Piña, Jusi, Cocoon) from a photo.
+
+Visual system:
+- Background #E5DED4, cards #FFFFFF, soft fill #F5F1EC
+- Text #2F323A, secondary text #5D5B63
+- Accent plum #77567A, deep plum #49344D, highlight mauve #C47AC0
+- Borders #D5CBD2 / #B9A9B9, soft shadow
+- Headlines: Playfair Display. UI and body: DM Sans
+- Eyebrows are small, uppercase, letterspaced, in the plum accent
+- Buttons are pills. Primary is plum with white text. Highlight actions use mauve
+- Brand mark is a diamond ◆. Tagline: “Preserving Heritage Through Technology”
+- Footer words: CULTURE | HERITAGE | INNOVATION
+- Mood: formal Philippine heritage, warm stone and plum, generous whitespace, rounded 16–20px cards
+- App nav: Dashboard, Classify Textile, Textile Types, History, About, plus an account menu
+- Do not use bright blue, neon, or generic SaaS purple gradients
+
+Mobile (under 800px, phone width about 390px):
+- One column. Center public pages. Hide the tagline under the logo
+- Public Home: hamburger plus a small Get Started in the bar. Hero text, full-width Get Started, then the photo, then CULTURE | HERITAGE | INNOVATION
+- Sign in: brand block centered on top, form card full width underneath, Back to Home above the brand
+- Signed-in bar is short. Links hide behind a hamburger. The open menu is a full-screen dark panel (#292b32) with large rounded links. Active link uses a mauve tint
+- Dashboard, Textile Types, History, and About stack their cards vertically
+- History filters are one field per row. Today, Filter, and Clear sit in one row of three
+- Classify: Camera and Upload from Gallery stack. Analyze Textile sticks to the bottom of the screen
+- Camera frame is portrait 3:4 with a colored guide (red, amber, or green). Capture Image is full width
+- Result stacks the photo above the detail rows. View Image is full width
+- Touch targets at least 48px. Respect the phone safe area
+
+Screen to design: [describe the screen and say desktop or mobile]</pre>
+    </section>
+  </div>
+</body>
+</html>

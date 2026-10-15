@@ -26,13 +26,15 @@ document.addEventListener("DOMContentLoaded", function () {
                 .pop()
                 .replace(".html", "");
 
-            const activeLink = navbarContainer.querySelector(
-                '[data-nav="' + currentPage + '"]'
-            );
+            const navKey = currentPage === "result"
+                ? "classify"
+                : currentPage;
 
-            if (activeLink) {
+            navbarContainer.querySelectorAll(
+                '[data-nav="' + navKey + '"]'
+            ).forEach(function (activeLink) {
                 activeLink.classList.add("active");
-            }
+            });
 
 
             // ==============================
