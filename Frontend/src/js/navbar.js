@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
     }
 
-    fetch("../components/navbar.html")
+    fetch("../components/navbar.html?v=3", { cache: "no-cache" })
         .then(function (response) {
 
             if (!response.ok) {
@@ -120,39 +120,99 @@ document.addEventListener("DOMContentLoaded", function () {
                 document.getElementById("accountEmail");
 
 
-            if (
-                typeof supabaseClient !== "undefined" &&
-                accountName &&
-                accountEmail
-            ) {
+            function showAccount(name, email) {
+                if (accountName) {
+                    accountName.textContent = name;
+                }
+                if (accountEmail) {
+                    accountEmail.textContent = email;
+                }
+            }
 
-                const { data: sessionData, error } =
-                    await supabaseClient.auth.getSession();
+            // The session listener fires as soon as Supabase knows the
+            // session (and again after a token refresh), so the name can
+            // never stay stuck on "Loading...". Nothing is awaited inside
+            // the callback, which keeps it safe with the Supabase lock.
+            function loadNameFromProfiles(user) {
+                var email = user.email || "";
 
-                if (error) {
-                    console.error(
-                        "Unable to retrieve account:",
-                        error
-                    );
+                setTimeout(function () {
+                    supabaseClient
+                        .from("profiles")
+                        .select("full_name")
+                        .eq("id", user.id)
+                        .maybeSingle()
+                        .then(function (result) {
+                            var name =
+                                result && result.data
+                                    ? String(result.data.full_name || "").trim()
+                                    : "";
+
+                            if (name) {
+                                showAccount(name, email);
+
+                                try {
+                                    localStorage.setItem("barongDisplayName", name);
+                                } catch (ignore) {
+                                    // Storage can be blocked; the page still works.
+                                }
+                            }
+                        })
+                        .catch(function () {
+                            // No profiles table or no row — keep what we have.
+                        });
+                }, 0);
+            }
+
+            function renderUser(user) {
+
+                if (!user) {
+                    showAccount("Not signed in", "");
+                    return;
                 }
 
-                const user = sessionData.session?.user;
+                var email = user.email || "";
+                var fullName = "";
 
-                if (user) {
+                try {
+                    fullName = String(
+                        (user.user_metadata && user.user_metadata.full_name) ||
+                        localStorage.getItem("barongDisplayName") ||
+                        ""
+                    ).trim();
+                } catch (ignore) {
+                    fullName = "";
+                }
 
-                    const fullName =
-                        user.user_metadata?.full_name;
+                showAccount(
+                    fullName || email || "Account",
+                    fullName ? email : ""
+                );
 
-                    accountName.textContent =
-                        fullName || user.email || "Account";
+                if (!fullName) {
+                    loadNameFromProfiles(user);
+                }
 
-                    accountEmail.textContent =
-                        user.email || "No email available";
+            }
 
-                } else {
+            if (typeof supabaseClient === "undefined") {
 
-                    accountName.textContent = "Account";
-                    accountEmail.textContent = "Not signed in";
+                showAccount("Account", "");
+
+            } else if (accountName || accountEmail) {
+
+                try {
+
+                    supabaseClient.auth.onAuthStateChange(
+                        function (event, session) {
+                            renderUser(session && session.user);
+                        }
+                    );
+
+                } catch (error) {
+
+                    console.error("Unable to retrieve account:", error);
+                    showAccount("Account", "");
 
                 }
 

@@ -365,11 +365,27 @@ body {
     overflow-wrap: anywhere;
 
     font-family: "DM Sans", Arial, sans-serif;
-    font-size: 13px;
-    font-weight: 500;
-    line-height: 1.5;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.4;
 
     color: var(--ink);
+}
+
+.account-email {
+    max-width: 100%;
+
+    overflow-wrap: anywhere;
+
+    font-family: "DM Sans", Arial, sans-serif;
+    font-size: 12px;
+    line-height: 1.4;
+
+    color: var(--ink-soft);
+}
+
+.account-email:empty {
+    display: none;
 }
 
 

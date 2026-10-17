@@ -98,6 +98,16 @@ document.addEventListener("DOMContentLoaded", async function () {
                                     user.user_metadata.full_name) ||
                                 ""
                         });
+
+                        const metaName = String(
+                            (user.user_metadata &&
+                                user.user_metadata.full_name) ||
+                            ""
+                        ).trim();
+
+                        if (metaName) {
+                            localStorage.setItem("barongDisplayName", metaName);
+                        }
                     } catch (profileError) {
                         console.error("Profile save error:", profileError);
                     }
@@ -211,6 +221,10 @@ document.addEventListener("DOMContentLoaded", async function () {
                             email: createdUser.email,
                             full_name: fullName
                         });
+
+                        if (fullName) {
+                            localStorage.setItem("barongDisplayName", fullName);
+                        }
                     } catch (profileError) {
                         console.error("Profile save error:", profileError);
                     }

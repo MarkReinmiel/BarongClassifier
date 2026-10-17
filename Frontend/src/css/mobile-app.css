@@ -6,34 +6,45 @@
     body {
         padding-top: calc(56px + env(safe-area-inset-top));
         padding-bottom: calc(74px + env(safe-area-inset-bottom));
-        background: var(--bg);
+        background: #795780;
     }
 
+    /* MOBILE HEADER — keep the desktop header unchanged */
     .navbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1001;
+        display: flex;
         height: calc(56px + env(safe-area-inset-top));
         align-items: center;
         justify-content: space-between;
         gap: 8px;
-        padding:
-            env(safe-area-inset-top)
-            16px
-            0;
-        background: var(--surface);
+        padding: env(safe-area-inset-top) 12px 0;
+        background: #292a30;
         border-bottom: 1px solid var(--line);
+        box-sizing: border-box;
     }
 
     .navbar-links,
     .menu-toggle {
-        display: none;
+        display: none !important;
     }
 
     .navbar-logo {
+        display: flex;
+        align-items: center;
+        flex: 1;
         min-width: 0;
-        max-width: calc(100% - 52px);
+        max-width: calc(100% - 48px);
         gap: 8px;
     }
 
     .logo-mark {
+        display: grid;
+        place-items: center;
+        flex: 0 0 32px;
         width: 32px;
         height: 32px;
         border-radius: 10px;
@@ -43,21 +54,38 @@
     }
 
     .logo-title {
-        color: var(--ink);
+        overflow: hidden;
+        color: #ffffff;
         font-family: "DM Sans", Arial, sans-serif;
-        font-size: 12px;
+        font-size: 11px;
         font-weight: 700;
-        letter-spacing: 0.08em;
+        letter-spacing: 0.07em;
+        white-space: nowrap;
+        text-overflow: ellipsis;
     }
 
     .logo-subtitle {
-        display: none;
+        display: block !important;
+        color: #ffffff;
+        font-size: 7px;
+    }
+
+    .account-button {
+        display: flex;
+        flex: 0 0 36px;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        color: #ffffff;
+        border-color: var(--line-strong);
+        font-size: 16px;
     }
 
     .account-button {
         width: 36px;
         height: 36px;
-        color: var(--ink);
+        color: #ffffff;
         border-color: var(--line-strong);
         font-size: 16px;
     }
@@ -70,12 +98,14 @@
         z-index: 1000;
         display: grid;
         grid-template-columns: repeat(5, 1fr);
-        background: var(--surface);
-        border-top: 1px solid var(--line);
+        background: #ffffff;
+        border-top: none;
+        box-shadow: none;
         padding: 6px 4px calc(6px + env(safe-area-inset-bottom));
     }
 
     .mobile-tabbar a {
+        position: relative;
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -89,8 +119,16 @@
         text-decoration: none;
     }
 
-    .mobile-tabbar a.active {
-        color: var(--accent);
+    .mobile-tabbar a.active::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        width: 24px;
+        height: 3px;
+        border-radius: 999px;
+        background: var(--accent);
+        transform: translateX(-50%);
     }
 
     .mobile-tab-fab {
@@ -99,15 +137,17 @@
         margin-top: -26px;
         display: grid;
         place-items: center;
-        border: 4px solid var(--bg);
+        border: 4px solid #ffffff;
         border-radius: 50%;
         background: var(--accent-deeper);
         color: #fff;
+        box-shadow: none;
     }
 
     .mobile-tab-classify {
         margin-top: -2px;
     }
+
 
     .dashboard,
     .classifier-page,
@@ -116,6 +156,21 @@
         max-width: none;
         margin: 0;
         padding: 14px 16px 20px;
+    }
+
+    /* All pages share one fixed-size glow on phones, so the background is
+       identical everywhere and never changes when the page grows (the old
+       percentage-based glow became huge on the tall History page). */
+    .dashboard,
+    .classifier-page,
+    .textile-page {
+        background:
+            radial-gradient(
+                circle 420px at top left,
+                rgba(196, 122, 192, 0.12),
+                transparent 100%
+            ),
+            var(--bg);
     }
 
     .dashboard-hero,
@@ -198,45 +253,50 @@
         background: var(--accent);
     }
 
-    .overview-section,
+        .overview-section {
+        margin-top: 20px;
+    }
+
     .how-section {
-        margin-top: 12px;
+        margin-top: 8px;
+        padding-bottom: 12px;
     }
 
     .section-heading {
-        margin-bottom: 8px;
+        margin-bottom: 12px;
     }
 
     .overview-cards {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 10px;
+        gap: 8px;
     }
 
     .overview-card {
-        display: block;
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
         margin: 0;
-        padding: 14px;
+        padding: 12px 10px;
+        box-sizing: border-box;
         background: var(--surface);
         border: 1px solid var(--line);
-        border-radius: 18px;
+        border-radius: 16px;
         box-shadow: 0 8px 24px var(--shadow);
         transform: none;
     }
 
     .overview-number {
         margin: 0;
-        color: var(--accent-deep);
-        font-size: 28px;
-        line-height: 1.1;
+        font-size: clamp(20px, 6vw, 28px);
+        line-height: 1.15;
     }
 
     .overview-info h3 {
-        margin: 4px 0 0;
-        color: var(--ink-soft);
-        font-family: "DM Sans", Arial, sans-serif;
-        font-size: 12px;
-        font-weight: 500;
+        margin: 6px 0 0;
+        font-size: 13px;
+        line-height: 1.35;
+        overflow-wrap: anywhere;
     }
 
     .steps {
@@ -294,7 +354,7 @@
     #cameraNotice {
         display: block;
         margin: 0;
-        color: var(--ink);
+        color: #ffffff;
         font-size: 14px;
     }
 
@@ -385,6 +445,11 @@
         color: var(--ink);
     }
 
+    .history-filter-field input::placeholder {
+        color: var(--ink-soft);
+        opacity: 0.7;
+    }
+
     .history-filter-actions {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
@@ -402,7 +467,7 @@
     .history-filter-button {
         background: var(--accent-highlight);
         border-color: var(--accent-highlight);
-        color: var(--ink);
+        color: #ffffff;
     }
 
     .textile-grid {
@@ -496,28 +561,61 @@
         flex-wrap: wrap;
     }
 
+    /* LOADING / EMPTY / ERROR CARDS — stacked and smaller on phones */
+
+    #historyLoading,
+    #historyEmpty,
+    #historyError {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+    }
+
+    #historyLoading h2,
+    #historyEmpty h2,
+    #historyError h2 {
+        font-size: 18px;
+        line-height: 1.3;
+    }
+
+    #historyLoading p,
+    #historyEmpty p,
+    #historyError p {
+        font-size: 13px;
+    }
+
     .history-card-main {
         flex: 1;
         min-width: 0;
     }
 
     .history-file-name {
-        overflow: hidden;
+        min-width: 0;
+        max-width: 100%;
+        margin: 0;
         color: var(--ink-soft);
         font-size: 12px;
-        text-overflow: ellipsis;
-        white-space: nowrap;
+        white-space: normal;
+        overflow-wrap: anywhere;
+        word-break: break-word;
     }
 
     .history-card-details {
-        display: flex;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         width: 100%;
-        gap: 10px;
+        min-width: 0;
+        gap: 12px;
+    }
+
+    .history-detail {
+        min-width: 0;
+        overflow-wrap: anywhere;
     }
 
     .history-detail strong {
-        color: var(--accent-deep);
-        font-family: "Playfair Display", Georgia, serif;
+        overflow-wrap: anywhere;
+        word-break: break-word;
     }
 
     .about-information {
@@ -545,7 +643,7 @@
     .about-information p:has(strong) {
         margin: 0;
         padding: 14px;
-        background: var(--surface);
+        color: var(--ink);
         border: 1px solid var(--line);
         border-radius: 18px;
         color: var(--ink-soft);
@@ -576,5 +674,18 @@
 @media (min-width: 900px) {
     .mobile-tabbar {
         display: none;
+    }
+}
+
+
+@media (max-width: 899px) {
+    body {
+        background: #ffffff;
+    }
+
+    .mobile-tabbar {
+        background: #ffffff !important;
+        border-top: none !important;
+        box-shadow: none !important;
     }
 }

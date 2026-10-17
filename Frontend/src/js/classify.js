@@ -244,26 +244,12 @@ document.addEventListener("DOMContentLoaded", function () {
     let analysisTimer = null;
     let lastStatus = null;
 
-    // Make READY TO CAPTURE clickable
+    // The headline is a real <button>: when the guide is green it is enabled
+    // and acts as the capture button (Enter / Space work natively).
     guidanceHeadline.addEventListener("click", function () {
-
-        if (lastStatus && lastStatus.canCapture) {
+        if ((lastStatus && lastStatus.canCapture) || calibrationMode) {
             captureButton.click();
         }
-
-    });
-
-    guidanceHeadline.addEventListener("keydown", function (event) {
-
-        if (
-            (event.key === "Enter" || event.key === " ") &&
-            lastStatus &&
-            lastStatus.canCapture
-        ) {
-            event.preventDefault();
-            captureButton.click();
-        }
-
     });
 
     function showCameraNotice(message) {
@@ -305,6 +291,8 @@ document.addEventListener("DOMContentLoaded", function () {
         uploadArea.hidden = false;
         openCamera.disabled = false;
         captureButton.disabled = true;
+        guidanceHeadline.disabled = true;
+        guidanceHeadline.classList.remove("is-ready");
     }
 
     // Maps the on-screen guide rectangle to pixels of the camera video,
@@ -356,16 +344,16 @@ document.addEventListener("DOMContentLoaded", function () {
         guidanceHeadline.textContent = status.headline;
 
         // Make READY TO CAPTURE behave like a button
-        if (status.canCapture || calibrationMode) {
+        const ready = status.canCapture || calibrationMode;
+
+        guidanceHeadline.disabled = !ready;
+
+        if (ready) {
             guidanceHeadline.textContent = "Click This to Capture";
             guidanceHeadline.classList.add("is-ready");
-            guidanceHeadline.setAttribute("role", "button");
-            guidanceHeadline.setAttribute("tabindex", "0");
             guidanceHeadline.setAttribute("aria-label", "Capture image");
         } else {
             guidanceHeadline.classList.remove("is-ready");
-            guidanceHeadline.removeAttribute("role");
-            guidanceHeadline.removeAttribute("tabindex");
             guidanceHeadline.removeAttribute("aria-label");
         }
 
@@ -682,49 +670,5 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-
-    // =================================
-    // CLASSIFICATION SERVER CHECK
-    // =================================
-
-    const serverStatus = document.getElementById("serverStatus");
-
-    function setServerStatus(message, state) {
-        serverStatus.textContent = message;
-        serverStatus.className = "server-status" + (state ? " " + state : "");
-    }
-
-    const healthController =
-        typeof AbortController !== "undefined" ? new AbortController() : null;
-
-    const healthTimeout = setTimeout(function () {
-        if (healthController) {
-            healthController.abort();
-        }
-    }, 6000);
-
-    fetch(CLASSIFIER_BASE_URL + "/health", {
-        signal: healthController ? healthController.signal : undefined
-    })
-        .then(function (response) {
-            return response.json();
-        })
-        .then(function (payload) {
-            if (payload && payload.status === "ok") {
-                setServerStatus(
-                    "Classification server connected (" +
-                        CLASSIFIER_HOST + ":" + CLASSIFIER_PORT + ")",
-                    "ok"
-                );
-            } else {
-                throw new Error("Unexpected health response");
-            }
-        })
-        .catch(function () {
-            setServerStatus(classifierOfflineMessage(), "error");
-        })
-        .finally(function () {
-            clearTimeout(healthTimeout);
-        });
 
 });
