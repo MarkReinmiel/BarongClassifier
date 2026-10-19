@@ -1,45 +1,79 @@
 <nav class="navbar">
 
-    <a href="dashboard.html" class="navbar-logo">
+    <a href="dashboard.html" class="navbar-logo" aria-label="BarongClassifier home">
 
-        <div class="logo-mark">
-            ◆
-        </div>
+        <span class="logo-mark" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+                <path d="M12 3l8 9-8 9-8-9z"/>
+                <path d="M4 12h16"/>
+            </svg>
+        </span>
 
-        <div class="logo-text">
+        <span class="logo-text">
 
             <span class="logo-title">
-                BARONG CLASSIFIER
+                BarongClassifier
             </span>
 
             <span class="logo-subtitle">
                 Preserving Heritage Through Technology
             </span>
 
-        </div>
+        </span>
 
     </a>
 
     <div class="navbar-links" id="navbarLinks">
 
-        <a href="dashboard.html" data-nav="dashboard">
-            Dashboard
-        </a>
+        <div class="nav-dropdown" id="homeDropdown" data-nav="home">
+
+            <button
+                type="button"
+                class="nav-dropdown-toggle"
+                id="homeMenuToggle"
+                aria-expanded="false"
+                aria-controls="homeMenu"
+                aria-haspopup="true"
+            >
+                <svg class="nav-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11l8-7 8 7v9a1 1 0 0 1-1 1h-4v-6h-6v6H5a1 1 0 0 1-1-1z"/></svg>
+                Home
+                <svg class="nav-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+
+            <div class="nav-dropdown-menu" id="homeMenu" role="menu">
+
+                <a href="dashboard.html" data-nav="dashboard" role="menuitem">
+                    <svg class="nav-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11l8-7 8 7v9a1 1 0 0 1-1 1h-4v-6h-6v6H5a1 1 0 0 1-1-1z"/></svg>
+                    Home
+                </a>
+
+                <a href="about.html" data-nav="about" role="menuitem">
+                    <svg class="nav-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg>
+                    About
+                </a>
+
+                <a href="dashboard.html#how-it-works" data-nav="how" role="menuitem">
+                    <svg class="nav-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.2 2.4c-.7.3-1.2.9-1.2 1.6V14"/><path d="M12 17.5v.5"/></svg>
+                    How It Works
+                </a>
+
+            </div>
+
+        </div>
 
         <a href="classify.html" data-nav="classify">
+            <svg class="nav-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>
             Classify Textile
         </a>
 
         <a href="textiletypes.html" data-nav="textiletypes">
+            <svg class="nav-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l9 9-9 9-9-9z"/></svg>
             Textile Types
         </a>
 
         <a href="history.html" data-nav="history">
+            <svg class="nav-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
             History
-        </a>
-
-        <a href="about.html" data-nav="about">
-            About
         </a>
 
     </div>
@@ -78,6 +112,14 @@
                     <span id="accountEmail" class="account-email"></span>
 
                 </div>
+
+                <a class="account-link" href="account.html">
+                    Account settings
+                </a>
+
+                <a class="account-link" href="admin.html" id="adminMenuLink" hidden>
+                    Admin management
+                </a>
 
                 <button
                     type="button"
@@ -126,9 +168,5 @@
     <a href="history.html" data-nav="history">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
         <span>History</span>
-    </a>
-    <a href="about.html" data-nav="about">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg>
-        <span>About</span>
     </a>
 </nav>

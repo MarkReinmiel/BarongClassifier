@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account | Barong Classifier</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/shared.css">
+    <link rel="stylesheet" href="../css/navbar.css?v=3">
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <link rel="stylesheet" href="../css/mobile-app.css?v=4">
+    <link rel="stylesheet" href="../css/verify-email.css">
+</head>
+<body>
+    <div id="navbar"></div>
+    <main class="dashboard">
+        <section class="verify-card">
+            <p class="dashboard-label">ACCOUNT</p>
+            <h1>Account settings</h1>
+            <p id="accountSummary">Signed in</p>
+            <form id="passwordForm">
+                <label for="newPassword">New password</label>
+                <input id="newPassword" type="password" minlength="8" autocomplete="new-password" required>
+                <button class="auth-button" type="submit">Update password</button>
+            </form>
+            <p id="accountStatus" class="auth-message" hidden></p>
+        </section>
+    </main>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../js/supabaseClient.js?v=9"></script>
+    <script src="../js/backendConfig.js?v=1"></script>
+    <script src="../js/authGuard.js"></script>
+    <script src="../js/navbar.js?v=5"></script>
+    <script src="../js/account.js?v=1"></script>
+</body>
+</html>

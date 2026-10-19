@@ -25,6 +25,12 @@ document.addEventListener("DOMContentLoaded", async function () {
         authMessage.className = "auth-message " + type;
     }
 
+    const savedNotice = sessionStorage.getItem("barongAuthNotice");
+    if (savedNotice) {
+        sessionStorage.removeItem("barongAuthNotice");
+        showMessage(savedNotice, "success");
+    }
+
     function clearMessage() {
         if (!authMessage) {
             return;
@@ -76,47 +82,73 @@ document.addEventListener("DOMContentLoaded", async function () {
             setLoading(submitButton, true, "Login →");
 
             try {
-                const { data, error } =
-                    await supabaseClient.auth.signInWithPassword({
+                const response = await fetch(AUTH_API_BASE + "/api/auth/login", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        email: email,
+                        password: password
+                    })
+                });
+                const payload = await response.json().catch(function () {
+                    return {};
+                });
+
+                if (!response.ok) {
+                    showMessage(
+                        payload.error || "Invalid email or password.",
+                        "error"
+                    );
+                    return;
+                }
+
+                if (payload.verification_required) {
+                    sessionStorage.setItem(
+                        "barongVerificationToken",
+                        payload.verification_token
+                    );
+                    sessionStorage.setItem(
+                        "barongVerificationHint",
+                        payload.email_hint || ""
+                    );
+                    window.location.href = "verify-email.html";
+                    return;
+                }
+
+                const session = payload.session || {};
+                let sessionError = null;
+
+                if (session.access_token && session.refresh_token) {
+                    const restored = await supabaseClient.auth.setSession({
+                        access_token: session.access_token,
+                        refresh_token: session.refresh_token
+                    });
+                    sessionError = restored.error;
+                } else {
+                    sessionError = { message: "missing session" };
+                }
+
+                if (sessionError) {
+                    const direct = await supabaseClient.auth.signInWithPassword({
                         email: email,
                         password: password
                     });
 
-                if (error) {
-                    showMessage(error.message, "error");
-                    return;
-                }
-
-                if (data.session) {
-                    try {
-                        const user = data.session.user;
-                        await supabaseClient.from("profiles").upsert({
-                            id: user.id,
-                            email: user.email,
-                            full_name:
-                                (user.user_metadata &&
-                                    user.user_metadata.full_name) ||
-                                ""
-                        });
-
-                        const metaName = String(
-                            (user.user_metadata &&
-                                user.user_metadata.full_name) ||
-                            ""
-                        ).trim();
-
-                        if (metaName) {
-                            localStorage.setItem("barongDisplayName", metaName);
-                        }
-                    } catch (profileError) {
-                        console.error("Profile save error:", profileError);
+                    if (direct.error) {
+                        showMessage(
+                            direct.error.message || "Unable to sign in. Please try again.",
+                            "error"
+                        );
+                        return;
                     }
-
-                    window.location.href = "dashboard.html";
                 }
+
+                window.location.href = payload.must_change_password
+                    ? "account.html"
+                    : "dashboard.html";
             } catch (error) {
                 showMessage(
-                    error.message || "Unable to sign in. Please try again.",
+                    "Unable to reach the authentication server. Start it with: python Backend/main.py",
                     "error"
                 );
             } finally {
@@ -166,83 +198,49 @@ document.addEventListener("DOMContentLoaded", async function () {
             setLoading(submitButton, true, "Create Account →");
 
             try {
-                const { data, error } = await supabaseClient.auth.signUp({
-                    email: email,
-                    password: password,
-                    options: {
-                        data: {
-                            full_name: fullName
-                        },
-                        emailRedirectTo:
-                            window.location.origin +
-                            window.location.pathname.replace(
-                                /[^/]+$/,
-                                "auth.html"
-                            )
-                    }
+                const response = await fetch(AUTH_API_BASE + "/api/auth/register", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        full_name: fullName,
+                        email: email,
+                        password: password
+                    })
+                });
+                const payload = await response.json().catch(function () {
+                    return {};
                 });
 
-                if (error) {
-                    const message = error.message || "";
-                    if (
-                        /rate limit/i.test(message) ||
-                        /over_email_send_rate_limit/i.test(message)
-                    ) {
-                        showMessage(
-                            "Supabase email limit reached. No confirmation email can be sent right now. In the project dashboard turn Confirm email OFF, or wait and try again later.",
-                            "error"
-                        );
-                        return;
-                    }
-                    showMessage(message, "error");
-                    return;
-                }
-
-                const createdUser = data.user;
-                const identityCount =
-                    createdUser && createdUser.identities
-                        ? createdUser.identities.length
-                        : 0;
-
-                if (!createdUser || identityCount === 0) {
+                if (!response.ok) {
                     showMessage(
-                        "No account was created. This email may already be registered, confirm your email first, or check Authentication > Users in the new Supabase project.",
+                        payload.error || "Unable to create an account. Please try again.",
                         "error"
                     );
                     return;
                 }
 
-                // Keep a visible row in public.profiles (Table Editor).
-                // Auth itself already stores the account in Authentication > Users.
-                if (data.session) {
-                    try {
-                        await supabaseClient.from("profiles").upsert({
-                            id: createdUser.id,
-                            email: createdUser.email,
-                            full_name: fullName
-                        });
-
-                        if (fullName) {
-                            localStorage.setItem("barongDisplayName", fullName);
-                        }
-                    } catch (profileError) {
-                        console.error("Profile save error:", profileError);
-                    }
-
-                    window.location.href = "dashboard.html";
+                if (payload.verification_required && payload.verification_token) {
+                    sessionStorage.setItem(
+                        "barongVerificationToken",
+                        payload.verification_token
+                    );
+                    sessionStorage.setItem(
+                        "barongVerificationHint",
+                        payload.email_hint || ""
+                    );
+                    window.location.href = "verify-email.html";
                     return;
                 }
 
                 showMessage(
-                    "Account created in Authentication. Confirm your email, then sign in. After confirmation it can also appear in the profiles table.",
+                    payload.message || "Check your email for the next step.",
                     "success"
                 );
-
                 signupSection.classList.remove("active");
                 loginSection.classList.add("active");
             } catch (error) {
                 showMessage(
-                    error.message || "Unable to sign up. Please try again.",
+                    "Unable to reach the authentication server. Start it with: python Backend/main.py",
                     "error"
                 );
             } finally {

@@ -1,0 +1,9 @@
+python-dotenv
+psycopg[binary]
+supabase
+fastapi
+uvicorn
+pydantic
+email-validator
+httpx
+pytest

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Your Email | Barong Classifier</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/shared.css">
+    <link rel="stylesheet" href="../css/auth.css">
+    <link rel="stylesheet" href="../css/verify-email.css">
+</head>
+<body>
+    <main class="auth-page verify-page">
+        <section class="auth-card verify-card">
+            <a class="navbar-logo verify-logo" href="auth.html" aria-label="BarongClassifier home">
+                <span class="logo-mark" aria-hidden="true">◆</span>
+                <span>BarongClassifier</span>
+            </a>
+            <h1>Verify Your Email</h1>
+            <p id="verifyIntro">A verification code was sent to your email address.</p>
+            <p id="verifyHint" class="verify-hint"></p>
+            <form id="verifyForm">
+                <label for="codeInput">Six-digit code</label>
+                <input id="codeInput" name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" required aria-describedby="verifyStatus">
+                <button type="submit" class="auth-button" id="verifyButton">Verify</button>
+            </form>
+            <p id="verifyStatus" class="auth-message" role="status" hidden></p>
+            <p class="verify-note">The code expires one hour after it is sent. Refreshing this page does not extend that time.</p>
+            <button type="button" id="resendButton" disabled>Resend available in 60 seconds</button>
+            <a class="back-login" href="auth.html">Back to Login</a>
+        </section>
+    </main>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../js/supabaseClient.js?v=9"></script>
+    <script src="../js/backendConfig.js?v=1"></script>
+    <script src="../js/verify-email.js?v=2"></script>
+</body>
+</html>

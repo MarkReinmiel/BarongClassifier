@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
     }
 
-    fetch("../components/navbar.html?v=3", { cache: "no-cache" })
+    fetch("../components/navbar.html?v=5", { cache: "no-cache" })
         .then(function (response) {
 
             if (!response.ok) {
@@ -21,20 +21,54 @@ document.addEventListener("DOMContentLoaded", function () {
 
             navbarContainer.innerHTML = data;
 
-            const currentPage = window.location.pathname
-                .split("/")
-                .pop()
-                .replace(".html", "");
+            const homeDropdown =
+                document.getElementById("homeDropdown");
 
-            const navKey = currentPage === "result"
-                ? "classify"
-                : currentPage;
+            function applyActiveNav() {
 
-            navbarContainer.querySelectorAll(
-                '[data-nav="' + navKey + '"]'
-            ).forEach(function (activeLink) {
-                activeLink.classList.add("active");
-            });
+                const currentPage = window.location.pathname
+                    .split("/")
+                    .pop()
+                    .replace(".html", "");
+
+                const navKey = currentPage === "result"
+                    ? "classify"
+                    : currentPage === "dashboard" &&
+                        window.location.hash === "#how-it-works"
+                        ? "how"
+                        : currentPage;
+
+                navbarContainer.querySelectorAll("[data-nav]").forEach(
+                    function (item) {
+                        item.classList.remove("active");
+                    }
+                );
+
+                navbarContainer.querySelectorAll(
+                    '[data-nav="' + navKey + '"]'
+                ).forEach(function (activeLink) {
+                    activeLink.classList.add("active");
+                });
+
+                if (navKey === "how") {
+                    navbarContainer.querySelectorAll(
+                        '.mobile-tabbar [data-nav="dashboard"]'
+                    ).forEach(function (tab) {
+                        tab.classList.add("active");
+                    });
+                }
+
+                if (
+                    homeDropdown &&
+                    (navKey === "dashboard" || navKey === "about" || navKey === "how")
+                ) {
+                    homeDropdown.classList.add("active");
+                }
+
+            }
+
+            applyActiveNav();
+            window.addEventListener("hashchange", applyActiveNav);
 
 
             // ==============================
@@ -79,11 +113,13 @@ document.addEventListener("DOMContentLoaded", function () {
                         accountDropdown.hidden = true;
                     }
 
+                    setHomeMenuOpen(false);
+
                     setMenuOpen(!navbar.classList.contains("is-open"));
 
                 });
 
-                navbar.querySelectorAll(".navbar-links a")
+                navbar.querySelectorAll(".navbar-links > a")
                     .forEach(function (link) {
 
                         link.addEventListener("click", function () {
@@ -139,7 +175,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 setTimeout(function () {
                     supabaseClient
                         .from("profiles")
-                        .select("full_name")
+                        .select("full_name, role")
                         .eq("id", user.id)
                         .maybeSingle()
                         .then(function (result) {
@@ -147,6 +183,15 @@ document.addEventListener("DOMContentLoaded", function () {
                                 result && result.data
                                     ? String(result.data.full_name || "").trim()
                                     : "";
+
+                            var adminLink = document.getElementById("adminMenuLink");
+                            if (adminLink) {
+                                adminLink.hidden = !(
+                                    result &&
+                                    result.data &&
+                                    result.data.role === "admin"
+                                );
+                            }
 
                             if (name) {
                                 showAccount(name, email);
@@ -220,6 +265,75 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
             // ==============================
+            // HOME DROPDOWN
+            // ==============================
+
+            const homeMenuToggle =
+                document.getElementById("homeMenuToggle");
+
+            const homeMenu =
+                document.getElementById("homeMenu");
+
+            function setHomeMenuOpen(isOpen) {
+
+                if (!homeDropdown || !homeMenuToggle) {
+                    return;
+                }
+
+                homeDropdown.classList.toggle("is-open", isOpen);
+                homeMenuToggle.setAttribute(
+                    "aria-expanded",
+                    isOpen ? "true" : "false"
+                );
+
+                if (isOpen && accountDropdown && accountButton) {
+                    accountDropdown.hidden = true;
+                    accountButton.setAttribute("aria-expanded", "false");
+                }
+
+            }
+
+            if (homeDropdown && homeMenuToggle && homeMenu) {
+
+                homeMenuToggle.addEventListener("click", function (event) {
+
+                    event.stopPropagation();
+
+                    setHomeMenuOpen(
+                        !homeDropdown.classList.contains("is-open")
+                    );
+
+                });
+
+                homeMenu.querySelectorAll("a").forEach(function (link) {
+
+                    link.addEventListener("click", function () {
+                        setHomeMenuOpen(false);
+                        setMenuOpen(false);
+                    });
+
+                });
+
+                document.addEventListener("click", function (event) {
+
+                    if (!homeDropdown.contains(event.target)) {
+                        setHomeMenuOpen(false);
+                    }
+
+                });
+
+                document.addEventListener("keydown", function (event) {
+
+                    if (event.key === "Escape") {
+                        setHomeMenuOpen(false);
+                    }
+
+                });
+
+            }
+
+
+            // ==============================
             // OPEN/CLOSE DROPDOWN
             // ==============================
 
@@ -239,6 +353,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                     if (willOpen) {
                         setMenuOpen(false);
+                        setHomeMenuOpen(false);
                     }
 
                 });

@@ -27,9 +27,85 @@
         box-sizing: border-box;
     }
 
-    .navbar-links,
     .menu-toggle {
         display: none !important;
+    }
+
+    /* Home stays in the header so About and How It Works remain reachable.
+       Classify, Types, and History stay in the bottom tab bar. */
+    .navbar-links {
+        position: static !important;
+        top: auto;
+        right: auto;
+        bottom: auto;
+        left: auto;
+
+        z-index: auto;
+
+        display: flex !important;
+        flex-direction: row;
+        align-items: center;
+
+        visibility: visible !important;
+        transform: none !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+
+        width: auto;
+        margin: 0;
+        padding: 0;
+
+        background: transparent;
+    }
+
+    .navbar-links > a {
+        display: none !important;
+    }
+
+    .nav-dropdown {
+        flex-direction: row;
+        align-items: center;
+    }
+
+    .nav-dropdown-toggle {
+        padding: 8px 10px !important;
+
+        border-radius: 10px;
+
+        color: #ffffff;
+        font-size: 13px !important;
+    }
+
+    .nav-dropdown.active .nav-dropdown-toggle,
+    .nav-dropdown.is-open .nav-dropdown-toggle {
+        background: rgba(196, 122, 192, 0.22);
+        color: var(--accent-highlight);
+    }
+
+    .nav-dropdown-menu {
+        position: absolute;
+        top: calc(100% + 8px);
+        right: 0;
+        left: auto;
+
+        z-index: 1200;
+
+        min-width: 196px;
+
+        background: var(--surface);
+        border-color: var(--line);
+        box-shadow: 0 12px 28px rgba(47, 50, 58, 0.18);
+    }
+
+    .navbar-links .nav-dropdown-menu a {
+        color: var(--ink);
+        font-size: 14px;
+    }
+
+    .navbar-links .nav-dropdown-menu a:hover,
+    .navbar-links .nav-dropdown-menu a.active {
+        background: rgba(196, 122, 192, 0.18);
+        color: var(--accent-deep);
     }
 
     .navbar-logo {
@@ -37,7 +113,7 @@
         align-items: center;
         flex: 1;
         min-width: 0;
-        max-width: calc(100% - 48px);
+        max-width: calc(100% - 168px);
         gap: 8px;
     }
 
@@ -97,7 +173,7 @@
         left: 0;
         z-index: 1000;
         display: grid;
-        grid-template-columns: repeat(5, 1fr);
+        grid-template-columns: repeat(4, 1fr);
         background: #ffffff;
         border-top: none;
         box-shadow: none;
