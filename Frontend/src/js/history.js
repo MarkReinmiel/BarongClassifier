@@ -300,7 +300,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                 supabaseClient
                     .from("classifications")
                     .select(
-                        "file_name, predicted_label, display_name, confidence, created_at"
+                        "file_name, predicted_label, display_name, confidence, created_at, image_path"
                     )
                     .eq(
                         "user_id",
@@ -426,6 +426,30 @@ document.addEventListener("DOMContentLoaded", async function () {
 
             historyList.innerHTML = "";
 
+            const signedByPath = {};
+            const imagePaths = data
+                .map(function (item) {
+                    return item.image_path;
+                })
+                .filter(Boolean);
+
+            if (imagePaths.length) {
+                const { data: signedFiles, error: signedError } =
+                    await supabaseClient.storage
+                        .from("classification-images")
+                        .createSignedUrls(imagePaths, 3600);
+
+                if (signedError) {
+                    console.error("History image URL error:", signedError);
+                } else if (signedFiles) {
+                    signedFiles.forEach(function (file) {
+                        if (file.path && file.signedUrl) {
+                            signedByPath[file.path] = file.signedUrl;
+                        }
+                    });
+                }
+            }
+
 
             data.forEach(function (item) {
 
@@ -480,7 +504,15 @@ document.addEventListener("DOMContentLoaded", async function () {
                     );
 
 
+                const imageUrl =
+                    signedByPath[item.image_path] || "";
+
+
                 card.innerHTML = `
+
+                    ${imageUrl
+                        ? `<img class="history-photo" src="${escapeHtml(imageUrl)}" alt="">`
+                        : ""}
 
                     <div class="history-card-main">
 

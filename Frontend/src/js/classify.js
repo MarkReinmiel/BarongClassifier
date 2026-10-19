@@ -24,6 +24,9 @@ document.addEventListener("DOMContentLoaded", function () {
     const retakeImage =
         document.getElementById("retakeImage");
 
+    const saveImage =
+        document.getElementById("saveImage");
+
     const uploadFeedback =
         document.getElementById("uploadFeedback");
 
@@ -85,6 +88,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
         retakeImage.hidden = !fromCamera;
 
+        saveImage.hidden = !fromCamera;
+
         classifyButton.disabled = false;
 
         uploadArea.classList.add("has-file");
@@ -141,6 +146,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
         retakeImage.hidden = true;
 
+        saveImage.hidden = true;
+
         classifyButton.disabled = true;
 
         uploadArea.classList.remove("has-file");
@@ -151,6 +158,41 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     removeImage.addEventListener("click", clearSelection);
+
+    saveImage.addEventListener("click", async function () {
+        if (!selectedFile) {
+            return;
+        }
+
+        const photo = new File(
+            [selectedFile],
+            selectedFile.name || "textile-photo.jpg",
+            { type: selectedFile.type || "image/jpeg" }
+        );
+
+        if (navigator.canShare && navigator.canShare({ files: [photo] })) {
+            try {
+                await navigator.share({
+                    files: [photo],
+                    title: "Textile photo"
+                });
+                return;
+            } catch (error) {
+                if (error && error.name === "AbortError") {
+                    return;
+                }
+            }
+        }
+
+        const link = document.createElement("a");
+        const url = URL.createObjectURL(photo);
+        link.href = url;
+        link.download = photo.name;
+        link.click();
+        setTimeout(function () {
+            URL.revokeObjectURL(url);
+        }, 1000);
+    });
 
     function resetClassifyButton() {
         classifyButton.disabled = false;

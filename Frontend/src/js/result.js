@@ -77,6 +77,69 @@ document.addEventListener("DOMContentLoaded", async function () {
         element.classList.toggle("is-pending", pending);
     }
 
+    function storageName(value) {
+        const cleaned = String(value || "")
+            .trim()
+            .replace(/[\\/:*?"<>|]+/g, "")
+            .replace(/\s+/g, " ")
+            .replace(/^\.+/, "")
+            .slice(0, 80);
+
+        return cleaned || "user";
+    }
+
+    async function uploadClassificationImage(user) {
+        const { data: profile } = await supabaseClient
+            .from("profiles")
+            .select("full_name")
+            .eq("id", user.id)
+            .maybeSingle();
+
+        const userName = storageName(
+            (profile && profile.full_name) ||
+            (user.user_metadata && user.user_metadata.full_name) ||
+            (user.email ? user.email.split("@")[0] : "")
+        );
+
+        const now = new Date();
+        const dateFolder =
+            now.getFullYear() + "-" +
+            String(now.getMonth() + 1).padStart(2, "0") + "-" +
+            String(now.getDate()).padStart(2, "0");
+        const time =
+            String(now.getHours()).padStart(2, "0") +
+            String(now.getMinutes()).padStart(2, "0") +
+            String(now.getSeconds()).padStart(2, "0");
+
+        const blob = await (await fetch(imageData)).blob();
+        const extension = blob.type === "image/png"
+            ? "png"
+            : blob.type === "image/webp"
+                ? "webp"
+                : "jpg";
+        const original = storageName(
+            (savedFileName || "photo").replace(/\.[^.]+$/, "")
+        ).replace(/ /g, "_");
+        const imagePath =
+            userName + "/" +
+            dateFolder + "/" +
+            time + "-" + original + "." + extension;
+
+        const { error: uploadError } = await supabaseClient.storage
+            .from("classification-images")
+            .upload(imagePath, blob, {
+                contentType: blob.type || "image/jpeg",
+                upsert: false
+            });
+
+        if (uploadError) {
+            console.error("Classification image upload error:", uploadError);
+            return null;
+        }
+
+        return imagePath;
+    }
+
     function classificationError(kind, message) {
         const error = new Error(message);
         error.kind = kind;
@@ -170,6 +233,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                     const user = sessionData.session && sessionData.session.user;
 
                     if (user) {
+                        const imagePath = await uploadClassificationImage(user);
                         const { error: saveError } = await supabaseClient
                             .from("classifications")
                             .insert({
@@ -177,7 +241,8 @@ document.addEventListener("DOMContentLoaded", async function () {
                                 file_name: savedFileName || null,
                                 predicted_label: result.payload.label,
                                 display_name: result.payload.display_name,
-                                confidence: result.payload.confidence
+                                confidence: result.payload.confidence,
+                                image_path: imagePath
                             });
 
                         if (saveError) {

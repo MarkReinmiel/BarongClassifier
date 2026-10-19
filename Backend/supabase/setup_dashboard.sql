@@ -110,6 +110,7 @@ create table if not exists public.classifications (
   predicted_label text not null,
   display_name text not null,
   confidence numeric(6,5) not null,
+  image_path text,
   created_at timestamptz not null default now()
 );
 

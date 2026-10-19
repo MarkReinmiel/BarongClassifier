@@ -403,10 +403,15 @@
         border-color: var(--accent-deeper);
     }
 
-    .camera-actions {
+    .camera-actions,
+    .preview-actions {
         display: grid;
         grid-template-columns: 1fr;
         gap: 8px;
+    }
+
+    #saveImage:not([hidden]) {
+        display: block;
     }
 
     .history-filter {
@@ -582,6 +587,14 @@
     #historyEmpty p,
     #historyError p {
         font-size: 13px;
+    }
+
+    .history-photo {
+        width: 64px;
+        height: 64px;
+        object-fit: cover;
+        flex: none;
+        border-radius: 10px;
     }
 
     .history-card-main {
