@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}History | {{ app_name }}{% endblock %}
+{% block content %}
+<div><p class="eyebrow">Barong Tagalog</p><h2>History</h2></div>
+<form method="get" class="stack" style="display:flex;flex-direction:column;gap:10px">
+  <select class="field" name="type" aria-label="Fabric type">
+    <option value="">All fabric types</option>
+    {% for option in ['Piña','Jusi','Cocoon','pina','jusi','cocoon'] %}
+    <option value="{{ option }}" {% if selected_type == option %}selected{% endif %}>{{ option }}</option>
+    {% endfor %}
+  </select>
+  <button class="btn h p" type="submit">Filter</button>
+</form>
+<div class="list">
+  {% if not rows %}
+  <div class="empty"><h3 style="font-size:20px">No classifications yet</h3><p class="sm" style="margin-top:4px">Classified images appear here.</p></div>
+  {% else %}
+    {% for row in rows %}
+    <div class="card item">
+      <div class="grow"><span class="val">{{ row.predicted_label }}</span><span class="sm">{{ row.image_name or 'image' }}</span></div>
+      <div style="text-align:right"><b>{{ '%.0f'|format(row.confidence * 100) }}%</b><span class="sm" style="display:block">{{ row.created_at.strftime('%b %d') if row.created_at else '' }}</span></div>
+    </div>
+    {% endfor %}
+  {% endif %}
+</div>
+{% endblock %}

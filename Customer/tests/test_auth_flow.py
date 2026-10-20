@@ -1,0 +1,132 @@
+from __future__ import annotations
+
+from datetime import timedelta
+
+import pytest
+
+from app import create_app
+from app.config import TestConfig
+from app.extensions import db
+from app.models import CustomerUser, EmailVerification, utcnow
+from app.services import auth_service
+from app.utils.security import hash_secret
+
+
+@pytest.fixture()
+def app(monkeypatch):
+    application = create_app(TestConfig)
+
+    for table in db.metadata.tables.values():
+        table.schema = None
+
+    sent = []
+
+    def fake_send(recipient, code, purpose="registration"):
+        sent.append((recipient, code, purpose))
+
+    monkeypatch.setattr("app.services.auth_service.send_verification_email", fake_send)
+    monkeypatch.setattr("app.services.email_service.send_verification_email", fake_send)
+
+    with application.app_context():
+        db.create_all()
+        application.extensions["mail_outbox"] = sent
+        yield application
+        db.session.remove()
+        db.drop_all()
+
+
+@pytest.fixture()
+def client(app):
+    return app.test_client()
+
+
+def test_register_and_verify(client, app):
+    response = client.post(
+        "/auth/register",
+        data={
+            "email": "Customer@Example.com",
+            "password": "secure-password-12",
+            "confirm_password": "secure-password-12",
+        },
+        follow_redirects=False,
+    )
+    assert response.status_code in {302, 303}
+    with app.app_context():
+        user = CustomerUser.query.filter_by(email="customer@example.com").one()
+        assert user.email_verified is False
+        assert app.extensions["mail_outbox"]
+        code = app.extensions["mail_outbox"][-1][1]
+
+    with client.session_transaction() as sess:
+        assert sess.get("pending_user_id")
+
+    verify = client.post(
+        "/auth/verify-code",
+        json={"code": code, "purpose": "registration"},
+    )
+    assert verify.status_code == 200
+    assert verify.get_json()["verified"] is True
+    with app.app_context():
+        user = CustomerUser.query.filter_by(email="customer@example.com").one()
+        assert user.email_verified is True
+
+
+def test_resend_cooldown(client, app):
+    client.post(
+        "/auth/register",
+        data={
+            "email": "cooldown@example.com",
+            "password": "secure-password-12",
+            "confirm_password": "secure-password-12",
+        },
+    )
+    again = client.post("/auth/resend-code", json={"purpose": "registration"})
+    assert again.status_code == 429
+    payload = again.get_json()
+    assert payload["retry_after_seconds"] > 0
+
+    status = client.get("/auth/verification-status?purpose=registration")
+    assert status.status_code == 200
+    assert status.get_json()["resend_after_seconds"] > 0
+
+
+def test_nickname_guard(client, app):
+    with app.app_context():
+        user = CustomerUser(
+            email="nick@example.com",
+            password_hash="x",
+            email_verified=True,
+            nickname_completed=False,
+        )
+        db.session.add(user)
+        db.session.commit()
+        user_id = user.id
+
+    with client.session_transaction() as sess:
+        sess["user_id"] = user_id
+
+    blocked = client.get("/dashboard", follow_redirects=False)
+    assert blocked.status_code in {302, 303}
+    assert "/auth/nickname" in blocked.headers["Location"]
+
+
+def test_expired_code_rejected(app):
+    with app.app_context():
+        user = CustomerUser(
+            email="expire@example.com",
+            password_hash="x",
+            email_verified=False,
+        )
+        db.session.add(user)
+        db.session.flush()
+        record = EmailVerification(
+            user_id=user.id,
+            purpose="registration",
+            code_hash=hash_secret(f"{user.id}:registration:123456"),
+            expires_at=utcnow() - timedelta(minutes=1),
+            resend_available_at=utcnow(),
+        )
+        db.session.add(record)
+        db.session.commit()
+        with pytest.raises(auth_service.AuthError):
+            auth_service.verify_code(user, "registration", "123456")

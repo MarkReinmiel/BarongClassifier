@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Result | {{ app_name }}{% endblock %}
+{% block content %}
+<a class="btn s" href="{{ url_for('classifier.classify_page') }}" style="align-self:flex-start">← Back to Classify</a>
+<h2>Classification Result</h2>
+<div class="card dark">
+  <div><span class="lbl">Predicted Textile Type</span><h2 style="color:#fff;font-size:34px">{{ result.label }}</h2></div>
+  <div style="text-align:right"><span class="lbl">Model Confidence</span><h2 style="color:var(--hi);font-size:30px">{{ '%.1f'|format(result.confidence * 100) }}%</h2></div>
+</div>
+<div class="g2">
+  <div class="card"><span class="lbl">Image Name</span><span class="num" style="font-size:18px">{{ result.image_name }}</span></div>
+  <div class="card"><span class="lbl">Classification Status</span><span class="num" style="font-size:18px">Classified</span></div>
+</div>
+<div class="row">
+  <a class="btn g" href="{{ url_for('history.history_page') }}">History</a>
+  <a class="btn p" href="{{ url_for('classifier.classify_page') }}" style="flex:2">Classify Another →</a>
+</div>
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Choose nickname | {{ app_name }}{% endblock %}
+{% block head %}<link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">{% endblock %}
+{% block content %}
+<section class="card" style="max-width:480px;margin:40px auto;padding:24px">
+  <p class="eyebrow">Almost done</p>
+  <h2>Choose a nickname</h2>
+  <p class="sm" style="margin:8px 0 16px">Required before you can use Home, Classify Textile, Textile Types, or History.</p>
+  <form method="post" class="stack" id="nicknameForm">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label><span class="lbl">Nickname</span><input class="field" name="nickname" required minlength="2" maxlength="40" autocomplete="nickname"></label>
+    <button class="btn p" type="submit">Save and continue</button>
+  </form>
+</section>
+{% endblock %}

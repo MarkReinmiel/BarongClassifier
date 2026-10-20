@@ -1,0 +1,73 @@
+.auth-shell{
+  min-height:100vh;
+  display:grid;
+  place-items:center;
+  padding:24px 16px;
+  background:var(--bg);
+}
+.auth-card{
+  width:min(100%,420px);
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:22px;
+  padding:28px 24px;
+  box-shadow:0 12px 32px var(--shadow);
+  overflow:hidden;
+}
+.auth-card h1{font-size:30px;margin:10px 0 8px;line-height:1.15}
+.auth-card .lead{margin-bottom:18px;word-break:break-word}
+.auth-logo{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.06em;font-size:12px;color:var(--ink)}
+.auth-logo img{width:48px;height:48px;border-radius:50%;object-fit:cover;border:1px solid var(--line);flex:none}
+.stack{display:flex;flex-direction:column;gap:12px}
+.pw-wrap{position:relative}
+.pw-wrap .field{padding-right:72px}
+.pw-toggle{position:absolute;right:8px;top:50%;transform:translateY(-50%);border:0;background:transparent;color:var(--accent);font-weight:600;cursor:pointer;min-height:36px}
+
+/* Six equal digit boxes — minmax(0,1fr) stops default input width overflow */
+.otp{
+  display:grid;
+  grid-template-columns:repeat(6, minmax(0, 1fr));
+  gap:8px;
+  width:100%;
+  margin:12px 0 8px;
+}
+.otp input{
+  width:100%;
+  min-width:0;
+  max-width:100%;
+  height:52px;
+  padding:0;
+  margin:0;
+  text-align:center;
+  font-size:22px;
+  font-weight:700;
+  line-height:1;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:var(--soft);
+  color:var(--ink);
+  box-sizing:border-box;
+  appearance:textfield;
+  -moz-appearance:textfield;
+}
+.otp input::-webkit-outer-spin-button,
+.otp input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.otp input:focus{outline:3px solid var(--hi);outline-offset:1px;border-color:var(--accent)}
+
+.status{min-height:20px;font-size:14px;margin:4px 0}
+.status.error{color:var(--err)}
+.status.success{color:var(--ok)}
+.auth-actions{display:flex;flex-direction:column;align-items:center;gap:8px;margin-top:8px}
+.auth-foot{margin-top:8px;text-align:center;font-size:14px}
+.modal-backdrop{position:fixed;inset:0;background:rgba(47,50,58,.55);display:none;place-items:center;padding:16px;z-index:50}
+.modal-backdrop.open{display:grid}
+.modal{background:var(--surface);border-radius:20px;border:1px solid var(--line2);padding:24px;width:min(100%,400px);text-align:center}
+.modal .check{width:56px;height:56px;border-radius:50%;background:#e8f4ee;color:var(--ok);display:grid;place-items:center;margin:0 auto 12px;font-size:28px}
+.resend{background:none;border:0;color:var(--accent);font-weight:700;min-height:44px;cursor:pointer}
+.resend:disabled{color:var(--ink2);cursor:not-allowed;font-weight:500}
+
+@media(max-width:380px){
+  .auth-card{padding:22px 16px}
+  .otp{gap:6px}
+  .otp input{height:46px;font-size:18px}
+}

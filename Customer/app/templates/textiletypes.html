@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Textile Types | {{ app_name }}{% endblock %}
+{% block content %}
+<div><p class="eyebrow">Barong Tagalog</p><h2>Textile Types</h2><p class="sm" style="margin-top:4px">Tap a card for details.</p></div>
+<button class="card type" type="button" data-t="Piña" data-d="A fine, lustrous fabric woven from pineapple leaf fibers."><span class="mark">◆</span><span><h3>Piña</h3><p class="sm">Supported Textile</p></span></button>
+<button class="card type" type="button" data-t="Jusi" data-d="A sheer, lightweight fabric used for Barong Tagalog."><span class="mark">◇</span><span><h3>Jusi</h3><p class="sm">Supported Textile</p></span></button>
+<button class="card type" type="button" data-t="Cocoon" data-d="The cocoon textile class in the classifier dataset."><span class="mark">✦</span><span><h3>Cocoon</h3><p class="sm">Supported Textile</p></span></button>
+<dialog id="dlg" class="card" style="border-radius:20px;border:1px solid var(--line2);max-width:min(92vw,420px)">
+  <p class="eyebrow">Supported Textile</p>
+  <h3 id="dTitle"></h3>
+  <p id="dText"></p>
+  <button class="btn p" style="margin-top:16px;width:100%" id="dClose" type="button">Close</button>
+</dialog>
+{% endblock %}
+{% block scripts %}
+<script>
+document.querySelectorAll('.type').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    document.getElementById('dTitle').textContent = btn.dataset.t;
+    document.getElementById('dText').textContent = btn.dataset.d;
+    document.getElementById('dlg').showModal();
+  });
+});
+document.getElementById('dClose').onclick = function(){ document.getElementById('dlg').close(); };
+</script>
+{% endblock %}

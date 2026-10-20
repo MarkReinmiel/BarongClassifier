@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Classify Textile | {{ app_name }}{% endblock %}
+{% block content %}
+<div><p class="eyebrow">Barong Tagalog Textile Classifier</p><h2>Classify Textile</h2></div>
+<div class="row">
+  <button class="btn d" type="button" id="camBtn">Camera</button>
+  <button class="btn g" type="button" id="galBtn">Gallery</button>
+</div>
+<form id="classifyForm" method="post" enctype="multipart/form-data" action="{{ url_for('classifier.classify_submit') }}">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="drop" id="drop">
+    <div id="prompt">
+      <img src="{{ url_for('static', filename='images/Barongclassi_logo.jpeg') }}" alt="" style="width:48px;height:48px;border-radius:50%">
+      <h3 style="font-size:22px;margin-top:8px">Choose an image</h3>
+      <p class="sm">JPG, PNG, or WEBP</p>
+    </div>
+    <img id="prev" alt="Selected textile preview" hidden>
+  </div>
+  <input type="file" name="file" id="fileGal" accept="image/png,image/jpeg,image/webp" hidden>
+  <input type="file" id="fileCam" accept="image/*" capture="environment" hidden>
+  <button class="btn d" id="analyze" style="width:100%;margin-top:12px;min-height:52px" disabled>Analyze Textile</button>
+</form>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/classifier.js') }}"></script>{% endblock %}

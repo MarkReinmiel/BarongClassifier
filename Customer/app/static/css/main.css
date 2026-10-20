@@ -1,0 +1,55 @@
+:root{
+  --bg:#E5DED4;--surface:#fff;--soft:#F5F1EC;--ink:#2F323A;--ink2:#5D5B63;
+  --accent:#77567A;--deep:#624568;--deeper:#49344D;--hi:#C47AC0;
+  --line:#D5CBD2;--line2:#B9A9B9;--shadow:rgba(47,50,58,.12);
+  --serif:"Playfair Display",Georgia,serif;--sans:"DM Sans",Arial,sans-serif;
+  --ok:#2f6b4f;--err:#8b2e3b;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.5}
+h1,h2,h3{font-family:var(--serif);font-weight:600;margin:0}
+p{margin:0;color:var(--ink2)}
+a{color:var(--accent);text-decoration:none}
+button,input,select{font-family:var(--sans)}
+.eyebrow{font-size:11px;font-weight:600;letter-spacing:.18em;color:var(--accent);margin:0 0 4px;text-transform:uppercase}
+.sm{font-size:12px}
+.top{height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:12px;letter-spacing:.08em;color:inherit}
+.brand img{width:40px;height:40px;border-radius:50%;object-fit:cover;flex:none;border:1px solid var(--line)}
+.brand small{display:none;font-weight:400;letter-spacing:0;color:var(--ink2);font-size:12px}
+.links{display:none;gap:4px;align-items:center}
+.links a,.links button{background:none;border:0;color:var(--ink2);font-size:14px;font-weight:500;padding:10px 12px;cursor:pointer;border-radius:999px}
+.links a.on,.links a[aria-current="page"]{color:var(--accent);font-weight:700}
+.btn{min-height:48px;border-radius:999px;border:1px solid transparent;font-weight:600;font-size:15px;padding:0 20px;display:inline-flex;align-items:center;justify-content:center;gap:8px;cursor:pointer}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn:focus-visible{outline:3px solid var(--hi);outline-offset:2px}
+.btn.p{background:var(--accent);color:#fff}
+.btn.d{background:var(--deeper);color:#fff}
+.btn.g{background:var(--surface);color:var(--deep);border-color:var(--accent)}
+.btn.s{background:var(--soft);color:var(--ink2);border-color:var(--line2)}
+.btn .spin{width:16px;height:16px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.btn .spin{animation:none}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:14px;box-shadow:0 8px 24px var(--shadow)}
+.num{font-family:var(--serif);font-size:28px;color:var(--deep);display:block;line-height:1.1}
+.field{min-height:44px;width:100%;border:1px solid var(--line);background:var(--soft);border-radius:12px;padding:0 12px;font-size:14px;color:var(--ink)}
+.lbl{font-size:12px;color:var(--ink2);display:block;margin-bottom:6px}
+.shell{max-width:1080px;margin:0 auto;padding:20px 16px 88px;display:flex;flex-direction:column;gap:14px}
+.flash{border-radius:12px;padding:12px 14px;font-size:14px}
+.flash.error{background:#f8e8eb;color:var(--err)}
+.flash.success{background:#e8f4ee;color:var(--ok)}
+.nav{position:fixed;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(4,1fr);background:var(--surface);border-top:1px solid var(--line);padding:6px 4px calc(6px + env(safe-area-inset-bottom,0px));z-index:30}
+.nb{background:none;border:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-weight:600;font-size:11px;color:var(--ink2);min-height:52px;text-decoration:none}
+.nb.on,.nb[aria-current="page"]{color:var(--accent)}
+.fab{width:52px;height:52px;border-radius:50%;background:var(--deeper);color:#fff;display:grid;place-items:center;margin-top:-26px;border:4px solid var(--bg)}
+.profile{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink2)}
+.profile form{margin:0}
+@media(min-width:900px){
+  .top{height:72px;padding:0 32px}
+  .brand small{display:block}
+  .brand>div:last-child{display:flex;flex-direction:column;line-height:1.2}
+  .links{display:flex}
+  .nav{display:none}
+  .shell{padding:40px 24px 60px;gap:20px}
+  h2{font-size:34px}
+}

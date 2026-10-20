@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Home | {{ app_name }}{% endblock %}
+{% block content %}
+<div>
+  <p class="eyebrow">Barong Tagalog Textile Classifier</p>
+  <h2>Welcome, <em style="color:var(--accent)">{{ user.nickname }}</em></h2>
+</div>
+<a class="btn p" href="{{ url_for('classifier.classify_page') }}">Classify Textile →</a>
+<div class="g3">
+  <div class="card"><span class="num">{{ stats.textile_types }}</span><span class="lbl">Textile Types</span></div>
+  <div class="card"><span class="num">{{ stats.model_accuracy }}</span><span class="lbl">Model Accuracy</span></div>
+  <div class="card"><span class="num">{{ stats.images_classified }}</span><span class="lbl">Images Classified</span></div>
+</div>
+<p class="eyebrow" style="margin-top:8px">How it works</p>
+<div class="g2 grid-steps">
+  <div class="card step"><span class="num">01</span><b>Upload Image</b></div>
+  <div class="card step"><span class="num">02</span><b>Image Processing</b></div>
+  <div class="card step"><span class="num">03</span><b>AI Classification</b></div>
+  <div class="card step"><span class="num">04</span><b>View Result</b></div>
+</div>
+{% if stats.recent %}
+<p class="eyebrow" style="margin-top:8px">Recent</p>
+<div class="list">
+  {% for row in stats.recent %}
+  <div class="card item">
+    <div class="grow"><span class="val">{{ row.label }}</span><span class="sm">{{ row.image_name }}</span></div>
+    <div style="text-align:right"><b>{{ '%.0f'|format(row.confidence * 100) }}%</b></div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>{% endblock %}

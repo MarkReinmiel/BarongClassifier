@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>{% block title %}{{ app_name }}{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/classifier.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/responsive.css') }}">
+  {% block head %}{% endblock %}
+</head>
+<body>
+  <header class="top">
+    <a class="brand" href="{{ url_for('main.dashboard') }}">
+      <img src="{{ url_for('static', filename='images/Barongclassi_logo.jpeg') }}" alt="BarongClassifier logo">
+      <div><b>BARONG CLASSIFIER</b><small>Preserving Heritage Through Technology</small></div>
+    </a>
+    <nav class="links" aria-label="Main">
+      <a href="{{ url_for('main.dashboard') }}" class="{% if request.endpoint == 'main.dashboard' %}on{% endif %}">Home</a>
+      <a href="{{ url_for('classifier.classify_page') }}" class="{% if request.endpoint and 'classifier' in request.endpoint %}on{% endif %}">Classify Textile</a>
+      <a href="{{ url_for('main.textile_types') }}" class="{% if request.endpoint == 'main.textile_types' %}on{% endif %}">Textile Types</a>
+      <a href="{{ url_for('history.history_page') }}" class="{% if request.endpoint == 'history.history_page' %}on{% endif %}">History</a>
+    </nav>
+    {% if current_user %}
+    <div class="profile">
+      <span>{{ current_user.nickname or current_user.email }}</span>
+      <form method="post" action="{{ url_for('auth.logout') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="btn s" type="submit" style="min-height:40px">Log out</button>
+      </form>
+    </div>
+    {% endif %}
+  </header>
+
+  <main class="shell">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+        <div class="flash {{ category }}">{{ message }}</div>
+      {% endfor %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </main>
+
+  {% if current_user and current_user.nickname_completed %}
+  <nav class="nav hide-desktop" aria-label="Main">
+    <a class="nb {% if request.endpoint == 'main.dashboard' %}on{% endif %}" href="{{ url_for('main.dashboard') }}">Home</a>
+    <a class="nb {% if request.endpoint == 'main.textile_types' %}on{% endif %}" href="{{ url_for('main.textile_types') }}">Types</a>
+    <a class="nb {% if request.endpoint and 'classifier' in request.endpoint %}on{% endif %}" href="{{ url_for('classifier.classify_page') }}"><span class="fab">◆</span>Classify</a>
+    <a class="nb {% if request.endpoint == 'history.history_page' %}on{% endif %}" href="{{ url_for('history.history_page') }}">History</a>
+  </nav>
+  {% endif %}
+
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>
