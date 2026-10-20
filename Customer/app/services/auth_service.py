@@ -9,14 +9,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 from app.extensions import db
 from app.models import CustomerUser, EmailVerification, TrustedDevice, utcnow
-
-
-def _aware(value: datetime | None) -> datetime | None:
-    if value is None:
-        return None
-    if value.tzinfo is None:
-        return value.replace(tzinfo=timezone.utc)
-    return value
+from app.services.directory_service import email_exists_in_users_table, find_public_user_by_email
 from app.services.email_service import EmailDeliveryError, send_verification_email
 from app.utils.security import generate_code, hash_secret, hashes_match, new_device_token
 from app.utils.validators import (
@@ -25,6 +18,15 @@ from app.utils.validators import (
     normalize_email,
     password_errors,
 )
+
+
+def _aware(value: datetime | None) -> datetime | None:
+    if value is None:
+        return None
+    if value.tzinfo is None:
+        return value.replace(tzinfo=timezone.utc)
+    return value
+
 
 MAX_ATTEMPTS = 5
 LOCK_MINUTES = 15
@@ -44,12 +46,19 @@ def register_user(email: str, password: str, confirm: str) -> CustomerUser:
     for message in password_errors(password, confirm):
         raise AuthError(message)
 
-    if CustomerUser.query.filter_by(email=email).first():
-        raise AuthError("duplicate")
+    # Supabase public.users is the shared directory — block duplicates there.
+    if email_exists_in_users_table(email) or CustomerUser.query.filter_by(email=email).first():
+        raise AuthError(
+            "An account with that email already exists. Please sign in instead.",
+            409,
+        )
 
     user = CustomerUser(
         email=email,
         password_hash=generate_password_hash(password, method="scrypt"),
+        full_name="",
+        role="customer",
+        status="pending_verification",
         email_verified=False,
         nickname_completed=False,
     )
@@ -62,12 +71,31 @@ def register_user(email: str, password: str, confirm: str) -> CustomerUser:
 
 def authenticate(email: str, password: str) -> CustomerUser:
     email = normalize_email(email)
-    user = CustomerUser.query.filter_by(email=email).first()
-    if not user or not check_password_hash(user.password_hash, password):
-        raise AuthError("Invalid email or password.", 401)
-    if not user.is_active:
+    if not is_valid_email(email):
+        raise AuthError("Enter a valid email address.")
+
+    # Require a row in Supabase public.users before password check.
+    directory = find_public_user_by_email(email)
+    if not directory:
+        raise AuthError(
+            "No account found for that email. Please create an account first.",
+            404,
+        )
+    if directory.get("is_active") is False or directory.get("status") == "disabled":
         raise AuthError("This account is disabled.", 403)
-    if not user.email_verified:
+
+    user = CustomerUser.query.filter_by(email=email).first()
+    if not user:
+        raise AuthError(
+            "This email is in the users directory but has no Customer portal password. "
+            "Please create a Customer account or use the main site sign-in.",
+            404,
+        )
+    if not check_password_hash(user.password_hash, password):
+        raise AuthError("Invalid email or password.", 401)
+    if not user.is_active or user.status == "disabled":
+        raise AuthError("This account is disabled.", 403)
+    if not user.email_verified or user.status == "pending_verification":
         raise AuthError("Verify your email before signing in.", 403)
     return user
 
@@ -94,6 +122,7 @@ def issue_and_send_code(user: CustomerUser, purpose: str) -> dict:
         user_id=user.id, purpose=purpose, consumed_at=None
     ).all():
         row.consumed_at = now
+        row.status = "consumed"
 
     ttl = timedelta(minutes=current_app.config["EMAIL_VERIFICATION_EXPIRE_MINUTES"])
     cooldown = timedelta(seconds=current_app.config["EMAIL_VERIFICATION_RESEND_COOLDOWN_SECONDS"])
@@ -103,6 +132,8 @@ def issue_and_send_code(user: CustomerUser, purpose: str) -> dict:
         user_id=user.id,
         purpose=purpose,
         code_hash=hash_secret(f"{user.id}:{purpose}:{code}"),
+        role=user.role or "customer",
+        status="pending",
         expires_at=now + ttl,
         resend_available_at=now + cooldown,
     )
@@ -153,6 +184,7 @@ def verify_code(user: CustomerUser, purpose: str, code: str) -> None:
         raise AuthError("That code has expired. Request a new one.")
     if record.attempts >= MAX_ATTEMPTS:
         record.locked_until = now + timedelta(minutes=LOCK_MINUTES)
+        record.status = "locked"
         db.session.commit()
         raise AuthError("Too many attempts. Try again later.", 429)
 
@@ -161,12 +193,15 @@ def verify_code(user: CustomerUser, purpose: str, code: str) -> None:
         record.attempts += 1
         if record.attempts >= MAX_ATTEMPTS:
             record.locked_until = now + timedelta(minutes=LOCK_MINUTES)
+            record.status = "locked"
         db.session.commit()
         raise AuthError("That code is not valid.")
 
     record.consumed_at = now
+    record.status = "consumed"
     if purpose == "registration":
         user.email_verified = True
+        user.status = "active"
     user.updated_at = now
     db.session.commit()
 
@@ -177,9 +212,13 @@ def device_is_trusted(user: CustomerUser, raw_token: str | None) -> bool:
     digest = hash_secret(raw_token)
     now = utcnow()
     device = TrustedDevice.query.filter_by(user_id=user.id, token_hash=digest).first()
-    if not device or device.revoked_at or _aware(device.expires_at) <= now:
+    if not device or device.revoked_at or device.status == "revoked" or _aware(device.expires_at) <= now:
+        if device and not device.revoked_at and _aware(device.expires_at) <= now and device.status != "expired":
+            device.status = "expired"
+            db.session.commit()
         return False
     device.last_used_at = now
+    device.status = "active"
     db.session.commit()
     return True
 
@@ -192,6 +231,8 @@ def trust_device(user: CustomerUser, label: str | None = None) -> str:
         user_id=user.id,
         token_hash=hash_secret(raw),
         label=(label or "")[:120] or None,
+        role=user.role or "customer",
+        status="active",
         expires_at=now + timedelta(days=days),
     )
     db.session.add(device)
@@ -204,6 +245,7 @@ def save_nickname(user: CustomerUser, nickname: str) -> None:
     if errors:
         raise AuthError(errors[0])
     user.nickname = nickname.strip()
+    user.full_name = user.nickname
     user.nickname_completed = True
     user.updated_at = utcnow()
     db.session.commit()

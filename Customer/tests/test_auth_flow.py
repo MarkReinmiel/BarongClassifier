@@ -90,6 +90,36 @@ def test_resend_cooldown(client, app):
     assert status.get_json()["resend_after_seconds"] > 0
 
 
+def test_login_missing_account_shows_error(client):
+    response = client.post(
+        "/auth/login",
+        data={"email": "missing@example.com", "password": "secure-password-12"},
+    )
+    assert response.status_code == 404
+    assert b"No account found for that email" in response.data
+
+
+def test_register_duplicate_shows_error(client, app):
+    client.post(
+        "/auth/register",
+        data={
+            "email": "dup@example.com",
+            "password": "secure-password-12",
+            "confirm_password": "secure-password-12",
+        },
+    )
+    again = client.post(
+        "/auth/register",
+        data={
+            "email": "dup@example.com",
+            "password": "secure-password-12",
+            "confirm_password": "secure-password-12",
+        },
+    )
+    assert again.status_code == 409
+    assert b"already exists" in again.data
+
+
 def test_nickname_guard(client, app):
     with app.app_context():
         user = CustomerUser(

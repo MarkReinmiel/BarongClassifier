@@ -1,0 +1,155 @@
+"""Owner textile classification using the local Keras model (or classify server)."""
+
+from __future__ import annotations
+
+import base64
+import io
+import logging
+import math
+import uuid
+from pathlib import Path
+
+import httpx
+from flask import current_app
+from PIL import Image
+from sqlalchemy.exc import SQLAlchemyError
+
+from app.extensions import db
+from app.models import OwnerUser, utcnow
+
+logger = logging.getLogger("owner.classify")
+OWNER_ROOT = Path(__file__).resolve().parents[2]
+
+
+class ClassificationError(Exception):
+    def __init__(self, message: str, status_code: int = 400):
+        super().__init__(message)
+        self.status_code = status_code
+
+
+def validate_confidence(value) -> float:
+    try:
+        confidence = float(value)
+    except (TypeError, ValueError) as error:
+        raise ClassificationError("The model returned an invalid confidence value.") from error
+    if not math.isfinite(confidence) or confidence < 0 or confidence > 1:
+        raise ClassificationError("Confidence must be between 0 and 1.")
+    return confidence
+
+
+def prepare_image_bytes(file_storage) -> bytes:
+    filename = (getattr(file_storage, "filename", "") or "").lower()
+    suffix = "." + filename.rsplit(".", 1)[-1] if "." in filename else ""
+    allowed = {".jpg", ".jpeg", ".jpe", ".png", ".webp"}
+    if suffix not in allowed:
+        raise ClassificationError("Use a JPG, JPEG, JPE, PNG, or WEBP image.")
+
+    raw = file_storage.read()
+    max_bytes = current_app.config.get("MAX_CONTENT_LENGTH") or 10 * 1024 * 1024
+    if len(raw) > max_bytes:
+        raise ClassificationError("That image is too large.")
+
+    image = Image.open(io.BytesIO(raw)).convert("RGB")
+    buffer = io.BytesIO()
+    image.save(buffer, format="JPEG", quality=90)
+    return buffer.getvalue()
+
+
+def _model_file() -> Path | None:
+    configured = current_app.config.get("MODEL_PATH") or "models/barong_model.keras"
+    candidate = Path(configured)
+    if not candidate.is_file():
+        candidate = OWNER_ROOT / candidate
+    return candidate if candidate.is_file() else None
+
+
+def _predict_local(content: bytes) -> tuple[str, float] | None:
+    model_path = _model_file()
+    if model_path is None:
+        return None
+    try:
+        from app.ml.predictor import predict
+
+        return predict(content, model_path=str(model_path), customer_root=OWNER_ROOT)
+    except Exception:
+        logger.exception("Local CNN prediction failed.")
+        return None
+
+
+def _predict_remote(content: bytes) -> tuple[str, float] | None:
+    url = (current_app.config.get("CLASSIFY_SERVER_URL") or "").strip()
+    if not url:
+        return None
+    display = {"pina": "Piña", "jusi": "Jusi", "cocoon": "Cocoon"}
+    encoded = base64.b64encode(content).decode("ascii")
+    try:
+        response = httpx.post(url, json={"image": encoded}, timeout=60.0)
+        if response.is_success:
+            payload = response.json()
+            label = (
+                payload.get("display_name")
+                or payload.get("label")
+                or payload.get("predicted_label")
+                or payload.get("class")
+            )
+            confidence = payload.get("confidence", payload.get("score", 0))
+            if label is not None:
+                key = str(label).strip()
+                return display.get(key.lower(), key), float(confidence)
+    except Exception:
+        logger.warning("Classify server was unavailable.")
+    return None
+
+
+def classify_upload(user: OwnerUser, file_storage) -> dict:
+    if not user or not user.id:
+        raise ClassificationError("Sign in again.", 401)
+
+    name = getattr(file_storage, "filename", None) or "upload.jpg"
+    content = prepare_image_bytes(file_storage)
+
+    result = _predict_local(content) or _predict_remote(content)
+    if result is None:
+        raise ClassificationError(
+            "No classifier is available. Place models/barong_model.keras or set CLASSIFY_SERVER_URL.",
+            503,
+        )
+
+    label, confidence = result
+    confidence = validate_confidence(confidence)
+
+    # Persist into shared customer.classifications when possible.
+    try:
+        from sqlalchemy import text
+
+        db.session.execute(
+            text(
+                """
+                insert into customer.classifications
+                  (id, user_id, predicted_label, confidence, image_name, role, status, created_at)
+                values
+                  (:id, :user_id, :label, :confidence, :image_name, :role, 'completed', now())
+                """
+            ),
+            {
+                "id": str(uuid.uuid4()),
+                "user_id": str(user.id),
+                "label": str(label).strip(),
+                "confidence": confidence,
+                "image_name": name,
+                "role": user.role or "owner",
+            },
+        )
+        db.session.commit()
+    except SQLAlchemyError:
+        db.session.rollback()
+        logger.warning("Classification history was not saved.")
+
+    image_b64 = base64.b64encode(content).decode("ascii")
+    return {
+        "label": str(label).strip(),
+        "confidence": confidence,
+        "image_name": name,
+        "created_at": utcnow().isoformat(),
+        "image_data_url": f"data:image/jpeg;base64,{image_b64}",
+    }

@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% block title %}Dashboard | {{ app_name }}{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/shared.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-app.css') }}">
+{% endblock %}
+{% block body %}
+{% include "_nav.html" %}
+
+<main class="dashboard">
+
+  <section class="dashboard-hero">
+    <div class="dashboard-content">
+      <p class="dashboard-label">BARONG TAGALOG TEXTILE CLASSIFIER</p>
+      <h1>Welcome to<span>BarongClassifier</span></h1>
+      <p class="dashboard-description">
+        Identify selected Barong Tagalog textiles through image-based classification.
+      </p>
+      <a href="{{ url_for('classify.classify_page') }}" class="classify-button">
+        Classify Textile
+        <span>→</span>
+      </a>
+    </div>
+
+    <div class="dashboard-image">
+      <div class="image-frame">
+        <img src="{{ url_for('static', filename='images/barong.jpg') }}" alt="Barong Tagalog textile">
+      </div>
+    </div>
+  </section>
+
+  <section class="overview-section">
+    <div class="section-heading">
+      <p>SYSTEM OVERVIEW</p>
+      <h2>BarongClassifier at a Glance</h2>
+    </div>
+
+    <div class="overview-cards">
+      <article class="overview-card" onclick="window.location.href='{{ url_for('dashboard.textile_types') }}'" tabindex="0" role="button">
+        <div class="overview-icon">◆</div>
+        <div class="overview-info">
+          <span class="overview-number" id="overviewTextileTypes">{{ stats.textile_types }}</span>
+          <h3>Textile Types</h3>
+          <p>Cocoon, Jusi, and Piña</p>
+        </div>
+      </article>
+
+      <div class="overview-card">
+        <div class="overview-icon">✦</div>
+        <div class="overview-info">
+          <span class="overview-number" id="overviewModelAccuracy">{{ stats.model_accuracy }}%</span>
+          <h3>Model Accuracy</h3>
+          <p>MobileNetV2 test accuracy</p>
+        </div>
+      </div>
+
+      <div class="overview-card" onclick="window.location.href='{{ url_for('dashboard.history') }}'" tabindex="0" role="button">
+        <div class="overview-icon">◈</div>
+        <div class="overview-info">
+          <span class="overview-number" id="overviewImagesClassified">{{ stats.classifications_total }}</span>
+          <h3>Images Classified</h3>
+          <p>Saved in classification history</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="how-section" id="how-it-works">
+    <div class="section-heading">
+      <p>HOW IT WORKS</p>
+      <h2>From Image to Classification</h2>
+    </div>
+
+    <div class="steps">
+      <div class="step">
+        <span class="step-number">01</span>
+        <h3>Open Classify</h3>
+        <p>Open the classification page.</p>
+      </div>
+      <div class="step">
+        <span class="step-number">02</span>
+        <h3>Capture or Upload</h3>
+        <p>Capture a textile image using the camera or upload an image.</p>
+      </div>
+      <div class="step">
+        <span class="step-number">03</span>
+        <h3>CNN Analysis</h3>
+        <p>The CNN model analyzes the textile image.</p>
+      </div>
+      <div class="step">
+        <span class="step-number">04</span>
+        <h3>View Result</h3>
+        <p>The system displays the predicted textile type and confidence score.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="quick-section">
+    <div class="section-heading">
+      <p>QUICK ACCESS</p>
+      <h2>Owner shortcuts</h2>
+    </div>
+    <div class="quick-cards">
+      <a class="quick-card" href="{{ url_for('dashboard.textile_types') }}">
+        <div class="card-icon">◆</div>
+        <h3>Textile Types</h3>
+        <p>Explore Piña, Jusi, Cocoon, and related Barong materials.</p>
+        <span class="card-link">View types →</span>
+      </a>
+      <a class="quick-card" href="{{ url_for('dashboard.history') }}">
+        <div class="card-icon">◈</div>
+        <h3>History</h3>
+        <p>Review saved textile classification results from the shared database.</p>
+        <span class="card-link">Open history →</span>
+      </a>
+      <a class="quick-card" href="{{ url_for('dashboard.users') }}">
+        <div class="card-icon">♟</div>
+        <h3>Users</h3>
+        <p>Manage directory roles and activate or deactivate accounts.</p>
+        <span class="card-link">Manage users →</span>
+      </a>
+      <a class="quick-card" href="{{ url_for('dashboard.about') }}">
+        <div class="card-icon">ⓘ</div>
+        <h3>About</h3>
+        <p>Dataset, MobileNetV2 model details, and system performance.</p>
+        <span class="card-link">Read about →</span>
+      </a>
+    </div>
+  </section>
+
+</main>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/navbar.js') }}"></script>
+{% endblock %}

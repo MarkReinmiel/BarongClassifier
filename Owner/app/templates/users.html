@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}Users | {{ app_name }}{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/shared.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/history.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-app.css') }}">
+<style>
+  .user-card{display:grid;gap:12px;padding:22px;margin-bottom:14px;background:#fffaf3;border:1px solid #e7dac7;border-radius:12px}
+  .user-card h3{margin:0;font-family:"Playfair Display",Georgia,serif;font-size:18px;color:#3b2919}
+  .user-card .meta{margin:0;font-size:12px;color:#755f48}
+  .user-actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+  .user-actions select{min-height:40px;border:1px solid var(--line-strong);border-radius:7px;background:var(--surface-soft);padding:0 10px}
+  .btn{min-height:40px;border:0;border-radius:6px;padding:0 14px;font-weight:600;cursor:pointer;background:var(--accent);color:#fff}
+  .btn.danger{background:#B85C5C}
+  .flash{border-radius:10px;padding:12px 14px;margin-bottom:12px}
+  .flash.error{background:#f8e8eb;color:#8b2e3b}
+  .flash.success{background:#e8f4ee;color:#2f6b4f}
+</style>
+{% endblock %}
+{% block body %}
+{% include "_nav.html" %}
+<main class="dashboard">
+  <section class="overview-section">
+    <div class="section-heading">
+      <p>ADMINISTRATION</p>
+      <h2>User management</h2>
+    </div>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+        <div class="flash {{ category }}">{{ message }}</div>
+      {% endfor %}
+    {% endwith %}
+    {% if not users %}
+      <div class="overview-card"><div class="overview-info"><h3>No users found</h3><p>The shared directory is empty or unavailable.</p></div></div>
+    {% endif %}
+    {% for row in users %}
+    <article class="user-card">
+      <div>
+        <h3>{{ row.full_name or 'User' }} · {{ row.email }}</h3>
+        <p class="meta">
+          {{ row.role }} · {{ 'active' if row.is_active else 'inactive' }} · {{ 'verified' if row.email_verified else 'unverified' }}
+        </p>
+      </div>
+      <div class="user-actions">
+        {% if row.role == 'admin' %}
+          <span class="meta">Admin accounts are locked here.</span>
+        {% else %}
+          <form method="post" action="{{ url_for('dashboard.set_role', user_id=row.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <select name="role">
+              <option value="customer" {% if row.role == 'customer' %}selected{% endif %}>customer</option>
+              <option value="owner" {% if row.role == 'owner' %}selected{% endif %}>owner</option>
+            </select>
+            <button class="btn" type="submit">Save role</button>
+          </form>
+          <form method="post" action="{{ url_for('dashboard.set_status', user_id=row.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="is_active" value="{{ 'false' if row.is_active else 'true' }}">
+            <button class="btn {% if row.is_active %}danger{% endif %}" type="submit">
+              {{ 'Deactivate' if row.is_active else 'Activate' }}
+            </button>
+          </form>
+        {% endif %}
+      </div>
+    </article>
+    {% endfor %}
+  </section>
+</main>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/navbar.js') }}"></script>
+{% endblock %}

@@ -174,7 +174,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 setTimeout(function () {
                     supabaseClient
-                        .from("profiles")
+                        .from("users")
                         .select("full_name, role")
                         .eq("id", user.id)
                         .maybeSingle()
@@ -204,7 +204,7 @@ document.addEventListener("DOMContentLoaded", function () {
                             }
                         })
                         .catch(function () {
-                            // No profiles table or no row — keep what we have.
+                            // No users row — keep what we have.
                         });
                 }, 0);
             }

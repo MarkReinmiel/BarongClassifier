@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Server error{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+{% endblock %}
+{% block body %}
+<main class="auth-page">
+  <section class="auth-card" style="text-align:center">
+    <p class="form-label">SOMETHING WENT WRONG</p>
+    <h2>Try again</h2>
+    <p class="form-description">If the problem continues, contact support.</p>
+    <a class="auth-button" href="{{ url_for('auth.login') }}">Owner sign in</a>
+  </section>
+</main>
+{% endblock %}

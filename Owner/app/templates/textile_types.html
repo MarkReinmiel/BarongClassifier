@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Textile Types | {{ app_name }}{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/shared.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/textiletypes.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-app.css') }}">
+{% endblock %}
+{% block body %}
+{% include "_nav.html" %}
+<main class="textile-page">
+  <section class="textile-header">
+    <p class="eyebrow">BARONG TAGALOG</p>
+    <h1>Textile Types</h1>
+    <p class="page-description">
+      Explore the textile types supported by the BarongClassifier system.
+    </p>
+  </section>
+
+  <section class="textile-grid">
+    <article class="textile-card" data-textile="pina" tabindex="0" role="button">
+      <div class="textile-icon">◆</div>
+      <h2>Piña</h2>
+      <p>A traditional textile associated with Barong Tagalog and known for its delicate appearance and fine texture.</p>
+      <span class="textile-status">Supported Textile</span>
+    </article>
+    <article class="textile-card" data-textile="jusi" tabindex="0" role="button">
+      <div class="textile-icon">◇</div>
+      <h2>Jusi</h2>
+      <p>A lightweight textile commonly associated with Barong Tagalog garments and formal wear.</p>
+      <span class="textile-status">Supported Textile</span>
+    </article>
+    <article class="textile-card" data-textile="cocoon" tabindex="0" role="button">
+      <div class="textile-icon">✦</div>
+      <h2>Cocoon</h2>
+      <p>A lightweight silk fabric with a smooth texture and subtle sheen, giving the Barong Tagalog an elegant and refined appearance.</p>
+      <span class="textile-status">Supported Textile</span>
+    </article>
+    <article class="textile-card" data-textile="others" tabindex="0" role="button">
+      <div class="textile-icon">✧</div>
+      <h2>Others</h2>
+      <p>Other textile materials and fabric types that may be associated with traditional Filipino clothing.</p>
+      <span class="textile-status">Supported Textile</span>
+    </article>
+  </section>
+</main>
+
+<div id="textileModal" class="textile-modal" hidden>
+  <div class="textile-modal-content">
+    <button class="close-modal" type="button" id="closeTextileModal">&times;</button>
+    <h2 id="modalTitle"></h2>
+    <div id="modalImages" class="modal-images"></div>
+    <p id="modalDescription"></p>
+    <div class="textile-details">
+      <p><strong>Material:</strong> <span id="modalMaterial"></span></p>
+      <p><strong>Origin:</strong> <span id="modalOrigin"></span></p>
+      <p><strong>Common Uses:</strong> <span id="modalUses"></span></p>
+      <p><strong>Characteristics:</strong> <span id="modalCharacteristics"></span></p>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/navbar.js') }}"></script>
+<script src="{{ url_for('static', filename='js/textiletypes.js') }}"></script>
+{% endblock %}

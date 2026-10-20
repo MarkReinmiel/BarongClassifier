@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import base64
 import logging
 import math
+from pathlib import Path
 
 import httpx
 from flask import current_app
@@ -11,6 +13,7 @@ from app.extensions import db
 from app.models import Classification, CustomerUser, utcnow
 
 logger = logging.getLogger("customer.classify")
+CUSTOMER_ROOT = Path(__file__).resolve().parents[2]
 
 
 class ClassificationError(Exception):
@@ -49,6 +52,8 @@ def classify_image(user: CustomerUser, file_storage) -> dict:
         predicted_label=str(label).strip(),
         confidence=confidence,
         image_name=name,
+        role=user.role or "customer",
+        status="completed",
         created_at=utcnow(),
     )
     db.session.add(row)
@@ -68,25 +73,84 @@ def classify_image(user: CustomerUser, file_storage) -> dict:
     }
 
 
-def _predict(content: bytes, filename: str) -> tuple[str, float]:
-    url = current_app.config.get("CLASSIFY_SERVER_URL")
-    if url:
-        try:
-            response = httpx.post(
-                url,
-                files={"file": (filename, content, "image/jpeg")},
-                timeout=30.0,
-            )
-            if response.is_success:
-                payload = response.json()
-                label = payload.get("label") or payload.get("predicted_label") or payload.get("class")
-                confidence = payload.get("confidence", payload.get("score", 0))
-                if label is not None:
-                    return str(label), float(confidence)
-        except Exception:
-            logger.warning("Classify server was unavailable.")
+def _model_file() -> Path | None:
+    configured = current_app.config.get("MODEL_PATH") or "models/barong_model.keras"
+    candidate = Path(configured)
+    if not candidate.is_file():
+        candidate = CUSTOMER_ROOT / candidate
+    return candidate if candidate.is_file() else None
 
-    names = current_app.config.get("CLASS_NAMES") or ["pina", "jusi", "cocoon"]
+
+def _predict_local(content: bytes) -> tuple[str, float] | None:
+    model_path = _model_file()
+    if model_path is None:
+        return None
+    try:
+        from app.ml.predictor import predict
+
+        return predict(content, model_path=str(model_path), customer_root=CUSTOMER_ROOT)
+    except Exception:
+        logger.exception("Local CNN prediction failed.")
+        return None
+
+
+def _predict_remote(content: bytes, filename: str) -> tuple[str, float] | None:
+    url = (current_app.config.get("CLASSIFY_SERVER_URL") or "").strip()
+    if not url:
+        return None
+
     display = {"pina": "Piña", "jusi": "Jusi", "cocoon": "Cocoon"}
-    key = names[0].lower()
-    return display.get(key, key.title()), 0.0
+    encoded = base64.b64encode(content).decode("ascii")
+    try:
+        response = httpx.post(
+            url,
+            json={"image": encoded},
+            timeout=30.0,
+        )
+        if response.is_success:
+            payload = response.json()
+            label = (
+                payload.get("display_name")
+                or payload.get("label")
+                or payload.get("predicted_label")
+                or payload.get("class")
+            )
+            confidence = payload.get("confidence", payload.get("score", 0))
+            if label is not None:
+                key = str(label).strip()
+                return display.get(key.lower(), key), float(confidence)
+    except Exception:
+        logger.warning("Classify server was unavailable at %s", url)
+
+    # Legacy multipart fallback for alternate servers.
+    try:
+        response = httpx.post(
+            url,
+            files={"file": (filename, content, "image/jpeg")},
+            timeout=30.0,
+        )
+        if response.is_success:
+            payload = response.json()
+            label = payload.get("label") or payload.get("predicted_label") or payload.get("class")
+            confidence = payload.get("confidence", payload.get("score", 0))
+            if label is not None:
+                key = str(label).strip()
+                return display.get(key.lower(), key), float(confidence)
+    except Exception:
+        logger.warning("Classify server multipart fallback failed.")
+    return None
+
+
+def _predict(content: bytes, filename: str) -> tuple[str, float]:
+    local = _predict_local(content)
+    if local is not None:
+        return local
+
+    remote = _predict_remote(content, filename)
+    if remote is not None:
+        return remote
+
+    raise ClassificationError(
+        "No classifier is available. Place models/barong_model.keras or set CLASSIFY_SERVER_URL.",
+        503,
+    )

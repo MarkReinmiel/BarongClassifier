@@ -1,0 +1,225 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Classification Result | Barong Classifier</title>
+
+
+    <!-- Google Fonts -->
+
+    <link rel="preconnect"
+          href="https://fonts.googleapis.com">
+
+    <link rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossorigin>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap"
+        rel="stylesheet">
+
+
+    <!-- CSS -->
+
+    <link rel="stylesheet" href="../css/shared.css">
+
+    <link rel="stylesheet" href="../css/navbar.css?v=3">
+
+    <link rel="stylesheet" href="../css/result.css">
+    <link rel="stylesheet" href="../css/mobile-app.css?v=4">
+
+</head>
+
+
+<body>
+
+
+    <!-- ==============================
+         TOP NAVIGATION
+    =============================== -->
+
+    <div id="navbar"></div>
+
+
+
+    <!-- ==============================
+         RESULT PAGE
+    =============================== -->
+
+    <main class="classifier-page">
+
+
+        <!-- PAGE HEADER -->
+
+        <section class="classifier-header">
+
+            <a href="classify.html" class="backbutton">
+                ← Back to Classify
+            </a>
+            
+            <p class="classifier-label">
+                BARONG TAGALOG TEXTILE CLASSIFIER
+            </p>
+
+            <h1>
+                Classification Result
+            </h1>
+
+            <p class="classifier-description">
+
+                Review the details of your submitted textile image.
+
+            </p>
+
+        </section>
+
+
+
+        <!-- ==============================
+             RESULT CONTENT
+        =============================== -->
+
+        <section class="classifier-card result-layout">
+
+            <!-- LEFT SIDE: TEXTILE ANALYSIS -->
+            <div class="result-analysis">
+
+                <p class="result-label">
+                    CLASSIFICATION RESULT
+                </p>
+
+                <h2>
+                    Textile Analysis
+                </h2>
+
+                <div class="result-image-container">
+                    <img
+                        id="resultImage"
+                        src=""
+                        alt="Classified textile image"
+                    >
+                </div>
+
+                <button
+                    type="button"
+                    id="viewImageButton"
+                    class="view-image-button"
+                >
+                    View Image
+                </button>
+
+                <!-- IMAGE MODAL -->
+
+                <div
+                    id="imageModal"
+                    class="image-modal"
+                    hidden
+                    role="dialog"
+                    aria-modal="true"
+                    aria-label="Enlarged textile image"
+                >
+
+                    <button
+                        type="button"
+                        id="closeImageModal"
+                        class="close-image-modal"
+                        aria-label="Close enlarged image"
+                    >
+                        ×
+                    </button>
+
+                    <img
+                        id="fullResultImage"
+                        src=""
+                        alt="Full submitted textile image"
+                        class="modal-image"
+                    >
+
+                </div>
+            </div>
+
+
+            <!-- RIGHT SIDE: CLASSIFICATION DETAILS -->
+            <div class="result-details-panel">
+
+                <h2>
+                    Classification Details
+                </h2>
+
+                <div class="result-details">
+
+                    <div class="detail-item">
+                        <span class="detail-label">
+                            Predicted Textile Type
+                        </span>
+
+                        <strong id="predictedType" class="is-pending">
+                            Classifying...
+                        </strong>
+                    </div>
+
+
+                    <div class="detail-item">
+                        <span class="detail-label">
+                            Model Confidence
+                        </span>
+
+                        <strong id="confidence" class="is-pending">
+                            Classifying...
+                        </strong>
+                    </div>
+
+
+                    <div class="detail-item">
+                        <span class="detail-label">
+                            Image Name
+                        </span>
+
+                        <strong id="resultFileName">
+                            —
+                        </strong>
+                    </div>
+
+
+                    <div class="detail-item">
+                        <span class="detail-label">
+                            Classification Status
+                        </span>
+
+                        <strong id="classificationStatus" class="is-pending">
+                            Running the trained model
+                        </strong>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+    </main>
+
+
+
+    <!-- JAVASCRIPT -->
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../js/supabaseClient.js?v=9"></script>
+    <script src="../js/authGuard.js"></script>
+    <script src="../js/navbar.js?v=5"></script>
+    <script src="../js/apiConfig.js?v=2"></script>
+    <script src="../js/imageStore.js?v=1"></script>
+    <script src="../js/result.js?v=7"></script>
+
+
+</body>
+
+</html>

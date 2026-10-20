@@ -80,7 +80,7 @@ def fetch_profile(user_id: str) -> UserRecord:
         row = connection.execute(
             """
             select id::text, email, full_name, role::text, is_active, email_verified, must_change_password
-            from public.profiles
+            from public.users
             where id = %s::uuid
             """,
             (user_id,),
@@ -103,8 +103,9 @@ def mark_profile_verified(user_id: str) -> None:
         connection.execute("select set_config('app.trusted_profile_write', '1', true)")
         connection.execute(
             """
-            update public.profiles
+            update public.users
             set email_verified = true,
+                status = 'active',
                 updated_at = now()
             where id = %s::uuid
             """,

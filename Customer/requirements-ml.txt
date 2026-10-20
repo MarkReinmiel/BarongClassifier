@@ -1,0 +1,9 @@
+# Optional ML deps for local CNN training and in-process inference.
+# Install on top of requirements.txt:
+#   python -m pip install -r requirements-ml.txt
+-r requirements.txt
+tensorflow>=2.16
+keras>=3.14
+numpy
+scikit-learn
+matplotlib

@@ -78,6 +78,13 @@ def run_migrations_online():
 
     connectable = get_engine()
     with connectable.connect() as connection:
+        # Version table lives in customer.*; create schema before Alembic bootstraps it.
+        connection.execute(
+            __import__("sqlalchemy", fromlist=["text"]).text(
+                "CREATE SCHEMA IF NOT EXISTS customer"
+            )
+        )
+        connection.commit()
         context.configure(
             connection=connection,
             target_metadata=get_metadata(),

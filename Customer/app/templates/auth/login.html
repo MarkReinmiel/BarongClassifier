@@ -27,7 +27,7 @@
       {% endwith %}
       <form method="post" class="stack" id="loginForm">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <label><span class="lbl">Email</span><input class="field" type="email" name="email" required autocomplete="email"></label>
+        <label><span class="lbl">Email</span><input class="field" type="email" name="email" value="{{ request.form.email or '' }}" required autocomplete="email"></label>
         <label><span class="lbl">Password</span>
           <span class="pw-wrap">
             <input class="field" type="password" name="password" id="loginPassword" required autocomplete="current-password" minlength="12">

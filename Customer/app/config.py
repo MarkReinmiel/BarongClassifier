@@ -117,10 +117,12 @@ class Config:
 
     MAX_CONTENT_LENGTH = int(float(_first("MAX_UPLOAD_SIZE_MB", default="10")) * 1024 * 1024)
     MODEL_PATH = _first("MODEL_PATH", default="models/barong_model.keras")
-    CLASSIFY_SERVER_URL = _first("CLASSIFY_SERVER_URL", default="http://127.0.0.1:5501/predict")
+    # Empty by default so Customer uses the local Keras model under models/.
+    CLASSIFY_SERVER_URL = _first("CLASSIFY_SERVER_URL", default="")
+    IMAGE_SIZE = int(_first("IMAGE_SIZE", default="224"))
     CLASS_NAMES = [
         item.strip()
-        for item in _first("CLASS_NAMES", default="pina,jusi,cocoon").split(",")
+        for item in _first("CLASS_NAMES", default="cocoon,jusi,pina").split(",")
         if item.strip()
     ]
 

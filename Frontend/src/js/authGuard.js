@@ -15,7 +15,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
 
     const { data: profile, error: profileError } = await supabaseClient
-        .from("profiles")
+        .from("users")
         .select("is_active, email_verified, must_change_password, role, full_name")
         .eq("id", session.user.id)
         .maybeSingle();

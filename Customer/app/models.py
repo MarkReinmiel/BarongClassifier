@@ -1,4 +1,4 @@
-"""Customer-schema tables. Isolated from Supabase public.profiles."""
+"""Customer-schema tables. Isolated from Supabase Auth public.users (auth FK)."""
 
 from __future__ import annotations
 
@@ -19,6 +19,9 @@ class CustomerUser(db.Model):
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     email = db.Column(db.String(255), unique=True, nullable=False, index=True)
     password_hash = db.Column(db.String(255), nullable=False)
+    full_name = db.Column(db.String(120), nullable=False, default="")
+    role = db.Column(db.String(32), nullable=False, default="customer")
+    status = db.Column(db.String(32), nullable=False, default="pending_verification")
     email_verified = db.Column(db.Boolean, nullable=False, default=False)
     nickname = db.Column(db.String(40))
     nickname_completed = db.Column(db.Boolean, nullable=False, default=False)
@@ -43,6 +46,8 @@ class EmailVerification(db.Model):
     )
     purpose = db.Column(db.String(32), nullable=False)
     code_hash = db.Column(db.String(128), nullable=False)
+    role = db.Column(db.String(32), nullable=False, default="customer")
+    status = db.Column(db.String(32), nullable=False, default="pending")
     expires_at = db.Column(db.DateTime(timezone=True), nullable=False)
     resend_available_at = db.Column(db.DateTime(timezone=True), nullable=False)
     attempts = db.Column(db.Integer, nullable=False, default=0)
@@ -66,6 +71,8 @@ class TrustedDevice(db.Model):
     )
     token_hash = db.Column(db.String(128), nullable=False, unique=True)
     label = db.Column(db.String(120))
+    role = db.Column(db.String(32), nullable=False, default="customer")
+    status = db.Column(db.String(32), nullable=False, default="active")
     created_at = db.Column(db.DateTime(timezone=True), nullable=False, default=utcnow)
     last_used_at = db.Column(db.DateTime(timezone=True), nullable=False, default=utcnow)
     expires_at = db.Column(db.DateTime(timezone=True), nullable=False)
@@ -89,6 +96,8 @@ class Classification(db.Model):
     confidence = db.Column(db.Float, nullable=False)
     image_name = db.Column(db.String(255))
     image_path = db.Column(db.String(512))
+    role = db.Column(db.String(32), nullable=False, default="customer")
+    status = db.Column(db.String(32), nullable=False, default="completed")
     created_at = db.Column(db.DateTime(timezone=True), nullable=False, default=utcnow)
 
     user = db.relationship("CustomerUser", backref=db.backref("classifications", lazy=True))

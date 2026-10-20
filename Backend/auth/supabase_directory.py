@@ -76,7 +76,7 @@ class SupabaseDirectory:
 
     def get_profile(self, user_id: str) -> UserRecord:
         result = (
-            self.admin.table("profiles")
+            self.admin.table("users")
             .select("id, email, full_name, role, is_active, email_verified, must_change_password")
             .eq("id", user_id)
             .single()
@@ -85,7 +85,7 @@ class SupabaseDirectory:
         return _profile_from_row(result.data)
 
     def mark_login(self, user_id: str) -> None:
-        self.admin.table("profiles").update(
+        self.admin.table("users").update(
             {"last_login_at": datetime.now(timezone.utc).isoformat()}
         ).eq("id", user_id).execute()
 
@@ -112,23 +112,24 @@ class SupabaseDirectory:
 
     def change_password(self, access_token: str, user_id: str, new_password: str) -> None:
         self.admin.auth.admin.update_user_by_id(user_id, {"password": new_password})
-        self.admin.table("profiles").update({"must_change_password": False}).eq("id", user_id).execute()
+        self.admin.table("users").update({"must_change_password": False}).eq("id", user_id).execute()
 
     def list_profiles(self, actor_id: str) -> list[dict]:
         result = (
-            self.admin.table("profiles")
+            self.admin.table("users")
             .select("id, email, full_name, role, is_active, email_verified, created_at, last_login_at")
+            .eq("source", "auth")
             .order("created_at", desc=True)
             .execute()
         )
         return result.data or []
 
     def set_role(self, user_id: str, role: str) -> None:
-        self.admin.table("profiles").update({"role": role}).eq("id", user_id).execute()
+        self.admin.table("users").update({"role": role}).eq("id", user_id).execute()
         self.admin.auth.admin.update_user_by_id(user_id, {"app_metadata": {"role": role}})
 
     def set_active(self, user_id: str, is_active: bool) -> None:
-        self.admin.table("profiles").update({"is_active": is_active}).eq("id", user_id).execute()
+        self.admin.table("users").update({"is_active": is_active}).eq("id", user_id).execute()
 
 
 class SupabaseVerificationStore:
@@ -222,7 +223,7 @@ class PublicDirectory:
         if not result.session or not result.user:
             return None
         profile_row = (
-            self.public.table("profiles")
+            self.public.table("users")
             .select("id, email, full_name, role, is_active, email_verified, must_change_password")
             .eq("id", result.user.id)
             .single()

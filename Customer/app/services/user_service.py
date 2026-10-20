@@ -20,12 +20,16 @@ def find_by_email(email: str) -> CustomerUser | None:
 
 
 def find_by_id(user_id: str) -> CustomerUser | None:
-    return CustomerUser.query.filter_by(id=user_id, is_active=True).first()
+    return CustomerUser.query.filter_by(id=user_id, is_active=True).filter(
+        CustomerUser.status != "disabled"
+    ).first()
 
 
 def mark_login(user: CustomerUser) -> None:
     user.last_login_at = utcnow()
     user.updated_at = utcnow()
+    if user.email_verified and user.status != "disabled":
+        user.status = "active"
     db.session.commit()
 
 
@@ -34,6 +38,7 @@ def save_nickname(user: CustomerUser, nickname: str) -> CustomerUser:
     if errors:
         raise UserServiceError(errors[0])
     user.nickname = nickname.strip()
+    user.full_name = user.nickname
     user.nickname_completed = True
     user.updated_at = utcnow()
     try:

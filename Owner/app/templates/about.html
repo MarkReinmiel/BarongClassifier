@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}About | {{ app_name }}{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/shared.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/textiletypes.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-app.css') }}">
+{% endblock %}
+{% block body %}
+{% include "_nav.html" %}
+<main class="textile-page">
+  <section class="textile-header">
+    <p class="eyebrow">BARONG TAGALOG</p>
+    <h1>About</h1>
+    <p class="page-description">
+      BarongClassifier helps identify selected Barong Tagalog textiles through image-based classification while preserving Philippine heritage through technology.
+    </p>
+  </section>
+
+  <section class="about-information">
+    <h2>Dataset Information</h2>
+    <p>The dataset contains images related to selected Barong Tagalog textile materials.</p>
+    <p>The textile categories included in the system are Piña, Jusi, Cocoon, and Others.</p>
+
+    <h2>Model Information</h2>
+    <p>BarongClassifier uses image-based classification to identify textile materials from uploaded images.</p>
+    <p><strong>Model:</strong> MobileNetV2</p>
+    <p><strong>Input Size:</strong> 224 × 224 pixels</p>
+    <p><strong>Number of Classes:</strong> 3</p>
+    <p><strong>Training Epochs:</strong> Up to 20 epochs</p>
+
+    <h2>Model Performance</h2>
+    <p>The model's performance is evaluated using classification metrics such as accuracy, precision, recall, and F1-score.</p>
+    <p><strong>Accuracy:</strong> {{ stats.model_accuracy }}%</p>
+    <p><strong>Test images:</strong> {{ stats.test_images }}</p>
+    <p><strong>Images classified (system):</strong> {{ stats.classifications_total }}</p>
+  </section>
+</main>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/navbar.js') }}"></script>
+{% endblock %}

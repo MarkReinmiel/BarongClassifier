@@ -1,0 +1,8 @@
+/* Owner shared helpers on top of Frontend shared.css / navbar / dashboard */
+.flash{border-radius:10px;padding:12px 14px;font-size:14px;margin-bottom:12px}
+.flash.error{background:#f8e8eb;color:#8b2e3b}
+.flash.success{background:#e8f4ee;color:#2f6b4f}
+.btn .spin{width:16px;height:16px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+.textile-modal.open,
+.textile-modal:not([hidden]){display:flex}

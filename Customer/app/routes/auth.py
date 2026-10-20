@@ -56,16 +56,10 @@ def register():
             confirm = payload.get("confirm_password", password)
         user = auth_service.register_user(email, password, confirm)
     except AuthError as error:
-        if str(error) == "duplicate":
-            message = "If that email can be used, a verification code has been sent."
-            if wants_json or request.is_json:
-                return jsonify({"message": message, "verification_required": False}), 200
-            flash(message, "success")
-            return redirect(url_for("auth.login"))
         if wants_json or request.is_json:
             return _json_error(error)
         flash(str(error), "error")
-        return render_template("auth/register.html"), error.status_code
+        return render_template("auth/register.html", email=email), error.status_code
 
     session.clear()
     session["pending_user_id"] = str(user.id)

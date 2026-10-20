@@ -1,0 +1,665 @@
+/* =================================
+   DASHBOARD
+================================= */
+
+.dashboard {
+    min-height: calc(100vh - 80px);
+
+    padding: 75px 5% 90px;
+
+    background:
+    radial-gradient(
+        circle at top left,
+        rgba(196, 122, 192, 0.12),
+        transparent 28%
+    ),
+    var(--bg);
+
+    box-sizing: border-box;
+}
+
+
+/* =================================
+   WELCOME HERO
+================================= */
+
+.dashboard-hero {
+    max-width: 1400px;
+
+    margin: 0 auto 65px;
+
+    padding: 48px;
+
+    display: grid;
+
+    grid-template-columns: 1fr 330px;
+
+    align-items: center;
+
+    gap: 60px;
+
+    background: #fffaf3;
+
+    border: 1px solid #e7dac7;
+
+    border-radius: 15px;
+
+    box-sizing: border-box;
+
+    box-shadow:
+        0 15px 35px rgba(65, 43, 20, 0.07);
+
+    animation: fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+
+/* =================================
+   HERO CONTENT
+================================= */
+
+.dashboard-content {
+    max-width: 600px;
+}
+
+.dashboard-label {
+    margin: 0 0 15px;
+
+    font-family: "DM Sans", Arial, sans-serif;
+
+    font-size: 10px;
+    font-weight: 600;
+
+    letter-spacing: 3px;
+
+    color: #a8752f;
+}
+
+.dashboard-content h1 {
+    margin: 0;
+
+    font-family: "Playfair Display", Georgia, serif;
+
+    font-size: 48px;
+    line-height: 1.15;
+
+    color: #2d2117;
+}
+
+.dashboard-content h1 span {
+    display: block;
+
+    color: #a8752f;
+}
+
+.dashboard-description {
+    max-width: 520px;
+
+    margin: 20px 0 28px;
+
+    font-family: "DM Sans", Arial, sans-serif;
+
+    font-size: 15px;
+    line-height: 1.8;
+
+    color: #755f48;
+}
+
+
+/* =================================
+   CLASSIFY BUTTON
+================================= */
+
+.classify-button {
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 18px;
+
+    padding: 14px 20px;
+
+    background: var(--accent);
+
+    border-radius: 6px;
+
+    color: #ffffff;
+
+    font-family: "DM Sans", Arial, sans-serif;
+
+    font-size: 13px;
+    font-weight: 600;
+
+    text-decoration: none;
+
+    transition:
+        background 0.2s ease,
+        transform 0.2s ease;
+}
+
+.classify-button:hover {
+    background: var(--accent-highlight);
+    transform: translateY(-2px);
+}
+.classify-button span {
+    font-size: 18px;
+}
+
+
+/* =================================
+   HERO IMAGE
+================================= */
+
+.dashboard-image {
+    display: flex;
+
+    justify-content: center;
+}
+
+.image-frame {
+    width: 100%;
+
+    padding: 9px;
+
+    background: #fffaf3;
+
+    border: 1px solid #d9c29f;
+
+    border-radius: 13px;
+
+    box-sizing: border-box;
+}
+
+.image-frame img {
+    display: block;
+
+    width: 100%;
+    height: 225px;
+
+    object-fit: cover;
+
+    border-radius: 8px;
+}
+
+
+/* =================================
+   SECTION HEADING
+================================= */
+
+.section-heading {
+    margin-bottom: 25px;
+}
+
+.section-heading p {
+    margin: 0 0 8px;
+
+    font-family: "DM Sans", Arial, sans-serif;
+
+    font-size: 10px;
+    font-weight: 600;
+
+    letter-spacing: 3px;
+
+    color: #a8752f;
+}
+
+.section-heading h2 {
+    margin: 0;
+
+    font-family: "Playfair Display", Georgia, serif;
+
+    font-size: 30px;
+
+    color: #2d2117;
+}
+
+
+/* =================================
+   SYSTEM OVERVIEW
+================================= */
+
+.overview-section {
+    max-width: 1180px;
+
+    margin: 0 auto 70px;
+}
+
+.overview-cards {
+    display: grid;
+
+    grid-template-columns: repeat(3, 1fr);
+
+    gap: 20px;
+}
+
+.overview-card {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+
+    padding: 25px;
+
+    background: #fffaf3;
+    border: 1px solid #e7dac7;
+    border-radius: 12px;
+
+    box-sizing: border-box;
+
+    box-shadow:
+        0 8px 20px rgba(65, 43, 20, 0.04);
+
+    transition:
+        transform 0.3s ease,
+        box-shadow 0.3s ease,
+        border-color 0.3s ease;
+}
+
+.overview-card:hover {
+   /* Lift the card upward */
+    transform: translateY(-10px);
+
+    /* Highlight the border */
+    border-color: #d8bd91;
+
+    /* Shadow becomes visible underneath */
+    box-shadow:
+        0 8px 15px rgba(65, 43, 20, 0.08),
+        0 20px 35px rgba(65, 43, 20, 0.15);
+}
+
+
+/* =================================
+   OVERVIEW ICON
+================================= */
+
+.overview-icon {
+    width: 48px;
+    height: 48px;
+
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: #f2e5d1;
+
+    border-radius: 50%;
+
+    color: #a8752f;
+
+    font-size: 15px;
+}
+
+
+/* =================================
+   OVERVIEW INFORMATION
+================================= */
+
+.overview-info {
+    min-width: 0;
+}
+
+.overview-number {
+    display: block;
+
+    margin-bottom: 4px;
+
+    font-family: "Playfair Display", Georgia, serif;
+
+    font-size: 27px;
+    font-weight: 700;
+
+    color: var(--accent-deep);
+    background: transparent;
+}
+
+.overview-info h3 {
+    margin: 0 0 4px;
+
+    font-family: "Playfair Display", Georgia, serif;
+
+    font-size: 18px;
+
+    color: #3b2919;
+}
+
+.overview-info p {
+    margin: 0;
+
+    font-family: "DM Sans", Arial, sans-serif;
+
+    font-size: 11px;
+
+    line-height: 1.5;
+
+    color: #8b765e;
+}
+
+
+/* =================================
+   HOW IT WORKS
+================================= */
+
+.how-section {
+    max-width: 1180px;
+
+    margin: 0 auto 70px;
+
+    scroll-margin-top: 100px;
+}
+
+.steps {
+    display: grid;
+
+    grid-template-columns: repeat(4, 1fr);
+
+    gap: 20px;
+}
+
+.step {
+    position: relative;
+
+    padding: 28px 24px;
+
+    background: #fffaf3;
+
+    border: 1px solid #e7dac7;
+
+    border-radius: 12px;
+
+    box-sizing: border-box;
+
+    transition:
+        transform 0.25s ease,
+        border-color 0.25s ease,
+        box-shadow 0.25s ease;
+}
+
+.step:hover {
+    transform: translateY(-3px);
+
+    border-color: #d8bd91;
+
+    box-shadow: 0 12px 24px rgba(65, 43, 20, 0.07);
+}
+
+.step-number {
+    display: inline-block;
+
+    margin-bottom: 20px;
+
+    font-family: "DM Sans", Arial, sans-serif;
+
+    font-size: 11px;
+    font-weight: 700;
+
+    letter-spacing: 2px;
+
+    color: #a8752f;
+}
+
+.step h3 {
+    margin: 0 0 10px;
+
+    font-family: "Playfair Display", Georgia, serif;
+
+    font-size: 19px;
+
+    color: #3b2919;
+}
+
+.step p {
+    margin: 0;
+
+    font-family: "DM Sans", Arial, sans-serif;
+
+    font-size: 12px;
+
+    line-height: 1.7;
+
+    color: #755f48;
+}
+
+
+/* =================================
+   QUICK ACCESS
+================================= */
+
+.quick-section {
+    max-width: 1180px;
+
+    margin: 0 auto;
+}
+
+.quick-cards {
+    display: grid;
+
+    grid-template-columns: repeat(4, 1fr);
+
+    gap: 18px;
+}
+
+.quick-card {
+    min-height: 180px;
+
+    padding: 22px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    background: #fffaf3;
+
+    border: 1px solid #e7dac7;
+
+    border-radius: 12px;
+
+    text-decoration: none;
+
+    box-sizing: border-box;
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        border-color 0.2s ease;
+}
+
+.quick-card:hover {
+    transform: translateY(-4px);
+
+    border-color: #d8bd91;
+
+    box-shadow:
+        0 12px 25px rgba(65, 43, 20, 0.08);
+}
+
+
+/* =================================
+   QUICK CARD ICON
+================================= */
+
+.card-icon {
+    width: 34px;
+    height: 34px;
+
+    margin-bottom: 18px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: #f2e5d1;
+
+    border-radius: 50%;
+
+    color: #a8752f;
+
+    font-size: 12px;
+}
+
+
+/* =================================
+   QUICK CARD TEXT
+================================= */
+
+.quick-card h3 {
+    margin: 0 0 8px;
+
+    font-family: "Playfair Display", Georgia, serif;
+
+    font-size: 18px;
+
+    color: #3b2919;
+}
+
+.quick-card p {
+    margin: 0;
+
+    font-family: "DM Sans", Arial, sans-serif;
+
+    font-size: 11px;
+
+    line-height: 1.6;
+
+    color: #755f48;
+}
+
+
+/* =================================
+   QUICK CARD LINK
+================================= */
+
+.card-link {
+    margin-top: auto;
+
+    padding-top: 18px;
+
+    font-family: "DM Sans", Arial, sans-serif;
+
+    font-size: 11px;
+    font-weight: 600;
+
+    color: #8b5d22;
+}
+
+
+/* =================================
+   TABLET
+================================= */
+
+@media (max-width: 1000px) {
+
+    .dashboard {
+        padding: 40px 5% 70px;
+    }
+
+    .dashboard-hero {
+        grid-template-columns: 1fr 280px;
+
+        gap: 35px;
+
+        padding: 35px;
+    }
+
+    .dashboard-content h1 {
+        font-size: 40px;
+    }
+
+    .overview-cards {
+        grid-template-columns: 1fr;
+    }
+
+    .steps {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .quick-cards {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+}
+
+
+/* =================================
+   MOBILE
+================================= */
+
+@media (max-width: 700px) {
+
+    .dashboard {
+        padding: 20px 16px calc(40px + env(safe-area-inset-bottom));
+    }
+
+    .dashboard-hero {
+        grid-template-columns: 1fr;
+
+        padding: 30px;
+
+        margin-bottom: 50px;
+    }
+
+    .dashboard-content h1 {
+        font-size: 36px;
+    }
+
+    .dashboard-image {
+        max-width: 360px;
+
+        margin: 0 auto;
+    }
+
+    .image-frame img {
+        height: 210px;
+    }
+
+    .section-heading h2 {
+        font-size: 26px;
+    }
+
+    .steps {
+        grid-template-columns: 1fr;
+    }
+
+    .quick-cards {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+
+/* =================================
+   SMALL MOBILE
+================================= */
+
+@media (max-width: 450px) {
+
+    .dashboard-hero {
+        padding: 24px;
+    }
+
+    .dashboard-content h1 {
+        font-size: 32px;
+    }
+
+    .overview-card {
+        padding: 20px;
+    }
+
+    .step {
+        padding: 24px 20px;
+    }
+
+}
+
+
+@keyframes fade-up {
+    from {
+        opacity: 0;
+        transform: translateY(16px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

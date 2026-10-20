@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% block title %}Classify Textile | {{ app_name }}{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/shared.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/classify.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-app.css') }}">
+<style>
+  /* Keep Flask form for CSRF/submit without breaking the 2-column card grid */
+  #classifyForm {
+    display: contents;
+  }
+</style>
+{% endblock %}
+{% block body %}
+{% include "_nav.html" %}
+
+<main class="classifier-page">
+  <section class="classifier-header">
+    <p class="classifier-label">BARONG TAGALOG TEXTILE CLASSIFIER</p>
+    <h1>Classify Textile</h1>
+    <p class="classifier-description">
+      Upload an image of a Barong Tagalog textile to explore its possible textile classification.
+    </p>
+  </section>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+      <div class="flash {{ category }}" style="max-width:1250px;margin:0 auto 16px">{{ message }}</div>
+    {% endfor %}
+  {% endwith %}
+
+  <section class="classifier-card">
+    <form id="classifyForm" method="post" enctype="multipart/form-data" action="{{ url_for('classify.classify_submit') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+      <div class="upload-section">
+        <h2>Upload Textile Image</h2>
+        <p>Take a close-up photo or select a clear image in JPG or PNG format.</p>
+
+        <div class="capture-options">
+          <button type="button" id="openCamera" class="capture-option">Camera</button>
+          <label for="textileImage" class="capture-option secondary">Upload from Gallery</label>
+        </div>
+
+        <p id="cameraNotice" class="camera-notice" role="status" hidden></p>
+
+        <div id="cameraPanel" class="camera-panel" hidden>
+          <div class="camera-frame" id="cameraFrame">
+            <video id="cameraPreview" autoplay muted playsinline></video>
+            <div id="cameraGuide" class="camera-guide is-red" aria-hidden="true">
+              <span class="camera-guide-label">Fill with textile</span>
+            </div>
+            <pre id="cameraCalibration" class="camera-calibration" hidden></pre>
+          </div>
+
+          <button type="button" id="cameraGuidanceHeadline" class="camera-guidance-headline is-red" disabled>
+            Starting camera…
+          </button>
+
+          <ul id="cameraChecklist" class="camera-checklist">
+            <li data-check="distance"><span aria-hidden="true">…</span> Distance</li>
+            <li data-check="lighting"><span aria-hidden="true">…</span> Lighting</li>
+            <li data-check="focus"><span aria-hidden="true">…</span> Focus</li>
+            <li data-check="stability"><span aria-hidden="true">…</span> Stability</li>
+            <li data-check="glare" hidden><span aria-hidden="true">△</span> Glare</li>
+          </ul>
+
+          <div id="cameraZoomControls" class="camera-zoom" hidden>
+            <label for="cameraZoom">Zoom</label>
+            <input type="range" id="cameraZoom">
+          </div>
+          <p id="cameraZoomStatus" class="camera-zoom-status"></p>
+          <p class="camera-zoom-note">
+            Browser zoom may be digital and is not the same as your camera app's Pro Mode optical zoom.
+          </p>
+
+          <div class="camera-actions">
+            <button type="button" id="captureButton" class="capture-button" disabled>Capture Image</button>
+            <button type="button" id="closeCamera" class="remove-button">Close Camera</button>
+          </div>
+        </div>
+
+        <label for="textileImage" class="upload-area" id="uploadArea">
+          <div class="upload-icon">◆</div>
+          <h3>Choose an image</h3>
+          <span>JPG or PNG files · drag & drop supported</span>
+          <div class="upload-button">Browse Image</div>
+          <input type="file" id="textileImage" name="file" accept="image/jpeg,image/jpg,image/jpe,image/png,image/webp,.jpg,.jpeg,.jpe,.png,.webp" hidden>
+        </label>
+        <p id="uploadFeedback" class="upload-feedback" hidden></p>
+      </div>
+
+      <div class="preview-section" id="previewSection" hidden>
+        <h2>Image Preview</h2>
+        <div class="preview-box">
+          <img id="imagePreview" src="" alt="Selected textile preview">
+        </div>
+        <p id="fileName" class="file-name"></p>
+        <div class="preview-actions">
+          <button type="button" id="saveImage" class="remove-button" hidden>Save Photo</button>
+          <button type="button" id="retakeImage" class="remove-button" hidden>Retake</button>
+          <button type="button" id="removeImage" class="remove-button">Remove Image</button>
+        </div>
+      </div>
+
+      <div class="classify-section">
+        <button type="button" id="classifyButton" class="classify-button" disabled>
+          Analyze Textile <span>→</span>
+        </button>
+        <p class="demo-note">Tap Analyze after the photo appears in the preview.</p>
+      </div>
+    </form>
+  </section>
+</main>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/navbar.js') }}"></script>
+<script src="{{ url_for('static', filename='js/cameraGuidance.js') }}"></script>
+<script src="{{ url_for('static', filename='js/classify.js') }}"></script>
+{% endblock %}

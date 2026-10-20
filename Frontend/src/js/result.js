@@ -90,7 +90,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     async function uploadClassificationImage(user) {
         const { data: profile } = await supabaseClient
-            .from("profiles")
+            .from("users")
             .select("full_name")
             .eq("id", user.id)
             .maybeSingle();

@@ -8,7 +8,16 @@
 - ORM: Flask-SQLAlchemy
 - Migrations: Flask-Migrate / Alembic (version table in `customer.alembic_version`)
 
-Tables: `customer.users`, `customer.email_verifications`, `customer.trusted_devices`, `customer.classifications`
+Tables (owner / Flask): `customer.users`, `customer.email_verifications`, `customer.trusted_devices`, `customer.classifications`
+
+Each of those tables has `role` + `status` (aligned with owner `public.users.role`).
+
+`public.users` is the **single account directory** (Auth + Flask). `public.profiles` was dropped — use `users` instead (`must_change_password`, `role`, `status`, `source`).
+
+Portal mirrors (no secret hashes; API revoked for anon/authenticated):
+`public.email_verifications`, `public.trusted_devices` — synced from `customer.*`.
+
+Flask passwords stay only on `customer.users.password_hash`.
 
 ## Environment
 

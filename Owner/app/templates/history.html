@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}History | {{ app_name }}{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/shared.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/textiletypes.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/history.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-app.css') }}">
+{% endblock %}
+{% block body %}
+{% include "_nav.html" %}
+<main class="textile-page">
+  <section class="textile-header">
+    <p class="eyebrow">BARONG TAGALOG</p>
+    <h1>History</h1>
+    <p class="page-description">
+      Review previous textile classifications from the shared database.
+    </p>
+  </section>
+
+  <form class="history-filter" method="get" action="{{ url_for('dashboard.history') }}">
+    <div class="history-filter-field">
+      <label for="historyFrom">From</label>
+      <input type="date" id="historyFrom" name="from" value="{{ filters.date_from }}">
+    </div>
+    <div class="history-filter-field">
+      <label for="historyTo">To</label>
+      <input type="date" id="historyTo" name="to" value="{{ filters.date_to }}">
+    </div>
+    <div class="history-filter-field">
+      <label for="fabricFilter">Fabric Type</label>
+      <select id="fabricFilter" name="fabric">
+        <option value="">All Fabric Types</option>
+        {% for option in fabric_options %}
+        <option value="{{ option }}" {% if filters.fabric == option %}selected{% endif %}>{{ option }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="history-filter-field">
+      <label for="historySearchDate">Search Date</label>
+      <input type="date" id="historySearchDate" name="search_date" value="{{ filters.search_date }}">
+    </div>
+    <div class="history-filter-actions">
+      <button type="submit" name="today" value="1" class="history-today-button">Today</button>
+      <button type="submit" class="history-filter-button">Filter</button>
+      <a href="{{ url_for('dashboard.history') }}" class="history-clear-button">Clear</a>
+    </div>
+  </form>
+
+  <section class="textile-grid">
+    {% if not rows %}
+    <article class="textile-card">
+      <div class="textile-icon">◆</div>
+      <h2>No Classifications Yet</h2>
+      <p>Upload a textile image from the Classify Textile page to start building classification history.</p>
+      <a href="{{ url_for('classify.classify_page') }}" class="textile-status">Go to Classify →</a>
+    </article>
+    {% else %}
+    <div class="history-list" style="display:contents">
+      {% for row in rows %}
+      <article class="textile-card history-card">
+        <div class="textile-icon">◈</div>
+        <h2>{{ row.predicted_label }}</h2>
+        <p>{{ row.image_name or 'image' }}</p>
+        <p>{{ row.email or row.user_id }} · {{ row.created_at }}</p>
+        <span class="textile-status">{{ '%.0f'|format(row.confidence * 100) }}% confidence</span>
+      </article>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </section>
+</main>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/navbar.js') }}"></script>
+{% endblock %}

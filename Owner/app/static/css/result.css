@@ -1,0 +1,626 @@
+/* =================================
+   GLOBAL RESET
+================================= */
+
+* {
+    margin: 0;
+    padding: 0;
+
+    box-sizing: border-box;
+}
+
+body {
+    background:
+    radial-gradient(
+        circle at top left,
+        rgba(196, 122, 192, 0.12),
+        transparent 30%
+    ),
+    var(--bg);
+
+    color: var(--ink);
+
+    font-family: "DM Sans", Arial, sans-serif;
+}
+
+
+/* =================================
+   RESULT PAGE
+================================= */
+
+.classifier-page {
+    position: relative;
+
+    width: 100%;
+    max-width: 1280px;
+    min-height: calc(100vh - 68px);
+
+    margin: 0 auto;
+    padding: 110px 40px 80px;
+}
+
+
+/* =================================
+   PAGE HEADER
+================================= */
+
+.classifier-header {
+    text-align: center;
+
+    margin-bottom: 42px;
+
+    animation: fade-up 0.65s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Back button */
+.backbutton {
+    position: absolute;
+    top: 15px;
+    left: 48px;
+
+    display: inline-block;
+    padding: 8px 16px;
+
+    border: 1px solid var(--accent);
+    border-radius: 6px;
+
+    background: transparent;
+    color: var(--accent);
+
+    font-family: "DM Sans", Arial, sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+
+    text-decoration: none;
+    transition:
+        background 0.2s ease,
+        color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.backbutton:hover {
+    background: var(--accent);
+    color: var(--surface);
+
+    transform: translateY(-2px);
+}
+
+.classifier-label {
+    margin-bottom: 14px;
+
+    color: var(--accent);
+
+    font-family: "DM Sans", Arial, sans-serif;
+
+    font-size: 11px;
+
+    font-weight: 600;
+
+    letter-spacing: 4px;
+
+    text-transform: uppercase;
+}
+
+.classifier-header h1 {
+    margin-bottom: 16px;
+
+    color: var(--ink);
+
+    font-family: "Playfair Display", Georgia, serif;
+
+    font-size: clamp(36px, 4vw, 52px);
+
+    font-weight: 700;
+
+    line-height: 1.2;
+}
+
+.classifier-description {
+    color: var(--ink-soft);
+
+    font-size: 15px;
+
+    line-height: 1.6;
+}
+
+
+/* =================================
+   MAIN RESULT CARD
+================================= */
+
+.classifier-card {
+    width: 100%;
+
+    padding: 38px;
+
+    background: var(--surface);
+
+    border: 1px solid var(--line-strong);
+
+    border-radius: 14px;
+
+    box-shadow:
+        0 12px 30px rgba(65, 43, 20, 0.06);
+
+    animation: fade-up 0.75s cubic-bezier(0.22, 1, 0.36, 1) 0.08s both;
+}
+
+
+/* =================================
+   TWO-COLUMN RESULT LAYOUT
+================================= */
+
+.result-layout {
+    display: grid;
+
+    grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
+
+    gap: 35px;
+
+    align-items: stretch;
+}
+
+
+/* =================================
+   LEFT SIDE: TEXTILE ANALYSIS
+================================= */
+
+.result-analysis {
+    min-width: 0;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: flex-start;
+}
+
+.result-label {
+    margin-bottom: 12px;
+
+    color: var(--accent);
+
+    font-family: "DM Sans", Arial, sans-serif;
+
+    font-size: 12px;
+
+    font-weight: 600;
+
+    letter-spacing: 1.5px;
+}
+
+.result-analysis h2 {
+    margin-bottom: 24px;
+
+    color: var(--ink);
+
+    font-family: "Playfair Display", Georgia, serif;
+
+    font-size: 30px;
+
+    font-weight: 700;
+}
+
+
+/* =================================
+   RESULT IMAGE
+================================= */
+
+.result-image-container {
+    width: 100%;
+
+    height: 420px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    overflow: hidden;
+
+    background: var(--bg);
+
+    border: 1px solid var(--line-strong);
+
+    border-radius: 12px;
+}
+
+.result-image-container img {
+    display: block;
+
+    width: 100%;
+
+    height: 100%;
+
+    object-fit: contain;
+}
+
+
+/* =================================
+   VIEW IMAGE BUTTON
+================================= */
+
+.view-image-button {
+    margin-top: 22px;
+
+    padding: 13px 26px;
+
+    background: var(--accent);
+
+    border: none;
+
+    border-radius: 6px;
+
+    color: #ffffff;
+
+    font-family: "DM Sans", Arial, sans-serif;
+
+    font-size: 13px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition: background 0.2s ease;
+}
+
+.view-image-button:hover {
+    background: var(--accent-highlight);
+}
+
+
+/* =================================
+   FULL IMAGE PREVIEW
+================================= */
+
+.result-preview {
+    width: 100%;
+
+    margin-top: 22px;
+}
+
+.result-preview img {
+    display: block;
+
+    width: 100%;
+
+    max-height: 600px;
+
+    object-fit: contain;
+
+    border: 1px solid var(--line-strong);
+
+    border-radius: 10px;
+}
+
+
+/* =================================
+   RIGHT SIDE: DETAILS PANEL
+================================= */
+
+.result-details-panel {
+    min-width: 0;
+
+    padding: 30px;
+
+    background: var(--surface-soft);
+
+    border: 1px solid var(--line-strong);
+
+    border-radius: 12px;
+}
+
+.result-details-panel h2 {
+    margin-bottom: 30px;
+
+    color: var(--ink);
+
+    font-family: "Playfair Display", Georgia, serif;
+
+    font-size: 28px;
+
+    font-weight: 700;
+}
+
+
+/* =================================
+   CLASSIFICATION DETAILS
+================================= */
+
+.result-details {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 0;
+}
+
+.detail-item {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 9px;
+
+    padding: 0 0 22px;
+
+    margin-bottom: 22px;
+
+    border-bottom: 1px solid var(--line);
+}
+
+.detail-item:last-child {
+    margin-bottom: 0;
+}
+
+.detail-label {
+    color: var(--ink-soft);
+
+    font-family: "DM Sans", Arial, sans-serif;
+
+    font-size: 13px;
+
+    font-weight: 400;
+}
+
+.detail-item strong {
+    color: var(--ink);
+
+    font-family: "DM Sans", Arial, sans-serif;
+
+    font-size: 16px;
+
+    font-weight: 700;
+
+    overflow-wrap: anywhere;
+}
+
+.detail-item strong.is-pending {
+    color: var(--accent);
+
+    font-weight: 600;
+}
+
+
+@keyframes fade-up {
+    from {
+        opacity: 0;
+        transform: translateY(16px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
+/* =================================
+   IMAGE MODAL
+================================= */
+
+.image-modal {
+    position: fixed;
+
+    inset: 0;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    padding: 40px;
+
+    background: rgba(47, 50, 58, 0.88);
+
+    z-index: 1000;
+
+    box-sizing: border-box;
+}
+
+
+/* =================================
+   ENLARGED IMAGE
+================================= */
+
+.modal-image {
+    display: block;
+
+    max-width: 90vw;
+    max-height: 85vh;
+
+    width: auto;
+    height: auto;
+
+    object-fit: contain;
+
+    border: 2px solid var(--line);
+    border-radius: 10px;
+
+    box-shadow:
+        0 12px 40px rgba(0, 0, 0, 0.35);
+
+    background: var(--surface);
+}
+
+
+/* =================================
+   CLOSE BUTTON
+================================= */
+
+.close-image-modal {
+    position: absolute;
+
+    top: 22px;
+    right: 28px;
+
+    width: 42px;
+    height: 42px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid var(--line);
+    border-radius: 50%;
+
+    background: var(--surface);
+
+    color: var(--ink-soft);
+
+    font-family: Arial, sans-serif;
+
+    font-size: 30px;
+    font-weight: 400;
+
+    line-height: 1;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.close-image-modal:hover {
+    background: var(--accent-highlight);
+
+    color: var(--surface);
+
+    transform: scale(1.05);
+}
+
+/* =================================
+   PREVENT PAGE SCROLL
+================================= */
+
+body.modal-open {
+    overflow: hidden;
+}
+
+
+/* =================================
+   HIDDEN MODAL
+================================= */
+
+.image-modal[hidden] {
+    display: none;
+}
+
+
+/* =================================
+   MOBILE
+================================= */
+
+@media (max-width: 600px) {
+
+    .image-modal {
+        padding: 25px 15px;
+    }
+
+    .modal-image {
+        max-width: 95vw;
+        max-height: 80vh;
+    }
+
+    .close-image-modal {
+        top: 14px;
+        right: 16px;
+    }
+
+}
+
+
+/* =================================
+   MOBILE AND TABLET
+================================= */
+
+@media (max-width: 1000px) {
+
+    .classifier-page {
+        padding: 45px 28px 60px;
+    }
+
+    .classifier-card {
+        padding: 28px;
+    }
+
+    .result-layout {
+        grid-template-columns: 1fr;
+
+        gap: 28px;
+    }
+
+    .result-details-panel {
+        padding: 28px;
+    }
+
+}
+
+
+@media (max-width: 600px) {
+
+    .classifier-page {
+        padding: 16px 16px calc(28px + env(safe-area-inset-bottom));
+    }
+
+    .classifier-header {
+        margin-bottom: 28px;
+    }
+
+    .backbutton {
+        position: static;
+
+        display: inline-flex;
+
+        align-items: center;
+
+        min-height: 44px;
+
+        margin-bottom: 18px;
+    }
+
+    .view-image-button {
+        width: 100%;
+
+        min-height: 48px;
+    }
+
+    .classifier-label {
+        font-size: 9px;
+
+        letter-spacing: 2px;
+    }
+
+    .classifier-header h1 {
+        font-size: 34px;
+    }
+
+    .classifier-description {
+        font-size: 13px;
+    }
+
+    .classifier-card {
+        padding: 20px;
+    }
+
+    .result-analysis h2 {
+        font-size: 26px;
+    }
+
+    .result-image-container {
+        height: 300px;
+    }
+
+    .result-details-panel {
+        padding: 22px;
+    }
+
+    .result-details-panel h2 {
+        font-size: 25px;
+    }
+
+}

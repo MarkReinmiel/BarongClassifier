@@ -30,7 +30,7 @@ def main() -> int:
 
     directory = SupabaseDirectory()
     existing = (
-        directory.admin.table("profiles")
+        directory.admin.table("users")
         .select("id, role, is_active, email_verified")
         .eq("email", settings.initial_admin_email)
         .limit(1)
@@ -73,11 +73,12 @@ def main() -> int:
     if not user:
         print("The Auth API did not return a user. No profile change was confirmed.")
         return 1
-    directory.admin.table("profiles").update(
+    directory.admin.table("users").update(
         {
             "role": "admin",
             "email_verified": True,
             "is_active": True,
+            "status": "active",
             "must_change_password": True,
         }
     ).eq("id", user.id).execute()

@@ -55,9 +55,25 @@ python -m pytest -q
 
 Email sending is mocked in automated tests.
 
+## Local CNN (train + test)
+
+The trained MobileNetV2 model and dataset live under `Customer/models/` and `Customer/datasets/`.
+
+```powershell
+cd Customer
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements-ml.txt
+python scripts/setup_ml_assets.py
+# optional retrain (~20 min on CPU):
+python scripts/train_cnn.py
+flask run --host 127.0.0.1 --port 5000
+```
+
+Classification uses `models/barong_model.keras` when `CLASSIFY_SERVER_URL` is empty. Set `CLASSIFY_SERVER_URL=http://127.0.0.1:5501/predict` only if you run the Backend classify server instead.
+
 ## Production notes
 
 - Set `SESSION_COOKIE_SECURE=true` behind HTTPS.
 - Keep `SECRET_KEY` long and random.
 - Back up Postgres before migrations.
-- Classification prefers `CLASSIFY_SERVER_URL` (default `http://127.0.0.1:5501/predict`).
+- Prefer the local model (`MODEL_PATH`) for Customer; optional remote via `CLASSIFY_SERVER_URL`.
