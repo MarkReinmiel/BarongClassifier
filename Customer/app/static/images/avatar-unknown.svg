@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" role="img" aria-hidden="true">
+  <!-- Outline user-circle icon (Material-style), brand purple -->
+  <circle cx="12" cy="12" r="9" stroke="#795780" stroke-width="1.75"/>
+  <circle cx="12" cy="10" r="3" stroke="#795780" stroke-width="1.75"/>
+  <path
+    d="M6.2 18.2c1.35-1.7 3.4-2.7 5.8-2.7s4.45 1 5.8 2.7"
+    stroke="#795780"
+    stroke-width="1.75"
+    stroke-linecap="round"
+  />
+</svg>

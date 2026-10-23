@@ -51,6 +51,8 @@ class Config:
     APP_ENV = _first("APP_ENV", default="development")
     SECRET_KEY = _first("SECRET_KEY") or "dev-only-change-me"
     DEBUG = _first("DEBUG", "FLASK_DEBUG").lower() in {"1", "true", "yes"}
+    # Reload Jinja templates even if flask run was started without --debug
+    TEMPLATES_AUTO_RELOAD = True
 
     DB_HOST = _first("DB_HOST")
     DB_PORT = _first("DB_PORT", default="5432")

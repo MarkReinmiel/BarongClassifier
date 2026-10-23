@@ -1,27 +1,29 @@
 /* Shared palette + motion — colors match existing brand */
 
 :root {
-    /* =================================
-       NEW COLOR PALETTE
-    ================================= */
-
-    --bg: #E5DED4;
+    /* Page backgrounds — cool light, not cream/beige */
+    --bg: #F7F7FA;
     --surface: #FFFFFF;
-    --surface-soft: #F5F1EC;
+    --surface-soft: #F0F1F5;
 
-    --ink: #2F323A;
-    --ink-soft: #5D5B63;
+    /* Text */
+    --ink: #26354A;
+    --ink-soft: #5A6575;
 
-    --accent: #77567A;
-    --accent-deep: #624568;
-    --accent-deeper: #49344D;
+    /* Purple accent (buttons / links) */
+    --accent: #795780;
+    --accent-deep: #634768;
+    --accent-deeper: #4A3552;
+    --accent-highlight: #B894C4;
 
-    --accent-highlight: #C47AC0;
+    /* Navbar */
+    --nav: #26354A;
+    --nav-elevated: #31455C;
 
-    --line: #D5CBD2;
-    --line-strong: #B9A9B9;
-
-    --shadow: rgba(47, 50, 58, 0.12);
+    /* Borders and shadows */
+    --line: #E2E4EA;
+    --line-strong: #C9CDD6;
+    --shadow: rgba(38, 53, 74, 0.10);
 
     --ease: cubic-bezier(0.22, 1, 0.36, 1);
 }

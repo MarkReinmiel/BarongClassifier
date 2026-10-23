@@ -17,7 +17,7 @@
   {% else %}
     {% for row in rows %}
     <div class="card item">
-      <div class="grow"><span class="val">{{ row.predicted_label }}</span><span class="sm">{{ row.image_name or 'image' }}</span></div>
+      <div class="grow"><span class="val">{{ row.predicted_label }}</span><span class="sep">/</span><span class="file">{{ row.image_name or 'image' }}</span></div>
       <div style="text-align:right"><b>{{ '%.0f'|format(row.confidence * 100) }}%</b><span class="sm" style="display:block">{{ row.created_at.strftime('%b %d') if row.created_at else '' }}</span></div>
     </div>
     {% endfor %}
