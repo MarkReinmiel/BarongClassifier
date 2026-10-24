@@ -3,6 +3,7 @@ from __future__ import annotations
 import base64
 import logging
 import math
+import uuid
 from pathlib import Path
 
 import httpx
@@ -14,6 +15,8 @@ from app.models import Classification, CustomerUser, utcnow
 
 logger = logging.getLogger("customer.classify")
 CUSTOMER_ROOT = Path(__file__).resolve().parents[2]
+
+_DISPLAY = {"pina": "Piña", "piña": "Piña", "jusi": "Jusi", "cocoon": "Cocoon"}
 
 
 class ClassificationError(Exception):
@@ -34,6 +37,11 @@ def validate_confidence(value) -> float:
     return confidence
 
 
+def display_name_for(label: str) -> str:
+    key = str(label or "").strip().lower()
+    return _DISPLAY.get(key, str(label or "").strip() or "Unknown")
+
+
 def classify_image(user: CustomerUser, file_storage) -> dict:
     from app.services.image_service import prepare_image_bytes
 
@@ -47,14 +55,23 @@ def classify_image(user: CustomerUser, file_storage) -> dict:
     if not label or not str(label).strip():
         raise ClassificationError("The model did not return a textile label.")
 
+    label_text = str(label).strip()
+    display = display_name_for(label_text)
+    row_id = str(uuid.uuid4())
+    now = utcnow()
+
     row = Classification(
-        user_id=user.id,
-        predicted_label=str(label).strip(),
+        id=row_id,
+        user_id=str(user.id),
+        file_name=name,
+        predicted_label=label_text,
+        display_name=display,
         confidence=confidence,
-        image_name=name,
-        role=user.role or "customer",
-        status="completed",
-        created_at=utcnow(),
+        image_path=None,
+        predicted_textile_type=label_text,
+        confidence_score=confidence,
+        image_reference=name,
+        created_at=now,
     )
     db.session.add(row)
     try:
@@ -66,8 +83,8 @@ def classify_image(user: CustomerUser, file_storage) -> dict:
 
     return {
         "id": str(row.id),
-        "label": row.predicted_label,
-        "confidence": row.confidence,
+        "label": row.display_name or row.predicted_label,
+        "confidence": float(row.confidence),
         "image_name": row.image_name,
         "created_at": row.created_at.isoformat() if row.created_at else "",
     }

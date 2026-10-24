@@ -1,11 +1,17 @@
 (function () {
   var fileInput = document.getElementById("fileGal");
   var camInput = document.getElementById("fileCam");
+  var camBtn = document.getElementById("camBtn");
   var prev = document.getElementById("prev");
   var prompt = document.getElementById("prompt");
   var analyze = document.getElementById("analyze");
   var form = document.getElementById("classifyForm");
   var url = null;
+  var mobileCameraQuery = window.matchMedia("(max-width: 899px)");
+
+  function isMobileCameraView() {
+    return mobileCameraQuery.matches;
+  }
 
   function setFile(file) {
     if (!file) return;
@@ -21,7 +27,12 @@
   }
 
   document.getElementById("galBtn").onclick = function () { fileInput.click(); };
-  document.getElementById("camBtn").onclick = function () { camInput.click(); };
+  if (camBtn) {
+    camBtn.onclick = function () {
+      if (!isMobileCameraView()) return;
+      camInput.click();
+    };
+  }
   fileInput.onchange = function (event) { setFile(event.target.files[0]); };
   camInput.onchange = function (event) { setFile(event.target.files[0]); };
 

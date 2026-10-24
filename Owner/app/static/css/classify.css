@@ -627,7 +627,26 @@ body {
 }
 
 @media (min-width: 900px) {
-    #saveImage {
+    #saveImage,
+    #retakeImage,
+    #openCamera,
+    #cameraPanel,
+    #cameraNotice,
+    .upload-hint-mobile {
+        display: none !important;
+    }
+
+    .capture-options {
+        grid-template-columns: 1fr;
+    }
+
+    .upload-hint-desktop {
+        display: block;
+    }
+}
+
+@media (max-width: 899px) {
+    .upload-hint-desktop {
         display: none !important;
     }
 }

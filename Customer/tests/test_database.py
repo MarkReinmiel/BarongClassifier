@@ -56,8 +56,9 @@ def test_classification_owned_by_user(app):
         row = Classification(
             user_id=owner.id,
             predicted_label="Piña",
+            display_name="Piña",
             confidence=0.91,
-            image_name="a.jpg",
+            file_name="a.jpg",
         )
         db.session.add(row)
         db.session.commit()

@@ -245,6 +245,11 @@ document.addEventListener("DOMContentLoaded", function () {
     const zoomControls = document.getElementById("cameraZoomControls");
     const zoomSlider = document.getElementById("cameraZoom");
     const zoomStatus = document.getElementById("cameraZoomStatus");
+    const mobileCameraQuery = window.matchMedia("(max-width: 899px)");
+
+    function isMobileCameraView() {
+        return mobileCameraQuery.matches;
+    }
 
     const HTTPS_MESSAGE =
         "Camera access may require HTTPS on this device/browser. " +
@@ -564,6 +569,11 @@ document.addEventListener("DOMContentLoaded", function () {
     async function startCamera() {
         showCameraNotice("");
 
+        if (!isMobileCameraView()) {
+            stopCamera();
+            return;
+        }
+
         if (
             !navigator.mediaDevices ||
             typeof navigator.mediaDevices.getUserMedia !== "function"
@@ -619,8 +629,22 @@ document.addEventListener("DOMContentLoaded", function () {
 
     retakeImage.addEventListener("click", function () {
         clearSelection();
-        startCamera();
+        if (isMobileCameraView()) {
+            startCamera();
+        }
     });
+
+    function onCameraViewportChange(event) {
+        if (!event.matches) {
+            stopCamera();
+        }
+    }
+
+    if (typeof mobileCameraQuery.addEventListener === "function") {
+        mobileCameraQuery.addEventListener("change", onCameraViewportChange);
+    } else if (typeof mobileCameraQuery.addListener === "function") {
+        mobileCameraQuery.addListener(onCameraViewportChange);
+    }
 
     captureButton.addEventListener("click", function () {
         const videoWidth = cameraPreview.videoWidth;

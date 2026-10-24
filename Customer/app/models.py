@@ -82,22 +82,23 @@ class TrustedDevice(db.Model):
 
 
 class Classification(db.Model):
+    """Portal history rows in public.classifications (visible in Supabase Table Editor)."""
+
     __tablename__ = "classifications"
-    __table_args__ = {"schema": "customer"}
+    __table_args__ = {"schema": "public"}
 
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    user_id = db.Column(
-        db.String(36),
-        db.ForeignKey("customer.users.id", ondelete="CASCADE"),
-        nullable=False,
-        index=True,
-    )
-    predicted_label = db.Column(db.String(64), nullable=False)
+    user_id = db.Column(db.String(36), nullable=False, index=True)
+    file_name = db.Column(db.Text)
+    predicted_label = db.Column(db.Text, nullable=False)
+    display_name = db.Column(db.Text, nullable=False)
     confidence = db.Column(db.Float, nullable=False)
-    image_name = db.Column(db.String(255))
-    image_path = db.Column(db.String(512))
-    role = db.Column(db.String(32), nullable=False, default="customer")
-    status = db.Column(db.String(32), nullable=False, default="completed")
+    image_path = db.Column(db.Text)
+    predicted_textile_type = db.Column(db.Text)
+    confidence_score = db.Column(db.Float)
+    image_reference = db.Column(db.Text)
     created_at = db.Column(db.DateTime(timezone=True), nullable=False, default=utcnow)
 
-    user = db.relationship("CustomerUser", backref=db.backref("classifications", lazy=True))
+    @property
+    def image_name(self) -> str | None:
+        return self.file_name

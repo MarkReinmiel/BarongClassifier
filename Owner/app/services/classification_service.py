@@ -117,27 +117,41 @@ def classify_upload(user: OwnerUser, file_storage) -> dict:
 
     label, confidence = result
     confidence = validate_confidence(confidence)
+    label_text = str(label).strip()
+    display = {
+        "pina": "Piña",
+        "piña": "Piña",
+        "jusi": "Jusi",
+        "cocoon": "Cocoon",
+    }.get(label_text.lower(), label_text)
+    row_id = str(uuid.uuid4())
 
-    # Persist into shared customer.classifications when possible.
+    # Persist into public.classifications so rows appear in Supabase Table Editor.
     try:
         from sqlalchemy import text
 
         db.session.execute(
             text(
                 """
-                insert into customer.classifications
-                  (id, user_id, predicted_label, confidence, image_name, role, status, created_at)
+                insert into public.classifications
+                  (
+                    id, user_id, file_name, predicted_label, display_name, confidence,
+                    created_at, image_path, predicted_textile_type, confidence_score, image_reference
+                  )
                 values
-                  (:id, :user_id, :label, :confidence, :image_name, :role, 'completed', now())
+                  (
+                    cast(:id as uuid), cast(:user_id as uuid), :file_name, :label, :display_name,
+                    :confidence, now(), null, :label, :confidence, :file_name
+                  )
                 """
             ),
             {
-                "id": str(uuid.uuid4()),
+                "id": row_id,
                 "user_id": str(user.id),
-                "label": str(label).strip(),
+                "file_name": name,
+                "label": label_text,
+                "display_name": display,
                 "confidence": confidence,
-                "image_name": name,
-                "role": user.role or "owner",
             },
         )
         db.session.commit()
@@ -147,7 +161,7 @@ def classify_upload(user: OwnerUser, file_storage) -> dict:
 
     image_b64 = base64.b64encode(content).decode("ascii")
     return {
-        "label": str(label).strip(),
+        "label": display,
         "confidence": confidence,
         "image_name": name,
         "created_at": utcnow().isoformat(),

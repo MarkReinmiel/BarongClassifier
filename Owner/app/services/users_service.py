@@ -64,7 +64,7 @@ def dashboard_stats() -> dict:
 
     try:
         count = db.session.execute(
-            text("select count(*)::int as n from customer.classifications")
+            text("select count(*)::int as n from public.classifications")
         ).scalar()
         stats["classifications_total"] = int(count or 0)
     except SQLAlchemyError:
@@ -250,14 +250,14 @@ def list_recent_classifications(
             text(
                 f"""
                 select
-                  c.predicted_label,
-                  c.confidence,
-                  c.image_name,
-                  c.user_id,
-                  coalesce(u.email, c.user_id) as email,
+                  coalesce(c.display_name, c.predicted_label) as predicted_label,
+                  c.confidence::float as confidence,
+                  coalesce(c.file_name, c.image_reference, c.image_path) as image_name,
+                  c.user_id::text as user_id,
+                  coalesce(u.email, c.user_id::text) as email,
                   to_char(c.created_at at time zone 'UTC', 'Mon DD, YYYY HH24:MI') as created_at
-                from customer.classifications c
-                left join customer.users u on u.id = c.user_id
+                from public.classifications c
+                left join customer.users u on u.id = c.user_id::text
                 where {where_sql}
                 order by c.created_at desc nulls last
                 limit :limit

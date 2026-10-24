@@ -8,7 +8,9 @@
 - ORM: Flask-SQLAlchemy
 - Migrations: Flask-Migrate / Alembic (version table in `customer.alembic_version`)
 
-Tables (owner / Flask): `customer.users`, `customer.email_verifications`, `customer.trusted_devices`, `customer.classifications`
+Tables (owner / Flask): `customer.users`, `customer.email_verifications`, `customer.trusted_devices`
+
+Classification history (Customer + Owner portals): **`public.classifications`** — same table the Supabase Table Editor shows by default.
 
 Each of those tables has `role` + `status` (aligned with owner `public.users.role`).
 

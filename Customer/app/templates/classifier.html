@@ -3,7 +3,7 @@
 {% block content %}
 <div><p class="eyebrow">Barong Tagalog Textile Classifier</p><h2>Classify Textile</h2></div>
 <div class="row">
-  <button class="btn d" type="button" id="camBtn">Camera</button>
+  <button class="btn d hide-desktop" type="button" id="camBtn">Camera</button>
   <button class="btn g" type="button" id="galBtn">Gallery</button>
 </div>
 <form id="classifyForm" method="post" enctype="multipart/form-data" action="{{ url_for('classifier.classify_submit') }}">
