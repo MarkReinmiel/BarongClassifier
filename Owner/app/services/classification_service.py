@@ -126,6 +126,23 @@ def classify_upload(user: OwnerUser, file_storage) -> dict:
     }.get(label_text.lower(), label_text)
     row_id = str(uuid.uuid4())
 
+    from app.services.cloudinary_service import upload_classification_image
+
+    image_url = upload_classification_image(
+        content=content,
+        filename=name,
+        user_id=str(user.id),
+        classification_id=row_id,
+    )
+    if image_url:
+        logger.info("classification_image_path_ready id=%s has_cloudinary_url=1", row_id)
+    else:
+        logger.warning(
+            "classification_image_path_ready id=%s has_cloudinary_url=0 "
+            "(DB will store NULL; classify still succeeds)",
+            row_id,
+        )
+
     # Persist into public.classifications so rows appear in Supabase Table Editor.
     try:
         from sqlalchemy import text
@@ -141,7 +158,7 @@ def classify_upload(user: OwnerUser, file_storage) -> dict:
                 values
                   (
                     cast(:id as uuid), cast(:user_id as uuid), :file_name, :label, :display_name,
-                    :confidence, now(), null, :label, :confidence, :file_name
+                    :confidence, now(), :image_path, :label, :confidence, :image_reference
                   )
                 """
             ),
@@ -152,12 +169,21 @@ def classify_upload(user: OwnerUser, file_storage) -> dict:
                 "label": label_text,
                 "display_name": display,
                 "confidence": confidence,
+                # image_path / image_reference get the Cloudinary secure_url only.
+                # Filename stays in file_name so the sync trigger cannot promote a bare name.
+                "image_path": image_url,
+                "image_reference": image_url,
             },
         )
         db.session.commit()
+        logger.info(
+            "classification_db_ok id=%s image_path_set=%s",
+            row_id,
+            bool(image_url),
+        )
     except SQLAlchemyError:
         db.session.rollback()
-        logger.warning("Classification history was not saved.")
+        logger.exception("Classification history was not saved. id=%s", row_id)
 
     image_b64 = base64.b64encode(content).decode("ascii")
     payload = {
@@ -166,6 +192,7 @@ def classify_upload(user: OwnerUser, file_storage) -> dict:
         "image_name": name,
         "created_at": utcnow().isoformat(),
         "image_data_url": f"data:image/jpeg;base64,{image_b64}",
+        "image_path": image_url,
     }
     payload.update(_hierarchical_result(display, confidence, image_bytes=content))
     return payload

@@ -253,6 +253,11 @@ def list_recent_classifications(
                   coalesce(c.display_name, c.predicted_label) as predicted_label,
                   c.confidence::float as confidence,
                   coalesce(c.file_name, c.image_reference, c.image_path) as image_name,
+                  case
+                    when c.image_path like 'https://%' then c.image_path
+                    when c.image_reference like 'https://%' then c.image_reference
+                    else null
+                  end as image_url,
                   c.user_id::text as user_id,
                   coalesce(u.email, c.user_id::text) as email,
                   to_char(c.created_at at time zone 'UTC', 'Mon DD, YYYY HH24:MI') as created_at
