@@ -7,10 +7,10 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/classifier.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/responsive.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}?v=11">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}?v=11">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/classifier.css') }}?v=11">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/responsive.css') }}?v=11">
   {% block head %}{% endblock %}
 </head>
 <body>
@@ -26,12 +26,34 @@
       <a href="{{ url_for('history.history_page') }}" class="{% if request.endpoint == 'history.history_page' %}on{% endif %}">History</a>
     </nav>
     {% if current_user %}
-    <div class="profile">
-      <span>{{ current_user.nickname or current_user.email }}</span>
-      <form method="post" action="{{ url_for('auth.logout') }}">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <button class="btn s" type="submit" style="min-height:40px">Log out</button>
-      </form>
+    <div class="profile" data-profile>
+      <button
+        type="button"
+        class="avatar-btn"
+        id="profileBtn"
+        aria-label="Account menu"
+        aria-expanded="false"
+        aria-controls="profileMenu"
+      >
+        <img
+          class="avatar"
+          src="{{ user_avatar_url }}"
+          alt=""
+          width="40"
+          height="40"
+        >
+      </button>
+      <div class="profile-menu" id="profileMenu" hidden>
+        <div class="profile-meta">
+          <span class="profile-label">Signed in as</span>
+          <strong>{{ current_user.nickname or 'User' }}</strong>
+          <span class="profile-email">{{ current_user.email }}</span>
+        </div>
+        <form method="post" action="{{ url_for('auth.logout') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn p profile-logout" type="submit">Log out</button>
+        </form>
+      </div>
     </div>
     {% endif %}
   </header>
@@ -54,7 +76,7 @@
   </nav>
   {% endif %}
 
-  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/main.js') }}?v=7"></script>
   {% block scripts %}{% endblock %}
 </body>
 </html>

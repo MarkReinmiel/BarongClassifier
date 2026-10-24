@@ -714,7 +714,7 @@ body {
 ================================= */
 
 .preview-section[hidden] {
-    display: block;
+    display: none
 }
 
 .preview-box {
@@ -1142,5 +1142,235 @@ body {
     to {
         opacity: 1;
         transform: translateY(0);
+    }
+}
+
+
+/* =========================================
+   MODERN CLASSIFIER POLISH
+   Add at the end of classify.css
+========================================= */
+
+.classifier-page {
+    background:
+        radial-gradient(
+            circle at top right,
+            rgba(114, 84, 163, 0.07),
+            transparent 32%
+        ),
+        var(--bg);
+}
+
+.classifier-header {
+    margin-bottom: 32px;
+}
+
+.classifier-label {
+    letter-spacing: 2.5px;
+    font-weight: 700;
+}
+
+.classifier-header h1 {
+    letter-spacing: -1px;
+}
+
+.classifier-description {
+    max-width: 620px;
+}
+
+.classifier-card {
+    gap: 24px;
+    padding: 24px;
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    box-shadow: 0 12px 36px rgba(39, 39, 51, 0.06);
+}
+
+.upload-section,
+.preview-section {
+    min-width: 0;
+    padding: 26px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    box-shadow: 0 4px 18px rgba(39, 39, 51, 0.035);
+}
+
+.upload-section h2,
+.preview-section h2 {
+    font-family: "DM Sans", Arial, sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.4px;
+}
+
+.upload-area {
+    min-width: 0;
+    background: var(--surface-soft);
+    border: 1.5px dashed var(--line-strong);
+    border-radius: 14px;
+}
+
+.upload-area:hover {
+    background: rgba(114, 84, 163, 0.055);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 4px rgba(114, 84, 163, 0.07);
+}
+
+.upload-area.is-dragging {
+    background: rgba(114, 84, 163, 0.09);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 4px rgba(114, 84, 163, 0.08);
+}
+
+.upload-icon {
+    background: var(--accent);
+    box-shadow: 0 6px 16px rgba(114, 84, 163, 0.18);
+}
+
+.upload-button,
+.capture-option:not(.secondary),
+.capture-button,
+.classify-button {
+    background: var(--accent);
+    border-color: var(--accent);
+    border-radius: 10px;
+}
+
+.upload-button:hover,
+.capture-option:hover:not(:disabled),
+.capture-button:hover:not(:disabled),
+.classify-button:hover:not(:disabled) {
+    background: var(--accent-deep);
+    border-color: var(--accent-deep);
+}
+
+.capture-option.secondary {
+    background: var(--surface);
+    border-color: var(--line-strong);
+    color: var(--ink);
+    border-radius: 10px;
+}
+
+.capture-option.secondary:hover:not(:disabled) {
+    background: var(--surface-soft);
+    border-color: var(--accent);
+    color: var(--accent-deep);
+}
+
+.preview-box {
+    background: var(--surface-soft);
+    border-color: var(--line);
+    border-radius: 12px;
+}
+
+.file-name {
+    border-radius: 10px;
+}
+
+.remove-button {
+    border-radius: 10px;
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        color 0.2s ease;
+}
+
+.remove-button:hover {
+    background: var(--surface-soft);
+    border-color: var(--accent);
+    color: var(--accent-deep);
+}
+
+.classify-button {
+    min-height: 54px;
+    padding: 16px 34px;
+    font-weight: 700;
+    box-shadow: 0 5px 14px rgba(114, 84, 163, 0.16);
+}
+
+.classify-button:disabled {
+    background: var(--line-strong);
+    border-color: var(--line-strong);
+    box-shadow: none;
+}
+
+.camera-panel {
+    border: 1px solid var(--line);
+    border-radius: 16px;
+}
+
+.camera-frame {
+    border-radius: 12px;
+}
+
+.capture-button:disabled {
+    background: var(--line-strong);
+}
+
+/* Keep small screens comfortable */
+@media (max-width: 650px) {
+    .classifier-page {
+        padding-right: 14px;
+        padding-left: 14px;
+    }
+
+    .classifier-header {
+        margin-bottom: 22px;
+    }
+
+    .classifier-label {
+        font-size: 10px;
+        letter-spacing: 1.8px;
+    }
+
+    .classifier-card {
+        gap: 16px;
+        padding: 12px;
+        border-radius: 16px;
+    }
+
+    .upload-section,
+    .preview-section {
+        padding: 18px;
+        border-radius: 14px;
+    }
+
+    .upload-section h2,
+    .preview-section h2 {
+        font-size: 20px;
+    }
+
+    .upload-area {
+        padding: 28px 14px;
+    }
+
+    .capture-options {
+        gap: 8px;
+    }
+
+    .capture-option {
+        min-height: 48px;
+        padding: 10px 8px;
+        font-size: 13px;
+    }
+
+    .classify-button {
+        border-radius: 12px;
+    }
+}
+
+/* Respect reduced-motion preferences */
+@media (prefers-reduced-motion: reduce) {
+    .classifier-header,
+    .classifier-card {
+        animation: none;
+    }
+
+    .upload-area,
+    .upload-button,
+    .capture-option,
+    .classify-button {
+        transition: none;
     }
 }

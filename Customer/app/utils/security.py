@@ -35,6 +35,12 @@ def mask_email(email: str) -> str:
     return f"{local[:1]}***@{domain}"
 
 
+def gravatar_url(email: str, size: int = 80) -> str:
+    """Avatar for the account email (Gravatar photo, or identicon fallback)."""
+    digest = hashlib.md5((email or "").strip().lower().encode("utf-8")).hexdigest()
+    return f"https://www.gravatar.com/avatar/{digest}?s={size}&d=identicon"
+
+
 def current_user() -> CustomerUser | None:
     user_id = session.get("user_id")
     if not user_id:

@@ -23,7 +23,7 @@
 <div class="list">
   {% for row in stats.recent %}
   <div class="card item">
-    <div class="grow"><span class="val">{{ row.label }}</span><span class="sm">{{ row.image_name }}</span></div>
+    <div class="grow"><span class="val">{{ row.label }}</span><span class="sep">/</span><span class="file">{{ row.image_name }}</span></div>
     <div style="text-align:right"><b>{{ '%.0f'|format(row.confidence * 100) }}%</b></div>
   </div>
   {% endfor %}

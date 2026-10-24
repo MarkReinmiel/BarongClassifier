@@ -59,11 +59,15 @@ def create_app(config_object: type[Config] = Config) -> Flask:
 
     @flask_app.context_processor
     def inject_globals():
+        from flask import url_for
+
         from app.utils.security import current_user
 
+        user = current_user()
         return {
             "app_name": flask_app.config["APP_NAME"],
-            "current_user": current_user(),
+            "current_user": user,
+            "user_avatar_url": url_for("static", filename="images/avatar-unknown.svg") + "?v=10",
         }
 
     @flask_app.get("/health")
