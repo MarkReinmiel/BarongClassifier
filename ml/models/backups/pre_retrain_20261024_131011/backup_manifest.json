@@ -1,0 +1,47 @@
+{
+  "created_at": "2026-10-24T13:10:11.330143+00:00",
+  "files": [
+    {
+      "src": "C:\\Users\\louis\\OneDrive\\Documents\\GitHub\\BarongClassifier\\Customer\\models\\barong_model.keras",
+      "backup": "C:\\Users\\louis\\OneDrive\\Documents\\GitHub\\BarongClassifier\\ml\\models\\backups\\pre_retrain_20261024_131011\\customer_barong_model.keras",
+      "sha256": "729caa30c6d9d2ed3362856c0fdf6f0bccd34eb8f5b5610328d57016f0fdbe78",
+      "bytes": 21771204,
+      "status": "copied"
+    },
+    {
+      "src": "C:\\Users\\louis\\OneDrive\\Documents\\GitHub\\BarongClassifier\\Customer\\models\\labels.json",
+      "backup": "C:\\Users\\louis\\OneDrive\\Documents\\GitHub\\BarongClassifier\\ml\\models\\backups\\pre_retrain_20261024_131011\\customer_labels.json",
+      "sha256": "620174e74a9fb6903a48ee46bb0b40bdb7a4de04c0df9a6070a917396344e7eb",
+      "bytes": 87,
+      "status": "copied"
+    },
+    {
+      "src": "C:\\Users\\louis\\OneDrive\\Documents\\GitHub\\BarongClassifier\\Owner\\models\\barong_model.keras",
+      "backup": "C:\\Users\\louis\\OneDrive\\Documents\\GitHub\\BarongClassifier\\ml\\models\\backups\\pre_retrain_20261024_131011\\owner_barong_model.keras",
+      "sha256": "729caa30c6d9d2ed3362856c0fdf6f0bccd34eb8f5b5610328d57016f0fdbe78",
+      "bytes": 21771204,
+      "status": "copied"
+    },
+    {
+      "src": "C:\\Users\\louis\\OneDrive\\Documents\\GitHub\\BarongClassifier\\Owner\\models\\labels.json",
+      "backup": "C:\\Users\\louis\\OneDrive\\Documents\\GitHub\\BarongClassifier\\ml\\models\\backups\\pre_retrain_20261024_131011\\owner_labels.json",
+      "sha256": "620174e74a9fb6903a48ee46bb0b40bdb7a4de04c0df9a6070a917396344e7eb",
+      "bytes": 87,
+      "status": "copied"
+    },
+    {
+      "src": "C:\\Users\\louis\\OneDrive\\Documents\\GitHub\\BarongClassifier\\Backend\\machine learning\\artifacts\\barong_mobilenetv2.keras",
+      "backup": "C:\\Users\\louis\\OneDrive\\Documents\\GitHub\\BarongClassifier\\ml\\models\\backups\\pre_retrain_20261024_131011\\backend_barong_mobilenetv2.keras",
+      "sha256": "729caa30c6d9d2ed3362856c0fdf6f0bccd34eb8f5b5610328d57016f0fdbe78",
+      "bytes": 21771204,
+      "status": "copied"
+    },
+    {
+      "src": "C:\\Users\\louis\\OneDrive\\Documents\\GitHub\\BarongClassifier\\Backend\\machine learning\\artifacts\\labels.json",
+      "backup": "C:\\Users\\louis\\OneDrive\\Documents\\GitHub\\BarongClassifier\\ml\\models\\backups\\pre_retrain_20261024_131011\\backend_labels.json",
+      "sha256": "620174e74a9fb6903a48ee46bb0b40bdb7a4de04c0df9a6070a917396344e7eb",
+      "bytes": 87,
+      "status": "copied"
+    }
+  ]
+}

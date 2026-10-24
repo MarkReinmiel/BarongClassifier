@@ -42,6 +42,81 @@ def display_name_for(label: str) -> str:
     return _DISPLAY.get(key, str(label or "").strip() or "Unknown")
 
 
+def _model_version() -> str:
+    labels_path = CUSTOMER_ROOT / "models" / "labels.json"
+    try:
+        import json
+
+        data = json.loads(labels_path.read_text(encoding="utf-8"))
+        return str(data.get("version") or "")
+    except Exception:
+        return ""
+
+
+def hierarchical_result(
+    display_label: str, confidence: float, image_bytes: bytes | None = None
+) -> dict:
+    """Main-class fields plus Piña-variant prediction when main class is Piña."""
+    raw = str(display_label or "").strip().lower().replace("ñ", "n")
+    variant = "undetermined"
+    variant_display = "Undetermined"
+    variant_confidence = None
+    message = ""
+    status = "classified"
+
+    if "pina" in raw:
+        main_key = "pina"
+        variant_hit = None
+        if image_bytes:
+            try:
+                from app.ml.variant_predictor import load_variant_model, predict_variant
+
+                load_variant_model(
+                    CUSTOMER_ROOT,
+                    configured=current_app.config.get("VARIANT_MODEL_PATH"),
+                )
+                variant_hit = predict_variant(image_bytes)
+            except Exception:
+                logger.exception("Variant model unavailable.")
+        if variant_hit:
+            variant = variant_hit["variant"]
+            variant_display = variant_hit["variant_label"]
+            variant_confidence = variant_hit.get("variant_confidence")
+            message = variant_hit.get("message") or ""
+            if variant_hit.get("status") == "uncertain":
+                status = "uncertain"
+        else:
+            message = (
+                "Piña detected, but the Piña / Piña Silk variant could not be determined "
+                "reliably yet."
+            )
+            status = "uncertain"
+    elif "jusi" in raw:
+        main_key = "jusi"
+        variant = "not_applicable"
+        variant_display = "Not applicable"
+    elif "cocoon" in raw:
+        main_key = "cocoon"
+        variant = "not_applicable"
+        variant_display = "Not applicable"
+    else:
+        main_key = raw or "unknown"
+        message = "This image could not be classified reliably. Please capture another image."
+        status = "uncertain"
+
+    return {
+        "main_class": main_key,
+        "main_class_label": display_name_for(main_key if main_key != "unknown" else display_label),
+        "variant": variant,
+        "variant_label": variant_display,
+        "main_confidence": float(confidence),
+        "variant_confidence": variant_confidence,
+        "status": status if main_key in {"pina", "jusi", "cocoon"} else "uncertain",
+        "message": message,
+        "model_version": _model_version(),
+    }
+
+
 def classify_image(user: CustomerUser, file_storage) -> dict:
     from app.services.image_service import prepare_image_bytes
 
@@ -81,13 +156,17 @@ def classify_image(user: CustomerUser, file_storage) -> dict:
         logger.exception("Classification history was not saved.")
         raise ClassificationError("The classification could not be saved.", 503) from error
 
-    return {
+    conf = float(row.confidence)
+    display = row.display_name or row.predicted_label
+    payload = {
         "id": str(row.id),
-        "label": row.display_name or row.predicted_label,
-        "confidence": float(row.confidence),
+        "label": display,
+        "confidence": conf,
         "image_name": row.image_name,
         "created_at": row.created_at.isoformat() if row.created_at else "",
     }
+    payload.update(hierarchical_result(display, conf, image_bytes=content))
+    return payload
 
 
 def _model_file() -> Path | None:

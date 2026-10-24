@@ -1,0 +1,32 @@
+{
+  "generated_at": "2026-10-24T15:33:16.826806+00:00",
+  "total_images": 136,
+  "pina": 102,
+  "pina_silk": 34,
+  "by_split": {
+    "train": {
+      "pina": 66,
+      "pina_silk": 21
+    },
+    "val": {
+      "pina": 18,
+      "pina_silk": 0
+    },
+    "test": {
+      "pina": 18,
+      "pina_silk": 13
+    }
+  },
+  "silk_physical_samples": [
+    "phys_silk_cam_01",
+    "phys_silk_img_01"
+  ],
+  "silk_sample_count": 2,
+  "limitations": [
+    "Only 2 independent Pi\u00f1a Silk physical samples.",
+    "No silk images in val split (EarlyStopping sees ordinary Pi\u00f1a only).",
+    "Provisional model \u2014 retrain when \u22656\u201310 distinct silk textiles available."
+  ],
+  "output_dir": "C:\\Users\\louis\\OneDrive\\Documents\\GitHub\\BarongClassifier\\ml\\data\\variant_classifier",
+  "manifest": "C:\\Users\\louis\\OneDrive\\Documents\\GitHub\\BarongClassifier\\ml\\reports\\variant_source_manifest.csv"
+}

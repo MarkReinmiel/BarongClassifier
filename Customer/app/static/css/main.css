@@ -44,6 +44,10 @@ button,input,select{font-family:var(--sans)}
 @keyframes spin{to{transform:rotate(360deg)}}
 @media (prefers-reduced-motion:reduce){.btn .spin{animation:none}}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:14px;box-shadow:0 8px 24px var(--shadow)}
+.result-message{margin:12px 0;padding:12px 14px;border-radius:14px;border:1px solid var(--line);background:var(--soft);color:var(--ink);font-size:14px;line-height:1.45}
+.result-message.undetermined{border-color:#c9b07a;background:#f8f1e2;color:#6a5428}
+.result-message.not_applicable{border-color:var(--line);background:var(--soft)}
+.result-message.uncertain{border-color:#d4a5a5;background:#f8ecec;color:#7a3b3b}
 .num{font-family:var(--serif);font-size:28px;color:var(--deep);display:block;line-height:1.1}
 .field{min-height:44px;width:100%;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:0 12px;font-size:14px;color:var(--ink)}
 .lbl{font-size:12px;color:var(--ink2);display:block;margin-bottom:6px}

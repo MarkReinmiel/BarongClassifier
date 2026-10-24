@@ -624,3 +624,26 @@ body.modal-open {
     }
 
 }
+.result-hierarchy-message {
+    margin: 0 0 18px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px solid var(--line-strong);
+    background: var(--surface-soft);
+    color: var(--ink-soft);
+    font-size: 14px;
+    line-height: 1.5;
+}
+.result-hierarchy-message.undetermined {
+    border-color: #c9b07a;
+    background: #f8f1e2;
+    color: #6a5428;
+}
+.result-hierarchy-message.not_applicable {
+    border-color: var(--line);
+}
+.result-hierarchy-message.uncertain {
+    border-color: #d4a5a5;
+    background: #f8ecec;
+    color: #7a3b3b;
+}

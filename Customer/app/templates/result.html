@@ -7,6 +7,21 @@
   <div><span class="lbl">Predicted Textile Type</span><h2 style="color:#fff;font-size:34px">{{ result.label }}</h2></div>
   <div style="text-align:right"><span class="lbl">Model Confidence</span><h2 style="color:var(--hi);font-size:30px">{{ '%.1f'|format(result.confidence * 100) }}%</h2></div>
 </div>
+
+{% if result.main_class == 'pina' %}
+<div class="card pina-variant-card" style="margin-top:12px">
+  <span class="lbl">Piña variant</span>
+  <span class="num" style="font-size:18px">{{ result.variant_label or 'Undetermined' }}</span>
+  {% if result.variant_confidence is not none %}
+  <span class="lbl" style="display:block;margin-top:8px">Variant confidence</span>
+  <span class="num" style="font-size:16px">{{ '%.1f'|format(result.variant_confidence * 100) }}%</span>
+  {% endif %}
+  {% if result.message %}
+  <p class="result-message undetermined" style="margin:10px 0 0">{{ result.message }}</p>
+  {% endif %}
+</div>
+{% endif %}
+
 <div class="g2">
   <div class="card"><span class="lbl">Image Name</span><span class="num" style="font-size:18px">{{ result.image_name }}</span></div>
   <div class="card"><span class="lbl">Classification Status</span><span class="num" style="font-size:18px">Classified</span></div>
