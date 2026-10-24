@@ -1,26 +1,61 @@
 {% extends "base.html" %}
 {% block title %}Textile Types | {{ app_name }}{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/textiletypes.css') }}?v=2">
+{% endblock %}
 {% block content %}
-<div><p class="eyebrow">Barong Tagalog</p><h2>Textile Types</h2><p class="sm" style="margin-top:4px">Tap a card for details.</p></div>
-<button class="card type" type="button" data-t="Piña" data-d="A fine, lustrous fabric woven from pineapple leaf fibers."><span class="mark">◆</span><span><h3>Piña</h3><p class="sm">Supported Textile</p></span></button>
-<button class="card type" type="button" data-t="Jusi" data-d="A sheer, lightweight fabric used for Barong Tagalog."><span class="mark">◇</span><span><h3>Jusi</h3><p class="sm">Supported Textile</p></span></button>
-<button class="card type" type="button" data-t="Cocoon" data-d="The cocoon textile class in the classifier dataset."><span class="mark">✦</span><span><h3>Cocoon</h3><p class="sm">Supported Textile</p></span></button>
-<dialog id="dlg" class="card" style="border-radius:20px;border:1px solid var(--line2);max-width:min(92vw,420px)">
-  <p class="eyebrow">Supported Textile</p>
-  <h3 id="dTitle"></h3>
-  <p id="dText"></p>
-  <button class="btn p" style="margin-top:16px;width:100%" id="dClose" type="button">Close</button>
-</dialog>
+<main class="textile-page textile-page--customer">
+  <section class="textile-header">
+    <p class="eyebrow">BARONG TAGALOG</p>
+    <h1>Textile Types</h1>
+    <p class="page-description">
+      Explore the textile types supported by the BarongClassifier system.
+    </p>
+  </section>
+
+  <section class="textile-grid">
+    <article class="textile-card" data-textile="pina" tabindex="0" role="button">
+      <div class="textile-icon">◆</div>
+      <h2>Piña</h2>
+      <p>A traditional textile associated with Barong Tagalog and known for its delicate appearance and fine texture.</p>
+      <span class="textile-status">Supported Textile</span>
+    </article>
+    <article class="textile-card" data-textile="jusi" tabindex="0" role="button">
+      <div class="textile-icon">◇</div>
+      <h2>Jusi</h2>
+      <p>A lightweight textile commonly associated with Barong Tagalog garments and formal wear.</p>
+      <span class="textile-status">Supported Textile</span>
+    </article>
+    <article class="textile-card" data-textile="cocoon" tabindex="0" role="button">
+      <div class="textile-icon">✦</div>
+      <h2>Cocoon</h2>
+      <p>A lightweight silk fabric with a smooth texture and subtle sheen, giving the Barong Tagalog an elegant and refined appearance.</p>
+      <span class="textile-status">Supported Textile</span>
+    </article>
+    <article class="textile-card" data-textile="others" tabindex="0" role="button">
+      <div class="textile-icon">✧</div>
+      <h2>Others</h2>
+      <p>Other textile materials and fabric types that may be associated with traditional Filipino clothing.</p>
+      <span class="textile-status">Supported Textile</span>
+    </article>
+  </section>
+</main>
+
+<div id="textileModal" class="textile-modal" hidden>
+  <div class="textile-modal-content">
+    <button class="close-modal" type="button" id="closeTextileModal">&times;</button>
+    <h2 id="modalTitle"></h2>
+    <div id="modalImages" class="modal-images"></div>
+    <p id="modalDescription"></p>
+    <div class="textile-details">
+      <p><strong>Material:</strong> <span id="modalMaterial"></span></p>
+      <p><strong>Origin:</strong> <span id="modalOrigin"></span></p>
+      <p><strong>Common Uses:</strong> <span id="modalUses"></span></p>
+      <p><strong>Characteristics:</strong> <span id="modalCharacteristics"></span></p>
+    </div>
+  </div>
+</div>
 {% endblock %}
 {% block scripts %}
-<script>
-document.querySelectorAll('.type').forEach(function(btn){
-  btn.addEventListener('click', function(){
-    document.getElementById('dTitle').textContent = btn.dataset.t;
-    document.getElementById('dText').textContent = btn.dataset.d;
-    document.getElementById('dlg').showModal();
-  });
-});
-document.getElementById('dClose').onclick = function(){ document.getElementById('dlg').close(); };
-</script>
+<script src="{{ url_for('static', filename='js/textiletypes.js') }}?v=1"></script>
 {% endblock %}

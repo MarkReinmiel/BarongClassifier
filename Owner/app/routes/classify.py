@@ -19,7 +19,11 @@ def classify_page():
 @login_required
 def classify_submit():
     user = current_user()
-    upload = request.files.get("file") or request.files.get("textileImage")
+    upload = (
+        request.files.get("file")
+        or request.files.get("camera_file")
+        or request.files.get("textileImage")
+    )
     if not upload or not getattr(upload, "filename", None):
         flash("Please select or capture a textile image first.", "error")
         return redirect(url_for("classify.classify_page"))

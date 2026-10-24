@@ -5,6 +5,8 @@ from __future__ import annotations
 import uuid
 from datetime import datetime, timezone
 
+from sqlalchemy.dialects.postgresql import UUID
+
 from app.extensions import db
 
 
@@ -87,8 +89,13 @@ class Classification(db.Model):
     __tablename__ = "classifications"
     __table_args__ = {"schema": "public"}
 
-    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    user_id = db.Column(db.String(36), nullable=False, index=True)
+    # DB columns are uuid; keep Python values as strings (as_uuid=False).
+    id = db.Column(
+        UUID(as_uuid=False),
+        primary_key=True,
+        default=lambda: str(uuid.uuid4()),
+    )
+    user_id = db.Column(UUID(as_uuid=False), nullable=False, index=True)
     file_name = db.Column(db.Text)
     predicted_label = db.Column(db.Text, nullable=False)
     display_name = db.Column(db.Text, nullable=False)

@@ -18,16 +18,34 @@
   <div class="card step"><span class="num">03</span><b>AI Classification</b></div>
   <div class="card step"><span class="num">04</span><b>View Result</b></div>
 </div>
-{% if stats.recent %}
-<p class="eyebrow" style="margin-top:8px">Recent</p>
-<div class="list">
-  {% for row in stats.recent %}
-  <div class="card item">
-    <div class="grow"><span class="val">{{ row.label }}</span><span class="sep">/</span><span class="file">{{ row.image_name }}</span></div>
-    <div style="text-align:right"><b>{{ '%.0f'|format(row.confidence * 100) }}%</b></div>
+<section class="float-panel recent-panel">
+  <div class="float-panel-head">
+    <div>
+      <h3 class="float-panel-title">Recent</h3>
+      <p class="float-panel-sub">Latest textile classifications</p>
+    </div>
+    <a class="float-panel-link" href="{{ url_for('history.history_page') }}" aria-label="Open full history">↗</a>
   </div>
-  {% endfor %}
-</div>
-{% endif %}
+  {% if stats.recent %}
+  <div class="float-list">
+    {% for row in stats.recent %}
+    <div class="float-row">
+      <div class="grow">
+        <span class="val">{{ row.label }}</span>
+        <span class="sep">/</span>
+        <span class="file">{{ row.image_name }}</span>
+      </div>
+      <div class="float-meta">
+        <b>{{ '%.0f'|format(row.confidence * 100) }}%</b>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="float-empty">
+    <p>No classifications yet. Classify a textile to see it here.</p>
+  </div>
+  {% endif %}
+</section>
 {% endblock %}
-{% block scripts %}<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/dashboard.js') }}?v=12"></script>{% endblock %}

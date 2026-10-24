@@ -4,9 +4,14 @@
 @media (max-width: 899px) {
 
     body {
-        padding-top: calc(56px + env(safe-area-inset-top));
-        padding-bottom: calc(74px + env(safe-area-inset-bottom));
+        padding-top: calc(64px + env(safe-area-inset-top)) !important;
+        padding-bottom: calc(88px + env(safe-area-inset-bottom));
         background: #795780;
+    }
+
+    .top {
+        height: calc(64px + env(safe-area-inset-top));
+        padding-top: env(safe-area-inset-top);
     }
 
     /* MOBILE HEADER — keep the desktop header unchanged */
@@ -231,7 +236,7 @@
         width: 100%;
         max-width: none;
         margin: 0;
-        padding: 14px 16px 20px;
+        padding: 14px 16px calc(88px + env(safe-area-inset-bottom));
     }
 
     /* All pages share one fixed-size glow on phones, so the background is
@@ -249,7 +254,6 @@
             var(--bg);
     }
 
-    .dashboard-hero,
     .classifier-header,
     .textile-header {
         margin-bottom: 12px;
@@ -263,18 +267,40 @@
     }
 
     .dashboard-hero {
+        display: grid;
+        margin-bottom: 18px;
+    }
+
+    .classifier-description,
+    .page-description,
+    .demo-note {
+        display: none;
+    }
+
+    .how-section .step p {
         display: block;
     }
 
-    .dashboard-image,
-    .dashboard-description,
-    .classifier-description,
-    .page-description,
-    .overview-icon,
-    .overview-info p,
-    .step p,
-    .demo-note {
-        display: none;
+    .ghost-button {
+        min-height: 48px;
+        border-radius: 999px;
+        justify-content: center;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .tools-section {
+        margin-bottom: 28px;
+    }
+
+    .tool-card-wide {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .tool-card-wide .tool-link {
+        margin-left: 0;
+        padding-top: 16px;
     }
 
     .dashboard-label,

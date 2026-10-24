@@ -56,6 +56,7 @@ def main() -> int:
 
     model_src = SRC_ARTIFACTS / "barong_mobilenetv2.keras"
     labels_src = SRC_ARTIFACTS / "labels.json"
+    metrics_src = SRC_ARTIFACTS / "metrics.json"
     if not model_src.is_file() or not labels_src.is_file():
         print(f"Missing Backend artifacts under {SRC_ARTIFACTS}")
         print("Train first: python \"Backend/machine learning/train_cnn.py\"")
@@ -66,6 +67,10 @@ def main() -> int:
     shutil.copy2(labels_src, MODELS_DIR / "labels.json")
     print(f"Copied model -> {MODELS_DIR / 'barong_model.keras'}")
     print(f"Copied labels -> {MODELS_DIR / 'labels.json'}")
+    if metrics_src.is_file():
+        shutil.copy2(metrics_src, MODELS_DIR / "metrics.json")
+        print(f"Copied metrics -> {MODELS_DIR / 'metrics.json'}")
+
 
     if not SRC_DATASET.is_dir():
         print(f"Missing dataset folder: {SRC_DATASET}")

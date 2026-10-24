@@ -1,33 +1,71 @@
 {% extends "base.html" %}
 {% block title %}Result | {{ app_name }}{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/result.css') }}?v=2">
+{% endblock %}
 {% block content %}
-<a class="btn s" href="{{ url_for('classifier.classify_page') }}" style="align-self:flex-start">← Back to Classify</a>
-<h2>Classification Result</h2>
-<div class="card dark">
-  <div><span class="lbl">Predicted Textile Type</span><h2 style="color:#fff;font-size:34px">{{ result.label }}</h2></div>
-  <div style="text-align:right"><span class="lbl">Model Confidence</span><h2 style="color:var(--hi);font-size:30px">{{ '%.1f'|format(result.confidence * 100) }}%</h2></div>
-</div>
+{% set conf = (result.confidence or 0) * 100 %}
+{% set photo = result.image_path if result.image_path and result.image_path.startswith('https://') else none %}
+
+<a class="btn s result-back" href="{{ url_for('classifier.classify_page') }}">← Back to Classify</a>
+<h2 class="result-page-title">Classification Result</h2>
+
+<article class="result-hero">
+  <div class="result-hero-photo">
+    {% if photo %}
+    <img src="{{ photo }}" alt="Classified {{ result.label }}">
+    {% else %}
+    <div class="result-hero-photo-fallback" aria-hidden="true">◈</div>
+    {% endif %}
+    <span class="result-hero-photo-label">Your photo</span>
+  </div>
+  <div class="result-hero-prediction">
+    <span class="result-kicker">Predicted Textile Type</span>
+    <h3>{{ result.label }}</h3>
+  </div>
+  <div class="result-hero-confidence">
+    <span class="result-kicker">Model Confidence</span>
+    <strong>{{ '%.1f'|format(conf) }}%</strong>
+    <div class="result-bar" aria-hidden="true">
+      <span style="width: {{ [conf, 100]|min }}%"></span>
+    </div>
+  </div>
+</article>
 
 {% if result.main_class == 'pina' %}
-<div class="card pina-variant-card" style="margin-top:12px">
-  <span class="lbl">Piña variant</span>
-  <span class="num" style="font-size:18px">{{ result.variant_label or 'Undetermined' }}</span>
+<section class="result-variant-card">
+  <div class="result-variant-copy">
+    <span class="result-kicker">Piña variant</span>
+    <strong>{{ result.variant_label or 'Undetermined' }}</strong>
+    {% if result.message %}
+    <p class="result-message">{{ result.message }}</p>
+    {% endif %}
+  </div>
   {% if result.variant_confidence is not none %}
-  <span class="lbl" style="display:block;margin-top:8px">Variant confidence</span>
-  <span class="num" style="font-size:16px">{{ '%.1f'|format(result.variant_confidence * 100) }}%</span>
+  {% set vconf = result.variant_confidence * 100 %}
+  <div class="result-variant-score">
+    <div class="result-bar result-bar--dark" aria-hidden="true">
+      <span style="width: {{ [vconf, 100]|min }}%"></span>
+    </div>
+    <strong>{{ '%.1f'|format(vconf) }}%</strong>
+  </div>
   {% endif %}
-  {% if result.message %}
-  <p class="result-message undetermined" style="margin:10px 0 0">{{ result.message }}</p>
-  {% endif %}
-</div>
+</section>
 {% endif %}
 
-<div class="g2">
-  <div class="card"><span class="lbl">Image Name</span><span class="num" style="font-size:18px">{{ result.image_name }}</span></div>
-  <div class="card"><span class="lbl">Classification Status</span><span class="num" style="font-size:18px">Classified</span></div>
+<div class="result-meta">
+  <div class="result-meta-card">
+    <span class="result-kicker">Image Name</span>
+    <strong>{{ result.image_name or '—' }}</strong>
+  </div>
+  <div class="result-meta-card">
+    <span class="result-kicker">Classification Status</span>
+    <strong>{{ result.status or 'Classified' }}</strong>
+  </div>
 </div>
-<div class="row">
+
+<div class="result-actions">
   <a class="btn g" href="{{ url_for('history.history_page') }}">History</a>
-  <a class="btn p" href="{{ url_for('classifier.classify_page') }}" style="flex:2">Classify Another →</a>
+  <a class="btn p" href="{{ url_for('classifier.classify_page') }}">Classify Another →</a>
 </div>
 {% endblock %}

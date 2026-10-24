@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from datetime import date
-
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 
 from app.services.auth_service import AuthError, change_password
@@ -16,7 +14,19 @@ from app.services.users_service import (
 from app.utils.security import current_user, login_required, no_store
 
 bp = Blueprint("dashboard", __name__)
-FABRIC_OPTIONS = ["Piña", "Jusi", "Cocoon", "pina", "jusi", "cocoon"]
+FABRIC_OPTIONS = [
+    ("", "All fabric types"),
+    ("pina", "Piña"),
+    ("jusi", "Jusi"),
+    ("cocoon", "Cocoon"),
+]
+DATE_OPTIONS = [
+    ("", "All dates"),
+    ("today", "Today"),
+    ("7d", "Last 7 days"),
+    ("30d", "Last 30 days"),
+]
+PER_PAGE_OPTIONS = [10, 25, 50]
 
 
 @bp.get("/dashboard")
@@ -24,7 +34,14 @@ FABRIC_OPTIONS = ["Piña", "Jusi", "Cocoon", "pina", "jusi", "cocoon"]
 def home():
     user = current_user()
     stats = dashboard_stats()
-    response = render_template("dashboard.html", user=user, stats=stats, active="dashboard")
+    recent = list_recent_classifications(limit=5)["items"]
+    response = render_template(
+        "dashboard.html",
+        user=user,
+        stats=stats,
+        recent=recent,
+        active="dashboard",
+    )
     return no_store(response)
 
 
@@ -49,33 +66,39 @@ def textile_types():
 @login_required
 def history():
     user = current_user()
-    date_from = (request.args.get("from") or "").strip()
-    date_to = (request.args.get("to") or "").strip()
-    fabric = (request.args.get("fabric") or "").strip()
-    search_date = (request.args.get("search_date") or "").strip()
-    if (request.args.get("today") or "") == "1":
-        search_date = date.today().isoformat()
-        date_from = ""
-        date_to = ""
+    fabric = (request.args.get("fabric") or request.args.get("type") or "").strip()
+    date_preset = (request.args.get("date") or "").strip()
+    try:
+        page = int(request.args.get("page") or 1)
+    except ValueError:
+        page = 1
+    try:
+        per_page = int(request.args.get("per_page") or 10)
+    except ValueError:
+        per_page = 10
+    if per_page not in PER_PAGE_OPTIONS:
+        per_page = 10
 
-    rows = list_recent_classifications(
-        date_from=date_from or None,
-        date_to=date_to or None,
+    result = list_recent_classifications(
+        page=page,
+        per_page=per_page,
+        date_preset=date_preset or None,
         fabric=fabric or None,
-        search_date=search_date or None,
     )
     response = render_template(
         "history.html",
         user=user,
-        rows=rows,
+        rows=result["items"],
         active="history",
         fabric_options=FABRIC_OPTIONS,
-        filters={
-            "date_from": date_from,
-            "date_to": date_to,
-            "fabric": fabric,
-            "search_date": search_date,
-        },
+        date_options=DATE_OPTIONS,
+        per_page_options=PER_PAGE_OPTIONS,
+        selected_type=fabric,
+        date_preset=date_preset,
+        page=result["page"],
+        pages=result["pages"],
+        total=result["total"],
+        per_page=result["per_page"],
     )
     return no_store(response)
 
