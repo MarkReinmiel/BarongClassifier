@@ -1,0 +1,20 @@
+{
+  "activated_at": "2026-10-24T15:37:13.184528+00:00",
+  "version": "variant_20261024_153608",
+  "threshold": 0.800000011920929,
+  "customer": {
+    "model": "C:\\Users\\louis\\OneDrive\\Documents\\GitHub\\BarongClassifier\\Customer\\models\\barong_pina_variant.keras",
+    "labels": "C:\\Users\\louis\\OneDrive\\Documents\\GitHub\\BarongClassifier\\Customer\\models\\barong_pina_variant_labels.json",
+    "sha256": "97f1116a6715488866da8aa2aa15a9f0a0a4903a112bf3c43660704e3064db58"
+  },
+  "owner": {
+    "model": "C:\\Users\\louis\\OneDrive\\Documents\\GitHub\\BarongClassifier\\Owner\\models\\barong_pina_variant.keras",
+    "labels": "C:\\Users\\louis\\OneDrive\\Documents\\GitHub\\BarongClassifier\\Owner\\models\\barong_pina_variant_labels.json",
+    "sha256": "97f1116a6715488866da8aa2aa15a9f0a0a4903a112bf3c43660704e3064db58"
+  },
+  "backend": {
+    "model": "C:\\Users\\louis\\OneDrive\\Documents\\GitHub\\BarongClassifier\\Backend\\machine learning\\artifacts\\barong_pina_variant.keras",
+    "labels": "C:\\Users\\louis\\OneDrive\\Documents\\GitHub\\BarongClassifier\\Backend\\machine learning\\artifacts\\barong_pina_variant_labels.json",
+    "sha256": "97f1116a6715488866da8aa2aa15a9f0a0a4903a112bf3c43660704e3064db58"
+  }
+}

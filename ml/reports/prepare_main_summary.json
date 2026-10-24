@@ -1,0 +1,41 @@
+{
+  "generated_at": "2026-10-24T13:10:10.986755+00:00",
+  "seed": 42,
+  "main_candidates": 346,
+  "main_included": 346,
+  "main_excluded_duplicates_or_unreadable": 0,
+  "silk_review_only": 34,
+  "prepared_class_counts": {
+    "cocoon": 96,
+    "jusi": 124,
+    "pina": 126
+  },
+  "split_image_counts": {
+    "train/cocoon": 66,
+    "train/jusi": 85,
+    "train/pina": 87,
+    "val/cocoon": 14,
+    "val/jusi": 19,
+    "val/pina": 19,
+    "test/cocoon": 16,
+    "test/jusi": 20,
+    "test/pina": 20
+  },
+  "unique_groups_per_split_class": {
+    "train/cocoon": 62,
+    "train/jusi": 65,
+    "train/pina": 84,
+    "val/cocoon": 14,
+    "val/jusi": 14,
+    "val/pina": 19,
+    "test/cocoon": 14,
+    "test/jusi": 15,
+    "test/pina": 19
+  },
+  "limitations": [
+    "physical_sample_id is unknown for most images; grouping uses IMG_* stem or filename stem.",
+    "pia_2 / pia_2.1 accepted as Pi\u00f1a by user decision (provisional), not lab-verified.",
+    "All pia_silk images flagged needs_manual_verification; excluded from variant training.",
+    "Exact sha256 duplicates excluded from prepared training copies."
+  ]
+}

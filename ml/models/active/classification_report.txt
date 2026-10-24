@@ -1,0 +1,9 @@
+              precision    recall  f1-score   support
+
+      Cocoon      0.938     0.938     0.938        16
+        Jusi      0.952     1.000     0.976        20
+        Piña      1.000     0.950     0.974        20
+
+    accuracy                          0.964        56
+   macro avg      0.963     0.963     0.962        56
+weighted avg      0.965     0.964     0.964        56
