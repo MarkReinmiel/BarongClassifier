@@ -219,18 +219,34 @@ def find_user_email(user_id: str) -> str | None:
 
 
 def list_recent_classifications(
-    limit: int = 100,
+    limit: int | None = None,
     *,
+    page: int = 1,
+    per_page: int | None = None,
+    date_preset: str | None = None,
     date_from: str | None = None,
     date_to: str | None = None,
     fabric: str | None = None,
     search_date: str | None = None,
-) -> list[dict]:
+) -> dict:
+    empty = {"items": [], "total": 0, "page": 1, "pages": 1, "per_page": per_page or limit or 10}
     if current_app.config.get("TESTING"):
-        return []
+        return empty
+
+    page = max(1, int(page or 1))
+    if per_page is None:
+        per_page = int(limit or 10)
+    per_page = min(100, max(1, int(per_page)))
 
     clauses = ["1=1"]
-    params: dict = {"limit": int(limit)}
+    params: dict = {"limit": per_page, "offset": (page - 1) * per_page}
+    preset = (date_preset or "").strip().lower()
+    if preset == "today":
+        clauses.append("c.created_at::date = (timezone('utc', now()))::date")
+    elif preset in {"7d", "last_7_days"}:
+        clauses.append("c.created_at >= timezone('utc', now()) - interval '7 days'")
+    elif preset in {"30d", "last_30_days"}:
+        clauses.append("c.created_at >= timezone('utc', now()) - interval '30 days'")
     if date_from:
         clauses.append("c.created_at::date >= cast(:date_from as date)")
         params["date_from"] = date_from
@@ -241,11 +257,32 @@ def list_recent_classifications(
         clauses.append("c.created_at::date = cast(:search_date as date)")
         params["search_date"] = search_date
     if fabric:
-        clauses.append("lower(c.predicted_label) = lower(:fabric)")
-        params["fabric"] = fabric.strip()
+        key = fabric.strip().lower().replace("ñ", "n")
+        if key == "pina":
+            clauses.append(
+                "(lower(replace(coalesce(c.display_name, c.predicted_label), 'ñ', 'n')) like '%pina%')"
+            )
+        else:
+            clauses.append(
+                "lower(coalesce(c.display_name, c.predicted_label)) like :fabric_like"
+            )
+            params["fabric_like"] = f"%{key}%"
 
     where_sql = " and ".join(clauses)
     try:
+        total = db.session.execute(
+            text(
+                f"""
+                select count(*)::int
+                from public.classifications c
+                where {where_sql}
+                """
+            ),
+            params,
+        ).scalar() or 0
+        pages = max(1, (int(total) + per_page - 1) // per_page)
+        page = min(page, pages)
+        params["offset"] = (page - 1) * per_page
         rows = db.session.execute(
             text(
                 f"""
@@ -260,17 +297,23 @@ def list_recent_classifications(
                   end as image_url,
                   c.user_id::text as user_id,
                   coalesce(u.email, c.user_id::text) as email,
-                  to_char(c.created_at at time zone 'UTC', 'Mon DD, YYYY HH24:MI') as created_at
+                  to_char(c.created_at at time zone 'UTC', 'Mon DD, YYYY') as created_at
                 from public.classifications c
                 left join customer.users u on u.id = c.user_id::text
                 where {where_sql}
                 order by c.created_at desc nulls last
-                limit :limit
+                limit :limit offset :offset
                 """
             ),
             params,
         ).mappings().all()
-        return [dict(r) for r in rows]
+        return {
+            "items": [dict(r) for r in rows],
+            "total": int(total),
+            "page": page,
+            "pages": pages,
+            "per_page": per_page,
+        }
     except SQLAlchemyError:
         db.session.rollback()
-        return []
+        return empty

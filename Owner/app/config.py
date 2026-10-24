@@ -60,6 +60,8 @@ class Config:
     }
 
     WTF_CSRF_TIME_LIMIT = None
+    # Always reload templates in development so HTML edits show without a restart.
+    TEMPLATES_AUTO_RELOAD = DEBUG or APP_ENV.lower() in {"development", "dev", "local"}
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = "Lax"
     SESSION_COOKIE_SECURE = _first("SESSION_COOKIE_SECURE").lower() in {"1", "true", "yes"}

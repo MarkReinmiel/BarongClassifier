@@ -124,7 +124,8 @@ body {
     min-width: 0;
     margin: 0;
     padding: 0;
-    overflow-x: hidden;
+    /* clip keeps horizontal overflow off without breaking position:sticky/fixed ancestors */
+    overflow-x: clip;
 }
 
 img {

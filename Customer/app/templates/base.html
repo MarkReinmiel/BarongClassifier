@@ -7,13 +7,13 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}?v=11">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}?v=11">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/classifier.css') }}?v=11">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/responsive.css') }}?v=11">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}?v=15">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}?v=14">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/classifier.css') }}?v=14">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/responsive.css') }}?v=14">
   {% block head %}{% endblock %}
 </head>
-<body>
+<body data-static-root="{{ url_for('static', filename='') }}">
   <header class="top">
     <a class="brand" href="{{ url_for('main.dashboard') }}">
       <img src="{{ url_for('static', filename='images/Barongclassi_logo.jpeg') }}" alt="BarongClassifier logo">
@@ -69,10 +69,30 @@
 
   {% if current_user and current_user.nickname_completed %}
   <nav class="nav hide-desktop" aria-label="Main">
-    <a class="nb {% if request.endpoint == 'main.dashboard' %}on{% endif %}" href="{{ url_for('main.dashboard') }}">Home</a>
-    <a class="nb {% if request.endpoint == 'main.textile_types' %}on{% endif %}" href="{{ url_for('main.textile_types') }}">Types</a>
-    <a class="nb {% if request.endpoint and 'classifier' in request.endpoint %}on{% endif %}" href="{{ url_for('classifier.classify_page') }}"><span class="fab">◆</span>Classify</a>
-    <a class="nb {% if request.endpoint == 'history.history_page' %}on{% endif %}" href="{{ url_for('history.history_page') }}">History</a>
+    <a class="nb {% if request.endpoint == 'main.dashboard' %}on{% endif %}" data-tone="home" href="{{ url_for('main.dashboard') }}">
+      <span class="nb-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg>
+      </span>
+      <span class="nb-label">Home</span>
+    </a>
+    <a class="nb {% if request.endpoint == 'main.textile_types' %}on{% endif %}" data-tone="types" href="{{ url_for('main.textile_types') }}">
+      <span class="nb-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+      </span>
+      <span class="nb-label">Types</span>
+    </a>
+    <a class="nb {% if request.endpoint and 'classifier' in request.endpoint %}on{% endif %}" data-tone="classify" href="{{ url_for('classifier.classify_page') }}">
+      <span class="nb-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      </span>
+      <span class="nb-label">Classify</span>
+    </a>
+    <a class="nb {% if request.endpoint == 'history.history_page' %}on{% endif %}" data-tone="history" href="{{ url_for('history.history_page') }}">
+      <span class="nb-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+      </span>
+      <span class="nb-label">History</span>
+    </a>
   </nav>
   {% endif %}
 

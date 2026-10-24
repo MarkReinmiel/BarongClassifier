@@ -62,6 +62,8 @@ def create_app(config_object: type[Config] = Config) -> Flask:
 
     @flask_app.context_processor
     def inject_globals():
+        from flask import url_for
+
         from app.utils.security import current_user
 
         return {
@@ -69,6 +71,7 @@ def create_app(config_object: type[Config] = Config) -> Flask:
             "current_user": current_user(),
             "turnstile_enabled": flask_app.config.get("TURNSTILE_ENABLED"),
             "turnstile_site_key": flask_app.config.get("TURNSTILE_SITE_KEY") or "",
+            "user_avatar_url": url_for("static", filename="images/avatar-unknown.svg") + "?v=1",
         }
 
     @flask_app.get("/health")

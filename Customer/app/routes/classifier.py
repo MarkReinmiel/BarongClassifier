@@ -21,7 +21,7 @@ def classify_page():
 @nickname_required
 def classify_submit():
     user = current_user()
-    file = request.files.get("file") or request.files.get("image")
+    file = request.files.get("file") or request.files.get("camera_file") or request.files.get("image")
     wants_json = (
         request.accept_mimetypes.best == "application/json"
         or request.is_json

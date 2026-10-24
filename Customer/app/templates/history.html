@@ -1,31 +1,111 @@
 {% extends "base.html" %}
 {% block title %}History | {{ app_name }}{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/history.css') }}?v=5">
+{% endblock %}
 {% block content %}
-<div><p class="eyebrow">Barong Tagalog</p><h2>History</h2></div>
-<form method="get" class="stack" style="display:flex;flex-direction:column;gap:10px">
-  <select class="field" name="type" aria-label="Fabric type">
-    <option value="">All fabric types</option>
-    {% for option in ['Piña','Jusi','Cocoon','pina','jusi','cocoon'] %}
-    <option value="{{ option }}" {% if selected_type == option %}selected{% endif %}>{{ option }}</option>
-    {% endfor %}
-  </select>
-  <button class="btn h p" type="submit">Filter</button>
-</form>
-<div class="list">
-  {% if not rows %}
-  <div class="empty"><h3 style="font-size:20px">No classifications yet</h3><p class="sm" style="margin-top:4px">Classified images appear here.</p></div>
-  {% else %}
-    {% for row in rows %}
-    <div class="card item" style="align-items:center;gap:12px">
-      {% if row.image_path and row.image_path.startswith('https://') %}
-      <a href="{{ row.image_path }}" target="_blank" rel="noopener" title="Open classified photo">
-        <img src="{{ row.image_path }}" alt="" style="width:56px;height:56px;object-fit:cover;border-radius:8px;display:block">
-      </a>
-      {% endif %}
-      <div class="grow"><span class="val">{{ row.display_name or row.predicted_label }}</span><span class="sep">/</span><span class="file">{{ row.image_name or 'image' }}</span></div>
-      <div style="text-align:right"><b>{{ '%.0f'|format(row.confidence * 100) }}%</b><span class="sm" style="display:block">{{ row.created_at.strftime('%b %d') if row.created_at else '' }}</span></div>
-    </div>
-    {% endfor %}
-  {% endif %}
+<div class="history-page-header">
+  <p class="eyebrow">Barong Tagalog</p>
+  <h2>History</h2>
 </div>
+
+<section class="history-panel">
+  <div class="history-panel-head">
+    <div>
+      <h3 class="history-panel-title">Classifications</h3>
+      <p class="history-panel-sub">Your textile classification history</p>
+    </div>
+  </div>
+
+  <form class="history-toolbar" method="get" action="{{ url_for('history.history_page') }}">
+    <div class="history-toolbar-filters">
+      <label class="history-select-wrap">
+        <span class="sr-only">Date filter</span>
+        <select class="history-select" name="date" onchange="this.form.submit()">
+          {% for value, label in date_options %}
+          <option value="{{ value }}" {% if date_preset == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label class="history-select-wrap">
+        <span class="sr-only">Fabric type</span>
+        <select class="history-select" name="type" onchange="this.form.submit()">
+          {% for value, label in fabric_options %}
+          <option value="{{ value }}" {% if selected_type == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </label>
+    </div>
+    <div class="history-toolbar-page">
+      <span>Show results</span>
+      <select class="history-select history-select--sm" name="per_page" onchange="this.form.submit()">
+        {% for n in per_page_options %}
+        <option value="{{ n }}" {% if per_page == n %}selected{% endif %}>{{ n }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  </form>
+
+  {% if not rows %}
+  <div class="history-empty">
+    <h3>No classifications yet</h3>
+    <p>Classified images appear here.</p>
+  </div>
+  {% else %}
+  <div class="history-table-wrap">
+    <table class="history-table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Textile name</th>
+          <th>Confidence</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in rows %}
+        <tr>
+          <td>{{ row.created_at.strftime('%b %d, %Y') if row.created_at else '—' }}</td>
+          <td>
+            <span class="history-textile">{{ row.display_name or row.predicted_label }}</span>
+            {% if row.image_name %}
+            <span class="history-file">{{ row.image_name }}</span>
+            {% endif %}
+          </td>
+          <td>{{ '%.0f'|format(row.confidence * 100) }}%</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="history-footer">
+    <p class="history-count">
+      Showing {{ ((page - 1) * per_page) + 1 }}–{{ ((page - 1) * per_page) + rows|length }} of {{ total }}
+    </p>
+    <nav class="history-pager" aria-label="History pages">
+      {% if page > 1 %}
+      <a class="history-page-btn" href="{{ url_for('history.history_page', page=page-1, type=selected_type, date=date_preset, per_page=per_page) }}">Previous</a>
+      {% else %}
+      <span class="history-page-btn is-disabled">Previous</span>
+      {% endif %}
+
+      {% for p in range(1, pages + 1) %}
+        {% if p == page %}
+        <span class="history-page-num is-active">{{ p }}</span>
+        {% elif p == 1 or p == pages or (p >= page - 1 and p <= page + 1) %}
+        <a class="history-page-num" href="{{ url_for('history.history_page', page=p, type=selected_type, date=date_preset, per_page=per_page) }}">{{ p }}</a>
+        {% elif p == page - 2 or p == page + 2 %}
+        <span class="history-page-ellipsis">…</span>
+        {% endif %}
+      {% endfor %}
+
+      {% if page < pages %}
+      <a class="history-page-btn" href="{{ url_for('history.history_page', page=page+1, type=selected_type, date=date_preset, per_page=per_page) }}">Next</a>
+      {% else %}
+      <span class="history-page-btn is-disabled">Next</span>
+      {% endif %}
+    </nav>
+  </div>
+  {% endif %}
+</section>
 {% endblock %}

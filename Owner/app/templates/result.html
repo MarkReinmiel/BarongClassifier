@@ -2,7 +2,7 @@
 {% block title %}Classification Result | {{ app_name }}{% endblock %}
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/shared.css') }}">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/topnav.css') }}?v=6">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/classify.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/result.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-app.css') }}">
@@ -11,7 +11,7 @@
 {% include "_nav.html" %}
 <main class="classifier-page">
   <section class="classifier-header">
-    <a href="{{ url_for('classify.classify_page') }}" class="backbutton">← Back to Classify</a>
+    <a href="{{ url_for('classify.classify_page') }}" class="backbutton">? Back to Classify</a>
     <p class="classifier-label">BARONG TAGALOG TEXTILE CLASSIFIER</p>
     <h1>Classification Result</h1>
     <p class="classifier-description">Review the details of your submitted textile image.</p>
@@ -70,7 +70,7 @@
         </div>
       </div>
       <div class="result-actions" style="margin-top:20px;display:flex;gap:12px;flex-wrap:wrap">
-        <a class="classify-button" href="{{ url_for('classify.classify_page') }}">Classify another <span>→</span></a>
+        <a class="classify-button" href="{{ url_for('classify.classify_page') }}">Classify another <span>?</span></a>
         <a class="remove-button" href="{{ url_for('dashboard.history') }}">View history</a>
       </div>
     </div>
