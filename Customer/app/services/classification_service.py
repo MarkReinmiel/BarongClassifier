@@ -135,6 +135,26 @@ def classify_image(user: CustomerUser, file_storage) -> dict:
     row_id = str(uuid.uuid4())
     now = utcnow()
 
+    from app.services.cloudinary_service import upload_classification_image
+
+    image_url = upload_classification_image(
+        content=content,
+        filename=name,
+        user_id=str(user.id),
+        classification_id=row_id,
+    )
+    if image_url:
+        logger.info(
+            "classification_image_path_ready id=%s has_cloudinary_url=1",
+            row_id,
+        )
+    else:
+        logger.warning(
+            "classification_image_path_ready id=%s has_cloudinary_url=0 "
+            "(DB will store NULL; classify still succeeds)",
+            row_id,
+        )
+
     row = Classification(
         id=row_id,
         user_id=str(user.id),
@@ -142,18 +162,24 @@ def classify_image(user: CustomerUser, file_storage) -> dict:
         predicted_label=label_text,
         display_name=display,
         confidence=confidence,
-        image_path=None,
+        # Cloudinary secure_url only; filename stays in file_name.
+        image_path=image_url,
         predicted_textile_type=label_text,
         confidence_score=confidence,
-        image_reference=name,
+        image_reference=image_url,
         created_at=now,
     )
     db.session.add(row)
     try:
         db.session.commit()
+        logger.info(
+            "classification_db_ok id=%s image_path_set=%s",
+            row_id,
+            bool(image_url),
+        )
     except SQLAlchemyError as error:
         db.session.rollback()
-        logger.exception("Classification history was not saved.")
+        logger.exception("Classification history was not saved. id=%s", row_id)
         raise ClassificationError("The classification could not be saved.", 503) from error
 
     conf = float(row.confidence)
@@ -163,6 +189,7 @@ def classify_image(user: CustomerUser, file_storage) -> dict:
         "label": display,
         "confidence": conf,
         "image_name": row.image_name,
+        "image_path": row.image_path,
         "created_at": row.created_at.isoformat() if row.created_at else "",
     }
     payload.update(hierarchical_result(display, conf, image_bytes=content))

@@ -16,8 +16,13 @@
   <div class="empty"><h3 style="font-size:20px">No classifications yet</h3><p class="sm" style="margin-top:4px">Classified images appear here.</p></div>
   {% else %}
     {% for row in rows %}
-    <div class="card item">
-      <div class="grow"><span class="val">{{ row.predicted_label }}</span><span class="sep">/</span><span class="file">{{ row.image_name or 'image' }}</span></div>
+    <div class="card item" style="align-items:center;gap:12px">
+      {% if row.image_path and row.image_path.startswith('https://') %}
+      <a href="{{ row.image_path }}" target="_blank" rel="noopener" title="Open classified photo">
+        <img src="{{ row.image_path }}" alt="" style="width:56px;height:56px;object-fit:cover;border-radius:8px;display:block">
+      </a>
+      {% endif %}
+      <div class="grow"><span class="val">{{ row.display_name or row.predicted_label }}</span><span class="sep">/</span><span class="file">{{ row.image_name or 'image' }}</span></div>
       <div style="text-align:right"><b>{{ '%.0f'|format(row.confidence * 100) }}%</b><span class="sm" style="display:block">{{ row.created_at.strftime('%b %d') if row.created_at else '' }}</span></div>
     </div>
     {% endfor %}

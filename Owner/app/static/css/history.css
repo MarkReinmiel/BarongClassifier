@@ -41,6 +41,16 @@
 }
 
 .history-photo {
+    width: 88px;
+    height: 88px;
+    object-fit: cover;
+    border-radius: 10px;
+    flex: none;
+    display: block;
+    background: #efe6d8;
+}
+
+.history-photo {
     width: 84px;
     height: 84px;
     object-fit: cover;

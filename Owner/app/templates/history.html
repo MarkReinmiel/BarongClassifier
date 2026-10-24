@@ -59,11 +59,20 @@
     <div class="history-list" style="display:contents">
       {% for row in rows %}
       <article class="textile-card history-card">
+        {% if row.image_url %}
+        <a href="{{ row.image_url }}" target="_blank" rel="noopener" title="Open classified photo">
+          <img class="history-photo" src="{{ row.image_url }}" alt="Classified {{ row.predicted_label }}">
+        </a>
+        {% else %}
         <div class="textile-icon">◈</div>
+        {% endif %}
         <h2>{{ row.predicted_label }}</h2>
         <p>{{ row.image_name or 'image' }}</p>
         <p>{{ row.email or row.user_id }} · {{ row.created_at }}</p>
         <span class="textile-status">{{ '%.0f'|format(row.confidence * 100) }}% confidence</span>
+        {% if row.image_url %}
+        <a class="textile-status" href="{{ row.image_url }}" target="_blank" rel="noopener">View photo →</a>
+        {% endif %}
       </article>
       {% endfor %}
     </div>

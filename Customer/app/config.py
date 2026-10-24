@@ -119,9 +119,13 @@ class Config:
 
     MAX_CONTENT_LENGTH = int(float(_first("MAX_UPLOAD_SIZE_MB", default="10")) * 1024 * 1024)
     MODEL_PATH = _first("MODEL_PATH", default="models/barong_model.keras")
+    VARIANT_MODEL_PATH = _first("VARIANT_MODEL_PATH", default="models/barong_pina_variant.keras")
     # Empty by default so Customer uses the local Keras model under models/.
     CLASSIFY_SERVER_URL = _first("CLASSIFY_SERVER_URL", default="")
     IMAGE_SIZE = int(_first("IMAGE_SIZE", default="224"))
+    CLOUDINARY_CLOUD_NAME = _first("CLOUDINARY_CLOUD_NAME")
+    CLOUDINARY_API_KEY = _first("CLOUDINARY_API_KEY")
+    CLOUDINARY_API_SECRET = _first("CLOUDINARY_API_SECRET")
     CLASS_NAMES = [
         item.strip()
         for item in _first("CLASS_NAMES", default="cocoon,jusi,pina").split(",")

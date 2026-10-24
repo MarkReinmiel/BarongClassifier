@@ -8,4 +8,5 @@ email-validator>=2.0
 httpx>=0.27
 Werkzeug>=3.0
 Pillow>=10.0
+cloudinary>=1.40
 
