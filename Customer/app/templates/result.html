@@ -1,30 +1,38 @@
 {% extends "base.html" %}
 {% block title %}Result | {{ app_name }}{% endblock %}
 {% block head %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/result.css') }}?v=2">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/result.css') }}?v=3">
 {% endblock %}
 {% block content %}
 {% set conf = (result.confidence or 0) * 100 %}
 {% set photo = result.image_path if result.image_path and result.image_path.startswith('https://') else none %}
+{% set status = result.status or 'classified' %}
+{% set status_labels = {
+  'classified': 'Classified',
+  'undefined_textile': 'Undefined Textile',
+  'uncertain': 'Uncertain',
+  'poor_image_quality': 'Poor Image Quality'
+} %}
+{% set is_rejected = status in ['undefined_textile', 'uncertain', 'poor_image_quality'] %}
 
 <a class="btn s result-back" href="{{ url_for('classifier.classify_page') }}">← Back to Classify</a>
 <h2 class="result-page-title">Classification Result</h2>
 
-<article class="result-hero">
+<article class="result-hero{% if is_rejected %} result-hero--rejected{% endif %}">
   <div class="result-hero-photo">
     {% if photo %}
-    <img src="{{ photo }}" alt="Classified {{ result.label }}">
+    <img src="{{ photo }}" alt="Submitted image">
     {% else %}
     <div class="result-hero-photo-fallback" aria-hidden="true">◈</div>
     {% endif %}
     <span class="result-hero-photo-label">Your photo</span>
   </div>
   <div class="result-hero-prediction">
-    <span class="result-kicker">Predicted Textile Type</span>
+    <span class="result-kicker">{% if is_rejected %}Result{% else %}Predicted Textile Type{% endif %}</span>
     <h3>{{ result.label }}</h3>
   </div>
   <div class="result-hero-confidence">
-    <span class="result-kicker">Model Confidence</span>
+    <span class="result-kicker">{% if is_rejected %}Score{% else %}Model Confidence{% endif %}</span>
     <strong>{{ '%.1f'|format(conf) }}%</strong>
     <div class="result-bar" aria-hidden="true">
       <span style="width: {{ [conf, 100]|min }}%"></span>
@@ -32,14 +40,15 @@
   </div>
 </article>
 
-{% if result.main_class == 'pina' %}
+{% if result.message %}
+<p class="result-message {{ status }}">{{ result.message }}</p>
+{% endif %}
+
+{% if result.main_class == 'pina' and not is_rejected %}
 <section class="result-variant-card">
   <div class="result-variant-copy">
     <span class="result-kicker">Piña variant</span>
     <strong>{{ result.variant_label or 'Undetermined' }}</strong>
-    {% if result.message %}
-    <p class="result-message">{{ result.message }}</p>
-    {% endif %}
   </div>
   {% if result.variant_confidence is not none %}
   {% set vconf = result.variant_confidence * 100 %}
@@ -60,12 +69,12 @@
   </div>
   <div class="result-meta-card">
     <span class="result-kicker">Classification Status</span>
-    <strong>{{ result.status or 'Classified' }}</strong>
+    <strong>{{ status_labels.get(status, status) }}</strong>
   </div>
 </div>
 
 <div class="result-actions">
   <a class="btn g" href="{{ url_for('history.history_page') }}">History</a>
-  <a class="btn p" href="{{ url_for('classifier.classify_page') }}">Classify Another →</a>
+  <a class="btn p" href="{{ url_for('classifier.classify_page') }}">{% if is_rejected %}Try Again →{% else %}Classify Another →{% endif %}</a>
 </div>
 {% endblock %}

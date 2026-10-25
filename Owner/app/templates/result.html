@@ -34,15 +34,23 @@
     <div class="result-details-panel">
       <h2>Classification Details</h2>
       <div class="result-details">
+        {% set status = result.status or 'classified' %}
+        {% set status_labels = {
+          'classified': 'Classified',
+          'undefined_textile': 'Undefined Textile',
+          'uncertain': 'Uncertain',
+          'poor_image_quality': 'Poor Image Quality'
+        } %}
+        {% set is_rejected = status in ['undefined_textile', 'uncertain', 'poor_image_quality'] %}
         <div class="detail-item">
-          <span class="detail-label">Predicted Textile Type</span>
+          <span class="detail-label">{% if is_rejected %}Result{% else %}Predicted Textile Type{% endif %}</span>
           <strong id="predictedType">{{ result.label }}</strong>
         </div>
         <div class="detail-item">
-          <span class="detail-label">Model Confidence</span>
+          <span class="detail-label">{% if is_rejected %}Score{% else %}Model Confidence{% endif %}</span>
           <strong id="confidence">{{ '%.1f'|format(result.confidence * 100) }}%</strong>
         </div>
-        {% if result.main_class == 'pina' %}
+        {% if result.main_class == 'pina' and not is_rejected %}
         <div class="detail-item">
           <span class="detail-label">Piña variant</span>
           <strong id="variantLabel">{{ result.variant_label or 'Undetermined' }}</strong>
@@ -53,12 +61,12 @@
           <strong id="variantConfidence">{{ '%.1f'|format(result.variant_confidence * 100) }}%</strong>
         </div>
         {% endif %}
+        {% endif %}
         {% if result.message %}
         <div class="detail-item detail-item-wide">
-          <span class="detail-label">Variant note</span>
-          <strong class="result-hierarchy-message undetermined" style="font-weight:500">{{ result.message }}</strong>
+          <span class="detail-label">Note</span>
+          <strong class="result-hierarchy-message {{ status }}" style="font-weight:500">{{ result.message }}</strong>
         </div>
-        {% endif %}
         {% endif %}
         <div class="detail-item">
           <span class="detail-label">Image Name</span>
@@ -66,11 +74,11 @@
         </div>
         <div class="detail-item">
           <span class="detail-label">Classification Status</span>
-          <strong id="classificationStatus">Completed</strong>
+          <strong id="classificationStatus">{{ status_labels.get(status, status) }}</strong>
         </div>
       </div>
       <div class="result-actions" style="margin-top:20px;display:flex;gap:12px;flex-wrap:wrap">
-        <a class="classify-button" href="{{ url_for('classify.classify_page') }}">Classify another <span>?</span></a>
+        <a class="classify-button" href="{{ url_for('classify.classify_page') }}">{% if is_rejected %}Try again{% else %}Classify another{% endif %}</a>
         <a class="remove-button" href="{{ url_for('dashboard.history') }}">View history</a>
       </div>
     </div>

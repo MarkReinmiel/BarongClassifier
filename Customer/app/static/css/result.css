@@ -131,6 +131,26 @@
   font-size:clamp(18px, 3.5vw, 24px);
   color:var(--deep);
 }
+.result-hero--rejected{
+  background:linear-gradient(135deg, #4a3f3a 0%, #6e5a52 100%);
+}
+.result-hero + .result-message{
+  margin:12px 0 0;
+  padding:12px 14px;
+  border-radius:14px;
+  border:1px solid var(--line);
+  background:var(--soft);
+  color:var(--ink);
+  font-size:14px;
+  line-height:1.45;
+}
+.result-hero + .result-message.undefined_textile,
+.result-hero + .result-message.uncertain,
+.result-hero + .result-message.poor_image_quality{
+  border-color:#c9b07a;
+  background:#f8f1e2;
+  color:#6a5428;
+}
 .result-message{
   margin:8px 0 0;
   font-size:13px;

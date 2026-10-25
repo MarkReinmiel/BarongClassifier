@@ -110,6 +110,11 @@ class Config:
     MAX_CONTENT_LENGTH = int(float(_first("MAX_UPLOAD_SIZE_MB", default="10")) * 1024 * 1024)
     MODEL_PATH = _first("MODEL_PATH", default="models/barong_model.keras")
     VARIANT_MODEL_PATH = _first("VARIANT_MODEL_PATH", default="models/barong_pina_variant.keras")
+    RELEVANCE_GATE_ENABLED = _first("RELEVANCE_GATE_ENABLED", default="true").lower() in {
+        "1",
+        "true",
+        "yes",
+    }
     CLASSIFY_SERVER_URL = _first("CLASSIFY_SERVER_URL", default="")
     IMAGE_SIZE = int(_first("IMAGE_SIZE", default="224"))
     CLOUDINARY_CLOUD_NAME = _first("CLOUDINARY_CLOUD_NAME")
