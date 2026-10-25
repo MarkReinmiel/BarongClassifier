@@ -63,11 +63,16 @@ def create_app(config_object: type[Config] = Config) -> Flask:
 
         from app.utils.security import current_user
 
+        from app.services.turnstile_service import turnstile_active
+
         user = current_user()
+        active = turnstile_active()
         return {
             "app_name": flask_app.config["APP_NAME"],
             "current_user": user,
             "user_avatar_url": url_for("static", filename="images/avatar-unknown.svg") + "?v=10",
+            "turnstile_enabled": active,
+            "turnstile_site_key": (flask_app.config.get("TURNSTILE_SITE_KEY") or "") if active else "",
         }
 
     @flask_app.get("/health")

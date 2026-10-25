@@ -64,13 +64,15 @@ def create_app(config_object: type[Config] = Config) -> Flask:
     def inject_globals():
         from flask import url_for
 
+        from app.services.turnstile_service import turnstile_active
         from app.utils.security import current_user
 
+        active = turnstile_active()
         return {
             "app_name": flask_app.config["APP_NAME"],
             "current_user": current_user(),
-            "turnstile_enabled": flask_app.config.get("TURNSTILE_ENABLED"),
-            "turnstile_site_key": flask_app.config.get("TURNSTILE_SITE_KEY") or "",
+            "turnstile_enabled": active,
+            "turnstile_site_key": (flask_app.config.get("TURNSTILE_SITE_KEY") or "") if active else "",
             "user_avatar_url": url_for("static", filename="images/avatar-unknown.svg") + "?v=1",
         }
 

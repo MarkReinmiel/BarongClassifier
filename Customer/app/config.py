@@ -126,6 +126,13 @@ class Config:
     CLOUDINARY_CLOUD_NAME = _first("CLOUDINARY_CLOUD_NAME")
     CLOUDINARY_API_KEY = _first("CLOUDINARY_API_KEY")
     CLOUDINARY_API_SECRET = _first("CLOUDINARY_API_SECRET")
+    TURNSTILE_ENABLED = _first("TURNSTILE_ENABLED", default="false").lower() in {
+        "1",
+        "true",
+        "yes",
+    }
+    TURNSTILE_SITE_KEY = _first("TURNSTILE_SITE_KEY")
+    TURNSTILE_SECRET_KEY = _first("TURNSTILE_SECRET_KEY")
     CLASS_NAMES = [
         item.strip()
         for item in _first("CLASS_NAMES", default="cocoon,jusi,pina").split(",")
@@ -142,3 +149,4 @@ class TestConfig(Config):
     MAIL_PASSWORD = "x"
     MAIL_FROM_ADDRESS = "test@example.com"
     MAIL_HOST = "localhost"
+    TURNSTILE_ENABLED = False

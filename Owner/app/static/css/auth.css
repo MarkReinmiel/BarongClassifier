@@ -267,7 +267,16 @@ body {
 .turnstile-wrap {
   display: flex;
   justify-content: center;
-  margin: 8px 0 4px;
+  align-items: center;
+  width: 100%;
+  max-width: 100%;
+  margin: 10px 0 6px;
+  overflow: visible;
+}
+
+.turnstile-wrap .cf-turnstile,
+.turnstile-wrap iframe {
+  max-width: 100% !important;
 }
 
 .auth-button {

@@ -18,6 +18,7 @@ from app.extensions import csrf, db
 from app.models import CustomerUser, utcnow
 from app.services import auth_service
 from app.services.auth_service import AuthError
+from app.services.turnstile_service import TurnstileError, verify_turnstile
 from app.utils.security import client_label, current_user, login_required, mask_email, no_store
 
 bp = Blueprint("auth", __name__, url_prefix="/auth")
@@ -54,12 +55,18 @@ def register():
             email = payload.get("email", "")
             password = payload.get("password", "")
             confirm = payload.get("confirm_password", password)
+            verify_turnstile(payload.get("cf-turnstile-response"))
+        else:
+            verify_turnstile(request.form.get("cf-turnstile-response"))
         user = auth_service.register_user(email, password, confirm)
-    except AuthError as error:
+    except (AuthError, TurnstileError) as error:
+        status = getattr(error, "status_code", 400)
         if wants_json or request.is_json:
+            if isinstance(error, TurnstileError):
+                return jsonify({"error": str(error)}), 400
             return _json_error(error)
         flash(str(error), "error")
-        return render_template("auth/register.html", email=email), error.status_code
+        return render_template("auth/register.html", email=email), status
 
     session.clear()
     session["pending_user_id"] = str(user.id)
@@ -89,13 +96,19 @@ def login():
 
     email = request.form.get("email", "")
     password = request.form.get("password", "")
+    turnstile_token = request.form.get("cf-turnstile-response")
     if request.is_json:
         payload = request.get_json(silent=True) or {}
         email = payload.get("email", email)
         password = payload.get("password", password)
+        turnstile_token = payload.get("cf-turnstile-response", turnstile_token)
 
     try:
+        verify_turnstile(turnstile_token)
         user = auth_service.authenticate(email, password)
+    except TurnstileError as error:
+        flash(str(error), "error")
+        return render_template("auth/login.html"), 400
     except AuthError as error:
         if error.status_code == 403 and "Verify your email" in str(error):
             found = CustomerUser.query.filter_by(email=email.strip().lower()).first()

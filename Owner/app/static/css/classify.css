@@ -211,15 +211,30 @@ input[type="file"].sr-file,
 
 /* Camera control: phones only */
 .classify-source-btn.mobile-only,
-#camBtn {
+#camBtn,
+#openCamera {
   display: none !important;
 }
 
 @media (max-width: 899px) {
   .classify-source-btn.mobile-only,
-  #camBtn {
+  #camBtn,
+  #openCamera {
     display: flex !important;
   }
+}
+
+button.classify-source-btn {
+  width: 100%;
+  appearance: none;
+}
+
+.classify-source-btn.secondary {
+  min-height: 44px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-soft, #5c6570);
+  border-style: dashed;
 }
 
 .classify-source-btn:hover {
@@ -236,6 +251,12 @@ input[type="file"].sr-file,
   display: grid;
   place-items: center;
   font-size: 16px;
+}
+
+.classify-source-icon svg {
+  width: 20px;
+  height: 20px;
+  display: block;
 }
 
 .classify-tips {

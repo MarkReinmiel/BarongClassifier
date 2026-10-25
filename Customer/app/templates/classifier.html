@@ -1,7 +1,8 @@
 {% extends "base.html" %}
 {% block title %}Classify Textile | {{ app_name }}{% endblock %}
 {% block head %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/classifier.css') }}?v=6">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/classifier.css') }}?v=10">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/camera.css') }}?v=2">
 {% endblock %}
 {% block content %}
 <div class="classify-header">
@@ -27,13 +28,53 @@
   <aside class="classify-side">
     <div class="classify-sources">
       <label class="classify-source-btn" for="fileGal" id="galBtn">
-        <span class="classify-source-icon" aria-hidden="true">▣</span>
+        <span class="classify-source-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10.5" r="1.5"/><path d="m21 16-5.5-5.5L9 17"/></svg>
+        </span>
         <span>Gallery</span>
       </label>
-      <label class="classify-source-btn mobile-only" for="fileCam" id="camBtn">
-        <span class="classify-source-icon" aria-hidden="true">📷</span>
+      <button type="button" class="classify-source-btn mobile-only mobile-only-camera" id="openCamera">
+        <span class="classify-source-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-2h6l2 2h3v11H4V8z"/><circle cx="12" cy="13" r="3.5"/></svg>
+        </span>
         <span>Camera</span>
-      </label>
+      </button>
+    </div>
+
+    <p id="cameraNotice" class="camera-notice mobile-only-camera" role="status" hidden></p>
+
+    <div id="cameraPanel" class="camera-panel mobile-only-camera" hidden>
+      <div class="camera-frame" id="cameraFrame">
+        <video id="cameraPreview" autoplay muted playsinline></video>
+        <div id="cameraGuide" class="camera-guide is-red" aria-hidden="true">
+          <span class="camera-guide-label">Fill with textile</span>
+        </div>
+        <pre id="cameraCalibration" class="camera-calibration" hidden></pre>
+      </div>
+
+      <button type="button" id="cameraGuidanceHeadline" class="camera-guidance-headline is-red" disabled>
+        Starting camera…
+      </button>
+
+      <ul id="cameraChecklist" class="camera-checklist">
+        <li data-check="distance"><span aria-hidden="true">…</span> Distance</li>
+        <li data-check="lighting"><span aria-hidden="true">…</span> Lighting</li>
+        <li data-check="focus"><span aria-hidden="true">…</span> Focus</li>
+        <li data-check="stability"><span aria-hidden="true">…</span> Stability</li>
+        <li data-check="glare" hidden><span aria-hidden="true">△</span> Glare</li>
+      </ul>
+
+      <div id="cameraZoomControls" class="camera-zoom" hidden>
+        <label for="cameraZoom">Zoom</label>
+        <input type="range" id="cameraZoom">
+      </div>
+      <p id="cameraZoomStatus" class="camera-zoom-status"></p>
+      <p class="camera-zoom-note">Browser zoom may be digital, not the same as optical Pro Mode zoom.</p>
+
+      <div class="camera-actions">
+        <button type="button" id="captureButton" class="capture-button" disabled>Capture Image</button>
+        <button type="button" id="closeCamera" class="remove-button">Close Camera</button>
+      </div>
     </div>
 
     <div class="classify-tips">
@@ -55,9 +96,12 @@
     </div>
 
     <input type="file" name="file" id="fileGal" accept="image/png,image/jpeg,image/jpg,image/jpe,image/webp,.jpg,.jpeg,.jpe,.png,.webp" class="sr-file">
-    <input type="file" name="camera_file" id="fileCam" accept="image/*" capture="environment" class="sr-file">
     <button class="btn p classify-analyze" id="analyze" type="submit" disabled>Analyze Textile</button>
   </aside>
 </form>
 {% endblock %}
-{% block scripts %}<script src="{{ url_for('static', filename='js/classifier.js') }}?v=4"></script>{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/classifier.js') }}?v=5"></script>
+<script src="{{ url_for('static', filename='js/cameraGuidance.js') }}?v=7"></script>
+<script src="{{ url_for('static', filename='js/liveCamera.js') }}?v=2"></script>
+{% endblock %}
