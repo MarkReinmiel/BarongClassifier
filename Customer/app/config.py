@@ -121,7 +121,7 @@ class Config:
     MODEL_PATH = _first("MODEL_PATH", default="models/barong_model.keras")
     VARIANT_MODEL_PATH = _first("VARIANT_MODEL_PATH", default="models/barong_pina_variant.keras")
     # Offline relevance / OOD gate (does not retrain the textile CNN).
-    RELEVANCE_GATE_ENABLED = _first("RELEVANCE_GATE_ENABLED", default="true").lower() in {
+    RELEVANCE_GATE_ENABLED = _first("RELEVANCE_GATE_ENABLED", default="false").lower() in {
         "1",
         "true",
         "yes",

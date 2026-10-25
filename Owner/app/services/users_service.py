@@ -23,14 +23,24 @@ def dashboard_stats() -> dict:
     """Frontend-style overview numbers plus directory counts."""
     stats = {
         "textile_types": 3,
-        "model_accuracy": 100,
-        "test_images": 39,
+        "model_accuracy": None,
+        "test_images": None,
         "users_total": 0,
         "owners_total": 0,
         "customers_total": 0,
         "classifications_total": 0,
         "active_users": 0,
     }
+    try:
+        from app.services.model_analytics_service import load_active_metrics
+
+        metrics = load_active_metrics()
+        if metrics.get("test_accuracy") is not None:
+            stats["model_accuracy"] = round(float(metrics["test_accuracy"]) * 100)
+        if metrics.get("test_images") is not None:
+            stats["test_images"] = int(metrics["test_images"])
+    except Exception:
+        pass
     if current_app.config.get("TESTING"):
         rows = OwnerUser.query.all()
         stats["users_total"] = len(rows)

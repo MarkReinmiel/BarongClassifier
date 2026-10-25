@@ -2,16 +2,17 @@
 {% block title %}About | {{ app_name }}{% endblock %}
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/shared.css') }}">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/topnav.css') }}?v=6">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/textiletypes.css') }}">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-app.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/topnav.css') }}?v=9">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/textiletypes.css') }}?v=2">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-app.css') }}?v=7">
 {% endblock %}
 {% block body %}
 {% include "_nav.html" %}
 <main class="textile-page">
-  <section class="textile-header">
+  <section class="textile-header reveal">
     <p class="eyebrow">BARONG TAGALOG</p>
     <h1>About</h1>
+    <hr class="stitch-divider" aria-hidden="true">
     <p class="page-description">
       BarongClassifier helps identify selected Barong Tagalog textiles through image-based classification while preserving Philippine heritage through technology.
     </p>
@@ -31,8 +32,8 @@
 
     <h2>Model Performance</h2>
     <p>The model's performance is evaluated using classification metrics such as accuracy, precision, recall, and F1-score.</p>
-    <p><strong>Accuracy:</strong> {{ stats.model_accuracy }}%</p>
-    <p><strong>Test images:</strong> {{ stats.test_images }}</p>
+    <p><strong>Accuracy:</strong> {% if stats.model_accuracy is not none %}{{ stats.model_accuracy }}%{% else %}Not available{% endif %}</p>
+    <p><strong>Test images:</strong> {{ stats.test_images if stats.test_images is not none else 'Not available' }}</p>
     <p><strong>Images classified (system):</strong> {{ stats.classifications_total }}</p>
   </section>
 </main>

@@ -185,21 +185,26 @@ def classify_upload(user: OwnerUser, file_storage) -> dict:
 
     model = None
     model_path = _model_file()
-    if model_path is not None:
-        try:
-            from app.ml.predictor import ensure_model
+    gate_enabled = bool(current_app.config.get("RELEVANCE_GATE_ENABLED", False))
+    gate = None
+    if gate_enabled:
+        if model_path is not None:
+            try:
+                from app.ml.predictor import ensure_model
 
-            model = ensure_model(str(model_path), customer_root=OWNER_ROOT)
-        except Exception:
-            logger.exception("Could not load local model for relevance gate.")
+                model = ensure_model(str(model_path), customer_root=OWNER_ROOT)
+            except Exception:
+                logger.exception("Could not load local model for relevance gate.")
 
-    gate = assess_relevance(
-        content,
-        model=model,
-        model_path=str(model_path) if model_path else None,
-        app_root=OWNER_ROOT,
-        enabled=bool(current_app.config.get("RELEVANCE_GATE_ENABLED", True)),
-    )
+        gate = assess_relevance(
+            content,
+            model=model,
+            model_path=str(model_path) if model_path else None,
+            app_root=OWNER_ROOT,
+            enabled=True,
+        )
+    else:
+        logger.info("relevance_gate_skipped RELEVANCE_GATE_ENABLED=false")
 
     image_b64 = base64.b64encode(content).decode("ascii")
     image_data_url = f"data:image/jpeg;base64,{image_b64}"
@@ -311,14 +316,14 @@ def _hierarchical_result(
             variant_display = variant_hit["variant_label"]
             variant_confidence = variant_hit.get("variant_confidence")
             message = variant_hit.get("message") or ""
-            if variant_hit.get("status") == "uncertain":
-                status = "uncertain"
+            # Keep main status classified — variant uncertainty is not "Undefined Textile".
+            status = "classified"
         else:
             message = (
                 "Piña detected, but the Piña / Piña Silk variant could not be determined "
                 "reliably yet."
             )
-            status = "uncertain"
+            status = "classified"
     elif "jusi" in raw:
         main_key = "jusi"
         variant = "not_applicable"

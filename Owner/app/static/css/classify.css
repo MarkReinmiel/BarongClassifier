@@ -31,7 +31,7 @@
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.18em;
-  color: var(--accent);
+  color: var(--gold, #a67c3d);
   margin: 0 0 6px;
   text-transform: uppercase;
   font-family: "DM Sans", Arial, sans-serif;
@@ -303,8 +303,12 @@ button.classify-source-btn {
   background: rgba(255, 255, 255, 0.7);
   display: grid;
   place-items: center;
-  color: var(--accent);
+  color: var(--forest, var(--accent));
   font-size: 14px;
+}
+
+.classify-tip-icon svg {
+  display: block;
 }
 
 .classify-shell .btn {
@@ -328,8 +332,26 @@ button.classify-source-btn {
 }
 
 .classify-shell .btn.p {
-  background: var(--accent);
+  background: var(--forest, var(--accent-deep));
   color: #fff;
+}
+
+.classify-shell .btn.p:hover:not(:disabled) {
+  background: var(--forest-mid, var(--accent));
+}
+
+.classify-source-btn {
+  border-color: var(--forest-mid, var(--accent));
+}
+
+.classify-source-icon {
+  background: rgba(30, 58, 47, 0.1);
+  color: var(--forest, var(--accent));
+}
+
+.classify-tip {
+  background: rgba(30, 58, 47, 0.08);
+  color: var(--forest, var(--deep));
 }
 
 .classify-shell .btn .spin {

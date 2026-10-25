@@ -1,27 +1,24 @@
 /* Shared palette + motion — colors match existing brand */
 
 :root {
-    /* =================================
-       NEW COLOR PALETTE
-    ================================= */
+    /* Heritage textile palette (Owner UI) — overridden further by heritage.css */
+    --bg: #F3EEE4;
+    --surface: #FFFdf8;
+    --surface-soft: #F7F1E8;
 
-    --bg: #E5DED4;
-    --surface: #FFFFFF;
-    --surface-soft: #F5F1EC;
+    --ink: #2A241C;
+    --ink-soft: #5C5348;
 
-    --ink: #2F323A;
-    --ink-soft: #5D5B63;
+    --accent: #2F5A45;
+    --accent-deep: #1E3A2F;
+    --accent-deeper: #14261F;
 
-    --accent: #77567A;
-    --accent-deep: #624568;
-    --accent-deeper: #49344D;
+    --accent-highlight: #A67C3D;
 
-    --accent-highlight: #C47AC0;
+    --line: #E0D6C6;
+    --line-strong: #C9BBA3;
 
-    --line: #D5CBD2;
-    --line-strong: #B9A9B9;
-
-    --shadow: rgba(47, 50, 58, 0.12);
+    --shadow: rgba(42, 36, 28, 0.12);
 
     --ease: cubic-bezier(0.22, 1, 0.36, 1);
 }

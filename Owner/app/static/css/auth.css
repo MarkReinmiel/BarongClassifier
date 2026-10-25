@@ -1,21 +1,21 @@
-/* Owner auth — Frontend Oct 18 palette + heritage photo background */
+/* Owner auth — heritage textile palette + barong photo background */
 
 :root {
-  --bg: #E5DED4;
-  --surface: #FFFFFF;
-  --surface-soft: #F5F1EC;
-  --ink: #2F323A;
-  --ink-soft: #5D5B63;
-  --accent: #77567A;
-  --accent-deep: #624568;
-  --accent-deeper: #49344D;
-  --accent-highlight: #C47AC0;
-  --line: #D5CBD2;
-  --line-strong: #B9A9B9;
-  --shadow: rgba(47, 50, 58, 0.12);
+  --bg: #F3EEE4;
+  --surface: #FFFdf8;
+  --surface-soft: #F7F1E8;
+  --ink: #2A241C;
+  --ink-soft: #5C5348;
+  --accent: #2F5A45;
+  --accent-deep: #1E3A2F;
+  --accent-deeper: #14261F;
+  --accent-highlight: #A67C3D;
+  --line: #E0D6C6;
+  --line-strong: #C9BBA3;
+  --shadow: rgba(42, 36, 28, 0.12);
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
-  --err: #8a3b2d;
-  --ok: #3f6a32;
+  --err: #8b2e3b;
+  --ok: #2f6b4f;
 }
 
 body {
@@ -26,19 +26,19 @@ body {
   background-image:
     linear-gradient(
       115deg,
-      rgba(229, 222, 212, 0.94) 0%,
-      rgba(229, 222, 212, 0.82) 38%,
-      rgba(98, 69, 104, 0.55) 72%,
-      rgba(73, 52, 77, 0.62) 100%
+      rgba(243, 238, 228, 0.94) 0%,
+      rgba(243, 238, 228, 0.82) 38%,
+      rgba(30, 58, 47, 0.58) 72%,
+      rgba(20, 38, 31, 0.66) 100%
     ),
     radial-gradient(
       circle at 12% 18%,
-      rgba(196, 122, 192, 0.16),
+      rgba(166, 124, 61, 0.18),
       transparent 32%
     ),
     radial-gradient(
       circle at 90% 80%,
-      rgba(119, 86, 122, 0.14),
+      rgba(47, 90, 69, 0.16),
       transparent 28%
     ),
     url("../images/barong.jpg");
@@ -82,18 +82,18 @@ body {
   padding: 70px 8%;
 }
 
-/* Left plum brand panel (Frontend design format) */
+/* Left forest brand panel */
 .auth-brand {
   width: min(100%, 430px);
   padding: 42px 36px;
   border-radius: 20px;
   background: linear-gradient(
     160deg,
-    rgba(98, 69, 104, 0.94),
-    rgba(73, 52, 77, 0.96)
+    rgba(30, 58, 47, 0.94),
+    rgba(20, 38, 31, 0.96)
   );
-  border: 1px solid rgba(196, 122, 192, 0.28);
-  box-shadow: 0 22px 50px rgba(47, 50, 58, 0.22);
+  border: 1px solid rgba(166, 124, 61, 0.35);
+  box-shadow: 0 22px 50px rgba(42, 36, 28, 0.22);
   animation: fade-up 0.7s var(--ease) both;
 }
 
@@ -219,7 +219,7 @@ body {
 
 .input-group input:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(119, 86, 122, 0.15);
+  box-shadow: 0 0 0 3px rgba(47, 90, 69, 0.18);
 }
 
 .password-field {
@@ -238,7 +238,7 @@ body {
   padding: 0 10px;
   border: none;
   border-radius: 6px;
-  background: rgba(196, 122, 192, 0.18);
+  background: rgba(166, 124, 61, 0.18);
   color: var(--accent);
   font-family: inherit;
   font-size: 12px;
@@ -247,7 +247,7 @@ body {
 }
 
 .password-toggle:hover {
-  background: rgba(196, 122, 192, 0.28);
+  background: rgba(166, 124, 61, 0.28);
 }
 
 .check-row {
@@ -360,7 +360,7 @@ body {
 }
 
 .otp input:focus {
-  outline: 3px solid rgba(196, 122, 192, 0.35);
+  outline: 3px solid rgba(166, 124, 61, 0.35);
   border-color: var(--accent);
 }
 

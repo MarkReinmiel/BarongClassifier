@@ -1,0 +1,318 @@
+/* BarongClassifier Owner — heritage textile design tokens & motion (UI only) */
+
+:root {
+  --bg: #F3EEE4;
+  --bg-deep: #E8E0D2;
+  --surface: #FFFdf8;
+  --surface-soft: #F7F1E8;
+  --ink: #2A241C;
+  --ink-soft: #5C5348;
+  --forest: #1E3A2F;
+  --forest-mid: #2F5A45;
+  --forest-soft: #E6EFE9;
+  --gold: #A67C3D;
+  --gold-soft: #F3E6D0;
+  --gold-line: #D4BC8A;
+  --nav: #15202B;
+  --nav-elevated: #1E2C3A;
+  --nav-muted: #9AA6B8;
+  --accent: var(--forest-mid);
+  --accent-deep: var(--forest);
+  --accent-deeper: #14261F;
+  --accent-highlight: var(--gold);
+  --hi: var(--gold);
+  --deep: var(--forest);
+  --deeper: var(--accent-deeper);
+  --line: #E0D6C6;
+  --line-strong: #C9BBA3;
+  --shadow: rgba(42, 36, 28, 0.10);
+  --ok: #2f6b4f;
+  --err: #8b2e3b;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --serif: "Playfair Display", Georgia, serif;
+  --sans: "DM Sans", Arial, sans-serif;
+  --radius: 16px;
+  --radius-sm: 10px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100%;
+  color: var(--ink);
+  font-family: var(--sans);
+  background-color: var(--bg);
+  background-image:
+    linear-gradient(180deg, rgba(243, 238, 228, 0.92), rgba(232, 224, 210, 0.96)),
+    repeating-linear-gradient(
+      90deg,
+      transparent 0,
+      transparent 11px,
+      rgba(166, 124, 61, 0.035) 11px,
+      rgba(166, 124, 61, 0.035) 12px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      transparent 0,
+      transparent 11px,
+      rgba(30, 58, 47, 0.03) 11px,
+      rgba(30, 58, 47, 0.03) 12px
+    );
+  -webkit-font-smoothing: antialiased;
+}
+
+*:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+}
+
+a,
+button,
+label,
+.classify-source-btn,
+.overview-card,
+.tool-card {
+  cursor: pointer;
+}
+
+/* Embroidered divider */
+.stitch-divider {
+  display: block;
+  width: min(220px, 55%);
+  height: 2px;
+  margin: var(--space-3) auto var(--space-4);
+  border: 0;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  position: relative;
+  overflow: hidden;
+}
+
+.stitch-divider::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--forest) 0 6px,
+    transparent 6px 10px
+  );
+  transform: scaleX(0);
+  transform-origin: left center;
+  animation: stitch-draw 1.1s var(--ease) 0.2s both;
+}
+
+@keyframes stitch-draw {
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.reveal {
+  animation: fade-up 0.55s var(--ease) both;
+}
+
+.reveal-delay-1 {
+  animation-delay: 0.06s;
+}
+.reveal-delay-2 {
+  animation-delay: 0.12s;
+}
+.reveal-delay-3 {
+  animation-delay: 0.18s;
+}
+
+/* Cross-stitch classification loader */
+.classify-loading {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(21, 32, 43, 0.48);
+  backdrop-filter: blur(2px);
+}
+
+.classify-loading[hidden] {
+  display: none !important;
+}
+
+.classify-loading-panel {
+  width: min(100%, 360px);
+  padding: 28px 24px 24px;
+  border-radius: 20px;
+  background: var(--surface);
+  border: 1px solid var(--gold-line);
+  box-shadow: 0 24px 48px rgba(21, 32, 43, 0.22);
+  text-align: center;
+}
+
+.cross-stitch {
+  --cell: 10px;
+  width: calc(var(--cell) * 8);
+  height: calc(var(--cell) * 8);
+  margin: 0 auto 18px;
+  display: grid;
+  grid-template-columns: repeat(8, var(--cell));
+  grid-template-rows: repeat(8, var(--cell));
+  gap: 0;
+}
+
+.cross-stitch span {
+  position: relative;
+  opacity: 0.15;
+  animation: stitch-cell 1.6s var(--ease) infinite;
+}
+
+.cross-stitch span::before,
+.cross-stitch span::after {
+  content: "";
+  position: absolute;
+  left: 15%;
+  right: 15%;
+  top: 50%;
+  height: 1.5px;
+  background: var(--forest-mid);
+  border-radius: 1px;
+}
+
+.cross-stitch span::before {
+  transform: translateY(-50%) rotate(45deg);
+}
+
+.cross-stitch span::after {
+  transform: translateY(-50%) rotate(-45deg);
+  background: var(--gold);
+}
+
+.cross-stitch span:nth-child(1) {
+  animation-delay: 0s;
+}
+.cross-stitch span:nth-child(2) {
+  animation-delay: 0.05s;
+}
+.cross-stitch span:nth-child(3) {
+  animation-delay: 0.1s;
+}
+.cross-stitch span:nth-child(4) {
+  animation-delay: 0.15s;
+}
+.cross-stitch span:nth-child(5) {
+  animation-delay: 0.2s;
+}
+.cross-stitch span:nth-child(6) {
+  animation-delay: 0.25s;
+}
+.cross-stitch span:nth-child(7) {
+  animation-delay: 0.3s;
+}
+.cross-stitch span:nth-child(8) {
+  animation-delay: 0.35s;
+}
+.cross-stitch span:nth-child(9) {
+  animation-delay: 0.08s;
+}
+.cross-stitch span:nth-child(10) {
+  animation-delay: 0.13s;
+}
+.cross-stitch span:nth-child(11) {
+  animation-delay: 0.18s;
+}
+.cross-stitch span:nth-child(12) {
+  animation-delay: 0.23s;
+}
+.cross-stitch span:nth-child(13) {
+  animation-delay: 0.28s;
+}
+.cross-stitch span:nth-child(14) {
+  animation-delay: 0.33s;
+}
+.cross-stitch span:nth-child(15) {
+  animation-delay: 0.38s;
+}
+.cross-stitch span:nth-child(16) {
+  animation-delay: 0.43s;
+}
+.cross-stitch span:nth-child(n + 17) {
+  animation-delay: 0.2s;
+}
+.cross-stitch span:nth-child(n + 33) {
+  animation-delay: 0.35s;
+}
+.cross-stitch span:nth-child(n + 49) {
+  animation-delay: 0.5s;
+}
+
+@keyframes stitch-cell {
+  0%,
+  100% {
+    opacity: 0.12;
+  }
+  40% {
+    opacity: 1;
+  }
+  70% {
+    opacity: 0.55;
+  }
+}
+
+.classify-loading-title {
+  margin: 0 0 6px;
+  font-family: var(--serif);
+  font-size: 22px;
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.classify-loading-sub {
+  margin: 0;
+  font-size: 13px;
+  color: var(--ink-soft);
+  line-height: 1.45;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .reveal,
+  .reveal-delay-1,
+  .reveal-delay-2,
+  .reveal-delay-3,
+  .stitch-divider::after,
+  .cross-stitch span,
+  .dashboard-hero,
+  .overview-card,
+  .tool-card {
+    animation: none !important;
+  }
+
+  .stitch-divider::after {
+    transform: scaleX(1);
+  }
+
+  .cross-stitch span {
+    opacity: 0.85;
+  }
+}

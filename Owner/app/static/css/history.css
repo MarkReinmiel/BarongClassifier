@@ -29,13 +29,18 @@
     font-weight: 700;
     letter-spacing: 0.18em;
     text-transform: uppercase;
-    color: var(--accent);
+    color: var(--gold, var(--accent));
 }
 
 .history-page-header h1 {
     margin: 0;
-    font-size: clamp(32px, 4vw, 44px);
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: clamp(28px, 4vw, 40px);
     color: var(--ink);
+}
+
+.history-page-header .stitch-divider {
+    margin-left: 0;
 }
 
 .history-page-header .page-description {
@@ -49,11 +54,11 @@
 .history-panel {
     max-width: 1400px;
     margin: 0 auto;
-    background: #fff;
-    border: 1px solid rgba(47, 50, 58, 0.06);
-    border-radius: 28px;
+    background: var(--surface, #fffdf8);
+    border: 1px solid var(--gold-line, #d4bc8a);
+    border-radius: 18px;
     padding: 22px 20px 16px;
-    box-shadow: 0 16px 40px rgba(47, 50, 58, 0.08);
+    box-shadow: 0 12px 28px rgba(42, 36, 28, 0.07);
     box-sizing: border-box;
 }
 

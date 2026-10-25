@@ -1,7 +1,7 @@
-{
+﻿{
   "version": "relevance_20261025_154859",
   "experimental": true,
-  "enabled": true,
+  "enabled": false,
   "method": "hybrid_centroid_msp_quality",
   "limitations": [
     "Synthetic OOD only (noise/solids/gradients); not a curated unrelated-photo set.",

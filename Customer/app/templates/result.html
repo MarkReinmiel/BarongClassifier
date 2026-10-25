@@ -1,11 +1,12 @@
 {% extends "base.html" %}
 {% block title %}Result | {{ app_name }}{% endblock %}
 {% block head %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/result.css') }}?v=3">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/result.css') }}?v=4">
 {% endblock %}
 {% block content %}
 {% set conf = (result.confidence or 0) * 100 %}
 {% set photo = result.image_path if result.image_path and result.image_path.startswith('https://') else none %}
+{% set has_photo = photo or result.image_data_url %}
 {% set status = result.status or 'classified' %}
 {% set status_labels = {
   'classified': 'Classified',
@@ -20,8 +21,10 @@
 
 <article class="result-hero{% if is_rejected %} result-hero--rejected{% endif %}">
   <div class="result-hero-photo">
-    {% if photo %}
-    <img src="{{ photo }}" alt="Submitted image">
+    {% if result.image_data_url %}
+    <img id="resultImage" src="{{ result.image_data_url }}" alt="Submitted image">
+    {% elif photo %}
+    <img id="resultImage" src="{{ photo }}" alt="Submitted image" crossorigin="anonymous">
     {% else %}
     <div class="result-hero-photo-fallback" aria-hidden="true">◈</div>
     {% endif %}
@@ -29,7 +32,7 @@
   </div>
   <div class="result-hero-prediction">
     <span class="result-kicker">{% if is_rejected %}Result{% else %}Predicted Textile Type{% endif %}</span>
-    <h3>{{ result.label }}</h3>
+    <h3 id="predictedType">{{ result.label }}</h3>
   </div>
   <div class="result-hero-confidence">
     <span class="result-kicker">{% if is_rejected %}Score{% else %}Model Confidence{% endif %}</span>
@@ -65,7 +68,7 @@
 <div class="result-meta">
   <div class="result-meta-card">
     <span class="result-kicker">Image Name</span>
-    <strong>{{ result.image_name or '—' }}</strong>
+    <strong id="resultFileName">{{ result.image_name or '—' }}</strong>
   </div>
   <div class="result-meta-card">
     <span class="result-kicker">Classification Status</span>
@@ -73,8 +76,20 @@
   </div>
 </div>
 
+<div class="result-file-actions" {% if not has_photo %}hidden{% endif %}>
+  <button type="button" id="saveImageBtn" class="btn g result-file-btn">Save Image</button>
+  <button type="button" id="downloadImageBtn" class="btn g result-file-btn">Download</button>
+</div>
+<p class="result-file-hint" {% if not has_photo %}hidden{% endif %}>
+  Save lets you choose a folder. Download sends the photo to your Downloads / Gallery.
+</p>
+
 <div class="result-actions">
   <a class="btn g" href="{{ url_for('history.history_page') }}">History</a>
   <a class="btn p" href="{{ url_for('classifier.classify_page') }}">{% if is_rejected %}Try Again →{% else %}Classify Another →{% endif %}</a>
 </div>
+{% endblock %}
+{% block scripts %}
+{{ super() }}
+<script src="{{ url_for('static', filename='js/result-image-actions.js') }}?v=1"></script>
 {% endblock %}

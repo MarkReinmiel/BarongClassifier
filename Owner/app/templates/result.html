@@ -2,18 +2,19 @@
 {% block title %}Classification Result | {{ app_name }}{% endblock %}
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/shared.css') }}">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/topnav.css') }}?v=6">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/classify.css') }}">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/result.css') }}">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-app.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/topnav.css') }}?v=9">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/classify.css') }}?v=16">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/result.css') }}?v=3">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-app.css') }}?v=7">
 {% endblock %}
 {% block body %}
 {% include "_nav.html" %}
 <main class="classifier-page">
-  <section class="classifier-header">
-    <a href="{{ url_for('classify.classify_page') }}" class="backbutton">? Back to Classify</a>
+  <section class="classifier-header reveal">
+    <a href="{{ url_for('classify.classify_page') }}" class="backbutton">&larr; Back to Classify</a>
     <p class="classifier-label">BARONG TAGALOG TEXTILE CLASSIFIER</p>
     <h1>Classification Result</h1>
+    <hr class="stitch-divider" aria-hidden="true">
     <p class="classifier-description">Review the details of your submitted textile image.</p>
   </section>
 
@@ -24,7 +25,12 @@
       <div class="result-image-container">
         <img id="resultImage" src="{{ result.image_data_url }}" alt="Classified textile image">
       </div>
-      <button type="button" id="viewImageButton" class="view-image-button">View Image</button>
+      <div class="result-image-actions">
+        <button type="button" id="viewImageButton" class="view-image-button">View Image</button>
+        <button type="button" id="saveImageBtn" class="result-file-btn result-file-btn--save">Save Image</button>
+        <button type="button" id="downloadImageBtn" class="result-file-btn result-file-btn--download">Download</button>
+      </div>
+      <p class="result-file-hint">Save lets you choose a folder. Download sends the photo to your Downloads / Gallery.</p>
       <div id="imageModal" class="image-modal" hidden role="dialog" aria-modal="true" aria-label="Enlarged textile image">
         <button type="button" id="closeImageModal" class="close-image-modal" aria-label="Close enlarged image">×</button>
         <img id="fullResultImage" src="{{ result.image_data_url }}" alt="Full submitted textile image" class="modal-image">
@@ -87,6 +93,7 @@
 {% endblock %}
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/navbar.js') }}"></script>
+<script src="{{ url_for('static', filename='js/result-image-actions.js') }}?v=1"></script>
 <script>
 document.getElementById("viewImageButton")?.addEventListener("click", () => {
   document.getElementById("imageModal").hidden = false;
