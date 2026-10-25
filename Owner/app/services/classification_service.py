@@ -101,33 +101,18 @@ def _predict_remote(content: bytes) -> tuple[str, float] | None:
     return None
 
 
-def classify_upload(user: OwnerUser, file_storage) -> dict:
-    if not user or not user.id:
-        raise ClassificationError("Sign in again.", 401)
-
-    name = getattr(file_storage, "filename", None) or "upload.jpg"
-    content = prepare_image_bytes(file_storage)
-
-    result = _predict_local(content) or _predict_remote(content)
-    if result is None:
-        raise ClassificationError(
-            "No classifier is available. Place models/barong_model.keras or set CLASSIFY_SERVER_URL.",
-            503,
-        )
-
-    label, confidence = result
-    confidence = validate_confidence(confidence)
-    label_text = str(label).strip()
-    display = {
-        "pina": "Piña",
-        "piña": "Piña",
-        "jusi": "Jusi",
-        "cocoon": "Cocoon",
-    }.get(label_text.lower(), label_text)
-    row_id = str(uuid.uuid4())
-
+def _persist_classification(
+    *,
+    user: OwnerUser,
+    name: str,
+    content: bytes,
+    label_text: str,
+    display: str,
+    confidence: float,
+) -> tuple[str, str | None]:
     from app.services.cloudinary_service import upload_classification_image
 
+    row_id = str(uuid.uuid4())
     image_url = upload_classification_image(
         content=content,
         filename=name,
@@ -143,7 +128,6 @@ def classify_upload(user: OwnerUser, file_storage) -> dict:
             row_id,
         )
 
-    # Persist into public.classifications so rows appear in Supabase Table Editor.
     try:
         from sqlalchemy import text
 
@@ -169,32 +153,120 @@ def classify_upload(user: OwnerUser, file_storage) -> dict:
                 "label": label_text,
                 "display_name": display,
                 "confidence": confidence,
-                # image_path / image_reference get the Cloudinary secure_url only.
-                # Filename stays in file_name so the sync trigger cannot promote a bare name.
                 "image_path": image_url,
                 "image_reference": image_url,
             },
         )
         db.session.commit()
         logger.info(
-            "classification_db_ok id=%s image_path_set=%s",
+            "classification_db_ok id=%s image_path_set=%s status_label=%s",
             row_id,
             bool(image_url),
+            label_text,
         )
     except SQLAlchemyError:
         db.session.rollback()
         logger.exception("Classification history was not saved. id=%s", row_id)
+    return row_id, image_url
+
+
+def classify_upload(user: OwnerUser, file_storage) -> dict:
+    from app.ml.relevance_gate import (
+        DISPLAY_UNDEFINED,
+        STATUS_CLASSIFIED,
+        assess_relevance,
+    )
+
+    if not user or not user.id:
+        raise ClassificationError("Sign in again.", 401)
+
+    name = getattr(file_storage, "filename", None) or "upload.jpg"
+    content = prepare_image_bytes(file_storage)
+
+    model = None
+    model_path = _model_file()
+    if model_path is not None:
+        try:
+            from app.ml.predictor import ensure_model
+
+            model = ensure_model(str(model_path), customer_root=OWNER_ROOT)
+        except Exception:
+            logger.exception("Could not load local model for relevance gate.")
+
+    gate = assess_relevance(
+        content,
+        model=model,
+        model_path=str(model_path) if model_path else None,
+        app_root=OWNER_ROOT,
+        enabled=bool(current_app.config.get("RELEVANCE_GATE_ENABLED", True)),
+    )
 
     image_b64 = base64.b64encode(content).decode("ascii")
+    image_data_url = f"data:image/jpeg;base64,{image_b64}"
+
+    if gate is not None and not gate.accept_textile:
+        label_text = "undefined_textile"
+        display = DISPLAY_UNDEFINED
+        confidence = validate_confidence(max(0.0, min(1.0, float(gate.confidence))))
+        _row_id, image_url = _persist_classification(
+            user=user,
+            name=name,
+            content=content,
+            label_text=label_text,
+            display=display,
+            confidence=confidence,
+        )
+        payload = {
+            "label": display,
+            "confidence": confidence,
+            "image_name": name,
+            "created_at": utcnow().isoformat(),
+            "image_data_url": image_data_url,
+            "image_path": image_url,
+            "model_version": _model_version(),
+        }
+        payload.update(gate.as_result_fields())
+        payload["label"] = display
+        payload["confidence"] = confidence
+        return payload
+
+    result = _predict_local(content) or _predict_remote(content)
+    if result is None:
+        raise ClassificationError(
+            "No classifier is available. Place models/barong_model.keras or set CLASSIFY_SERVER_URL.",
+            503,
+        )
+
+    label, confidence = result
+    confidence = validate_confidence(confidence)
+    label_text = str(label).strip()
+    display = {
+        "pina": "Piña",
+        "piña": "Piña",
+        "jusi": "Jusi",
+        "cocoon": "Cocoon",
+    }.get(label_text.lower(), label_text)
+
+    _row_id, image_url = _persist_classification(
+        user=user,
+        name=name,
+        content=content,
+        label_text=label_text,
+        display=display,
+        confidence=confidence,
+    )
+
     payload = {
         "label": display,
         "confidence": confidence,
         "image_name": name,
         "created_at": utcnow().isoformat(),
-        "image_data_url": f"data:image/jpeg;base64,{image_b64}",
+        "image_data_url": image_data_url,
         "image_path": image_url,
     }
     payload.update(_hierarchical_result(display, confidence, image_bytes=content))
+    if gate is not None and gate.status == STATUS_CLASSIFIED:
+        payload["gate"] = gate.details
     return payload
 
 

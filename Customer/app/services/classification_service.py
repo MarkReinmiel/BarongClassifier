@@ -117,26 +117,19 @@ def hierarchical_result(
     }
 
 
-def classify_image(user: CustomerUser, file_storage) -> dict:
-    from app.services.image_service import prepare_image_bytes
-
-    if not user or not user.id:
-        raise ClassificationError("Sign in again.", 401)
-
-    name = getattr(file_storage, "filename", None) or "upload.jpg"
-    content = prepare_image_bytes(file_storage)
-    label, confidence = _predict(content, name)
-    confidence = validate_confidence(confidence)
-    if not label or not str(label).strip():
-        raise ClassificationError("The model did not return a textile label.")
-
-    label_text = str(label).strip()
-    display = display_name_for(label_text)
-    row_id = str(uuid.uuid4())
-    now = utcnow()
-
+def _persist_classification(
+    *,
+    user: CustomerUser,
+    name: str,
+    content: bytes,
+    label_text: str,
+    display: str,
+    confidence: float,
+) -> Classification:
     from app.services.cloudinary_service import upload_classification_image
 
+    row_id = str(uuid.uuid4())
+    now = utcnow()
     image_url = upload_classification_image(
         content=content,
         filename=name,
@@ -144,10 +137,7 @@ def classify_image(user: CustomerUser, file_storage) -> dict:
         classification_id=row_id,
     )
     if image_url:
-        logger.info(
-            "classification_image_path_ready id=%s has_cloudinary_url=1",
-            row_id,
-        )
+        logger.info("classification_image_path_ready id=%s has_cloudinary_url=1", row_id)
     else:
         logger.warning(
             "classification_image_path_ready id=%s has_cloudinary_url=0 "
@@ -162,7 +152,6 @@ def classify_image(user: CustomerUser, file_storage) -> dict:
         predicted_label=label_text,
         display_name=display,
         confidence=confidence,
-        # Cloudinary secure_url only; filename stays in file_name.
         image_path=image_url,
         predicted_textile_type=label_text,
         confidence_score=confidence,
@@ -173,14 +162,92 @@ def classify_image(user: CustomerUser, file_storage) -> dict:
     try:
         db.session.commit()
         logger.info(
-            "classification_db_ok id=%s image_path_set=%s",
+            "classification_db_ok id=%s image_path_set=%s status_label=%s",
             row_id,
             bool(image_url),
+            label_text,
         )
     except SQLAlchemyError as error:
         db.session.rollback()
         logger.exception("Classification history was not saved. id=%s", row_id)
         raise ClassificationError("The classification could not be saved.", 503) from error
+    return row
+
+
+def classify_image(user: CustomerUser, file_storage) -> dict:
+    from app.services.image_service import prepare_image_bytes
+    from app.ml.relevance_gate import (
+        DISPLAY_UNDEFINED,
+        STATUS_CLASSIFIED,
+        assess_relevance,
+    )
+
+    if not user or not user.id:
+        raise ClassificationError("Sign in again.", 401)
+
+    name = getattr(file_storage, "filename", None) or "upload.jpg"
+    content = prepare_image_bytes(file_storage)
+
+    model = None
+    model_path = _model_file()
+    if model_path is not None:
+        try:
+            from app.ml.predictor import ensure_model
+
+            model = ensure_model(str(model_path), customer_root=CUSTOMER_ROOT)
+        except Exception:
+            logger.exception("Could not load local model for relevance gate.")
+
+    gate = assess_relevance(
+        content,
+        model=model,
+        model_path=str(model_path) if model_path else None,
+        app_root=CUSTOMER_ROOT,
+        enabled=bool(current_app.config.get("RELEVANCE_GATE_ENABLED", True)),
+    )
+
+    if gate is not None and not gate.accept_textile:
+        # Never assign Piña / Jusi / Cocoon for rejected relevance outcomes.
+        label_text = "undefined_textile"
+        display = DISPLAY_UNDEFINED
+        confidence = validate_confidence(max(0.0, min(1.0, float(gate.confidence))))
+        row = _persist_classification(
+            user=user,
+            name=name,
+            content=content,
+            label_text=label_text,
+            display=display,
+            confidence=confidence,
+        )
+        payload = {
+            "id": str(row.id),
+            "label": display,
+            "confidence": float(row.confidence),
+            "image_name": row.image_name,
+            "image_path": row.image_path,
+            "created_at": row.created_at.isoformat() if row.created_at else "",
+            "model_version": _model_version(),
+        }
+        payload.update(gate.as_result_fields())
+        payload["label"] = display
+        payload["confidence"] = float(row.confidence)
+        return payload
+
+    label, confidence = _predict(content, name)
+    confidence = validate_confidence(confidence)
+    if not label or not str(label).strip():
+        raise ClassificationError("The model did not return a textile label.")
+
+    label_text = str(label).strip()
+    display = display_name_for(label_text)
+    row = _persist_classification(
+        user=user,
+        name=name,
+        content=content,
+        label_text=label_text,
+        display=display,
+        confidence=confidence,
+    )
 
     conf = float(row.confidence)
     display = row.display_name or row.predicted_label
@@ -193,6 +260,8 @@ def classify_image(user: CustomerUser, file_storage) -> dict:
         "created_at": row.created_at.isoformat() if row.created_at else "",
     }
     payload.update(hierarchical_result(display, conf, image_bytes=content))
+    if gate is not None and gate.status == STATUS_CLASSIFIED:
+        payload["gate"] = gate.details
     return payload
 
 
