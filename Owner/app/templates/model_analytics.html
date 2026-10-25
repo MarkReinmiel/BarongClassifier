@@ -1,0 +1,423 @@
+{% extends "base.html" %}
+{% block title %}Model Analytics | {{ app_name }}{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/shared.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/topnav.css') }}?v=10">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}?v=7">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/model-analytics.css') }}?v=1">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-app.css') }}?v=7">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js" defer></script>
+{% endblock %}
+{% block body %}
+{% include "_nav.html" %}
+{% set o = analytics.overview %}
+{% set p = analytics.performance %}
+{% set c = analytics.confusion %}
+{% set h = analytics.history %}
+{% set e = analytics.efficiency %}
+{% set lat = e.latency or {} %}
+
+<main class="ma-page" id="modelAnalytics" data-analytics='{{ analytics | tojson }}'>
+  <header class="ma-header reveal">
+    <div>
+      <p class="ma-kicker">OWNER · MACHINE LEARNING</p>
+      <h1>Model Analytics</h1>
+      <hr class="stitch-divider" aria-hidden="true">
+      <p class="ma-lead">Held-out evaluation and training artifacts for the active Barong textile classifier. Values come from saved reports — not invented placeholders.</p>
+    </div>
+    <div class="ma-header-actions">
+      <a class="ma-btn ma-btn--ghost" href="{{ url_for('dashboard.model_analytics') }}">Refresh</a>
+      <a class="ma-btn ma-btn--ghost" href="{{ url_for('dashboard.model_analytics', measure_latency=1) }}">Refresh timing</a>
+      <button type="button" class="ma-btn ma-btn--primary" id="exportAnalyticsJson">Export JSON</button>
+    </div>
+  </header>
+
+  {% if analytics.limitations %}
+  <section class="ma-banner" role="note">
+    <strong>Data notes</strong>
+    <ul>
+      {% for item in analytics.limitations %}
+      <li>{{ item }}</li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+
+  <section class="ma-card ma-overview reveal">
+    <div class="ma-section-head">
+      <div>
+        <p class="ma-kicker">Model overview</p>
+        <h2>{{ o.name or 'Classifier' }}</h2>
+      </div>
+      <span class="ma-status ma-status--{{ (o.status or 'unknown')|lower|replace(' ', '-') }}">{{ o.status or 'Unknown' }}</span>
+    </div>
+    <div class="ma-overview-grid">
+      <div>
+        <span class="ma-label">Version</span>
+        <strong>{{ o.version or '—' }}</strong>
+      </div>
+      <div>
+        <span class="ma-label">Last evaluation</span>
+        <strong>{{ o.last_evaluation_at or '—' }}</strong>
+      </div>
+      <div>
+        <span class="ma-label">Supported classes</span>
+        <strong>{{ o.class_count or 0 }} · {{ (o.classes or [])|join(', ') }}</strong>
+      </div>
+      <div>
+        <span class="ma-label">Evaluation dataset</span>
+        <strong>{{ o.dataset.identifier or '—' }}</strong>
+      </div>
+      <div>
+        <span class="ma-label">Train / Val / Test</span>
+        <strong>
+          {{ o.dataset.train_images if o.dataset.train_images is not none else '—' }} /
+          {{ o.dataset.val_images if o.dataset.val_images is not none else '—' }} /
+          {{ o.dataset.test_images if o.dataset.test_images is not none else '—' }}
+        </strong>
+      </div>
+      <div>
+        <span class="ma-label">Metrics source</span>
+        <strong class="ma-mono">{{ o.metrics_source or '—' }}</strong>
+      </div>
+    </div>
+  </section>
+
+  <section class="ma-section reveal reveal-delay-1">
+    <div class="ma-section-head">
+      <div>
+        <p class="ma-kicker">Model performance</p>
+        <h2>Held-out test metrics</h2>
+      </div>
+      <p class="ma-note">{{ p.averaging_note }}</p>
+    </div>
+
+    {% if p.available %}
+    <div class="ma-metric-grid">
+      <article class="ma-metric" title="Share of test images predicted correctly. Uses the held-out test split only.">
+        <span class="ma-label">Accuracy</span>
+        <strong>{% if p.accuracy_pct is not none %}{{ '%.1f'|format(p.accuracy_pct) }}%{% else %}—{% endif %}</strong>
+        <small>Test split · n={{ p.test_images or '—' }}</small>
+      </article>
+      <article class="ma-metric" title="Macro-average precision: mean of per-class precision. Avoids dominance by larger classes.">
+        <span class="ma-label">Precision <span class="ma-tip">?</span></span>
+        <strong>{% if p.precision_pct is not none %}{{ '%.1f'|format(p.precision_pct) }}%{% else %}—{% endif %}</strong>
+        <small>Macro average</small>
+      </article>
+      <article class="ma-metric" title="Macro-average recall: mean of per-class recall (sensitivity).">
+        <span class="ma-label">Recall <span class="ma-tip">?</span></span>
+        <strong>{% if p.recall_pct is not none %}{{ '%.1f'|format(p.recall_pct) }}%{% else %}—{% endif %}</strong>
+        <small>Macro average</small>
+      </article>
+      <article class="ma-metric" title="Macro-average F1: harmonic mean of precision and recall, averaged across classes.">
+        <span class="ma-label">F1-score <span class="ma-tip">?</span></span>
+        <strong>{% if p.f1_pct is not none %}{{ '%.1f'|format(p.f1_pct) }}%{% else %}—{% endif %}</strong>
+        <small>Macro average</small>
+      </article>
+    </div>
+
+    <div class="ma-table-wrap">
+      <table class="ma-table">
+        <caption>Per-class performance on the held-out test set</caption>
+        <thead>
+          <tr>
+            <th scope="col">Class</th>
+            <th scope="col">Precision</th>
+            <th scope="col">Recall</th>
+            <th scope="col">F1-score</th>
+            <th scope="col">Support</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in p.per_class %}
+          <tr>
+            <th scope="row">{{ row.label }}</th>
+            <td>{% if row.precision_pct is not none %}{{ '%.1f'|format(row.precision_pct) }}%{% else %}—{% endif %}</td>
+            <td>{% if row.recall_pct is not none %}{{ '%.1f'|format(row.recall_pct) }}%{% else %}—{% endif %}</td>
+            <td>{% if row.f1_pct is not none %}{{ '%.1f'|format(row.f1_pct) }}%{% else %}—{% endif %}</td>
+            <td>{{ row.support if row.support is not none else '—' }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="5">No per-class metrics available.</td></tr>
+          {% endfor %}
+        </tbody>
+        <tfoot>
+          <tr>
+            <th scope="row">Macro avg</th>
+            <td>{% if p.macro.precision_pct is not none %}{{ '%.1f'|format(p.macro.precision_pct) }}%{% else %}—{% endif %}</td>
+            <td>{% if p.macro.recall_pct is not none %}{{ '%.1f'|format(p.macro.recall_pct) }}%{% else %}—{% endif %}</td>
+            <td>{% if p.macro.f1_pct is not none %}{{ '%.1f'|format(p.macro.f1_pct) }}%{% else %}—{% endif %}</td>
+            <td>{{ p.test_images or '—' }}</td>
+          </tr>
+          <tr>
+            <th scope="row">Weighted avg</th>
+            <td>{% if p.weighted.precision_pct is not none %}{{ '%.1f'|format(p.weighted.precision_pct) }}%{% else %}—{% endif %}</td>
+            <td>{% if p.weighted.recall_pct is not none %}{{ '%.1f'|format(p.weighted.recall_pct) }}%{% else %}—{% endif %}</td>
+            <td>{% if p.weighted.f1_pct is not none %}{{ '%.1f'|format(p.weighted.f1_pct) }}%{% else %}—{% endif %}</td>
+            <td>{{ p.test_images or '—' }}</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+    {% else %}
+    <div class="ma-empty">
+      <h3>No evaluation report found</h3>
+      <p>Generate a held-out evaluation (confusion matrix + classification report) into <code>ml/models/active/</code> to populate this section.</p>
+    </div>
+    {% endif %}
+  </section>
+
+  <section class="ma-section reveal reveal-delay-2">
+    <div class="ma-section-head">
+      <div>
+        <p class="ma-kicker">Confusion matrix</p>
+        <h2>True vs predicted classes</h2>
+      </div>
+      {% if c.available %}
+      <div class="ma-toggle" role="group" aria-label="Matrix display mode">
+        <button type="button" class="ma-toggle-btn is-on" data-matrix-mode="counts">Counts</button>
+        <button type="button" class="ma-toggle-btn" data-matrix-mode="pct">Row %</button>
+      </div>
+      {% endif %}
+    </div>
+    {% if c.available %}
+    <p class="ma-note">{{ c.explanation }}</p>
+    <div class="ma-matrix-wrap">
+      <table class="ma-matrix" id="confusionMatrix" data-counts='{{ c.matrix | tojson }}' data-pct='{{ c.row_normalized | tojson }}'>
+        <thead>
+          <tr>
+            <th scope="col">True \\ Pred</th>
+            {% for label in c.labels %}
+            <th scope="col">{{ label }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for row_idx in range(c.matrix|length) %}
+          {% set row = c.matrix[row_idx] %}
+          <tr>
+            <th scope="row">{{ c.labels[row_idx] }}</th>
+            {% for col_idx in range(row|length) %}
+            {% set val = row[col_idx] %}
+            <td class="{% if row_idx == col_idx %}is-diag{% endif %}" data-count="{{ val }}" data-pct="{{ c.row_normalized[row_idx][col_idx] }}">{{ val }}</td>
+            {% endfor %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="ma-empty">
+      <h3>Confusion matrix unavailable</h3>
+      <p>Run evaluation on a held-out test set and save <code>confusion_matrix</code> in <code>metrics.json</code>.</p>
+    </div>
+    {% endif %}
+  </section>
+
+  <section class="ma-section reveal">
+    <div class="ma-section-head">
+      <div>
+        <p class="ma-kicker">Training history</p>
+        <h2>Recorded training runs</h2>
+      </div>
+      {% if analytics.training_runs|length > 1 %}
+      <label class="ma-select-wrap">
+        <span class="ma-label">Run</span>
+        <select id="trainingRunSelect">
+          {% for run in analytics.training_runs %}
+          <option value="{{ run.id }}">{{ run.name }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      {% endif %}
+    </div>
+    {% if analytics.training_runs %}
+    <div class="ma-table-wrap">
+      <table class="ma-table">
+        <thead>
+          <tr>
+            <th>Run</th>
+            <th>Architecture</th>
+            <th>Date</th>
+            <th>Samples (tr/va/te)</th>
+            <th>Epochs</th>
+            <th>Best val acc</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for run in analytics.training_runs %}
+          <tr>
+            <th scope="row">{{ run.name }}</th>
+            <td>{{ run.architecture }}</td>
+            <td>{{ run.trained_at or '—' }}</td>
+            <td>
+              {{ run.dataset.train_images or '—' }} /
+              {{ run.dataset.val_images or '—' }} /
+              {{ run.dataset.test_images or '—' }}
+            </td>
+            <td>{{ run.epochs_completed or '—' }}</td>
+            <td>
+              {% if run.best_validation_metric.value_pct is not none %}
+              {{ '%.1f'|format(run.best_validation_metric.value_pct) }}%
+              {% else %}—{% endif %}
+            </td>
+            <td><span class="ma-status ma-status--completed">{{ run.status }}</span></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <p class="ma-note">{{ analytics.training_runs[0].duration_note }}</p>
+    {% else %}
+    <div class="ma-empty">
+      <h3>No training runs persisted</h3>
+      <p>Future training scripts should write epoch history into <code>ml/models/active/metrics.json</code> (already done for the active run).</p>
+    </div>
+    {% endif %}
+  </section>
+
+  <section class="ma-section reveal">
+    <div class="ma-section-head">
+      <div>
+        <p class="ma-kicker">Training curves</p>
+        <h2>Accuracy and loss by epoch</h2>
+      </div>
+    </div>
+    {% if h.available %}
+    <div class="ma-charts">
+      <div class="ma-chart-card">
+        <h3>Accuracy</h3>
+        <canvas id="accuracyChart" aria-label="Training versus validation accuracy"></canvas>
+      </div>
+      <div class="ma-chart-card">
+        <h3>Loss</h3>
+        <canvas id="lossChart" aria-label="Training versus validation loss"></canvas>
+      </div>
+    </div>
+    {% else %}
+    <div class="ma-empty">
+      <h3>Epoch history missing</h3>
+      <p>No accuracy/loss arrays were found in the active metrics file.</p>
+    </div>
+    {% endif %}
+  </section>
+
+  <section class="ma-section reveal">
+    <div class="ma-section-head">
+      <div>
+        <p class="ma-kicker">Model versions</p>
+        <h2>Versions &amp; comparison</h2>
+      </div>
+    </div>
+    <div class="ma-table-wrap">
+      <table class="ma-table">
+        <thead>
+          <tr>
+            <th>Version</th>
+            <th>Architecture</th>
+            <th>Created</th>
+            <th>Accuracy</th>
+            <th>Size</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for v in analytics.versions %}
+          <tr>
+            <th scope="row">{{ v.label }}</th>
+            <td>{{ v.architecture }}</td>
+            <td>{{ v.created_at or '—' }}</td>
+            <td>
+              {% if v.evaluation.accuracy_pct is not none %}
+              {{ '%.1f'|format(v.evaluation.accuracy_pct) }}%
+              {% else %}
+              <span class="ma-muted">{{ v.evaluation.note or 'No eval report' }}</span>
+              {% endif %}
+            </td>
+            <td>{% if v.file_size_mb is not none %}{{ v.file_size_mb }} MB{% else %}—{% endif %}</td>
+            <td><span class="ma-status ma-status--{{ v.status|lower }}">{{ v.status }}</span></td>
+          </tr>
+          {% else %}
+          <tr><td colspan="6">No model artifacts discovered.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="ma-compare">
+      <h3>Side-by-side comparison</h3>
+      <p class="ma-note">Only versions with evaluation reports can be compared numerically. Higher accuracy alone does not mean a version should be promoted.</p>
+      <div class="ma-compare-controls">
+        <label>
+          <span class="ma-label">Version A</span>
+          <select id="compareA">
+            {% for v in analytics.versions %}
+            <option value="{{ v.id }}" {% if loop.first %}selected{% endif %}>{{ v.label }}</option>
+            {% endfor %}
+          </select>
+        </label>
+        <label>
+          <span class="ma-label">Version B</span>
+          <select id="compareB">
+            {% for v in analytics.versions %}
+            <option value="{{ v.id }}" {% if loop.index == 2 or (analytics.versions|length == 1 and loop.first) %}selected{% endif %}>{{ v.label }}</option>
+            {% endfor %}
+          </select>
+        </label>
+      </div>
+      <div id="compareOut" class="ma-compare-out" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <section class="ma-section reveal">
+    <div class="ma-section-head">
+      <div>
+        <p class="ma-kicker">Efficiency</p>
+        <h2>Inference time &amp; model size</h2>
+      </div>
+    </div>
+    <div class="ma-metric-grid ma-metric-grid--3">
+      <article class="ma-metric">
+        <span class="ma-label">Model size</span>
+        <strong>{% if e.model_size_mb is not none %}{{ e.model_size_mb }} MB{% else %}—{% endif %}</strong>
+        <small>{{ e.model_format }} · {{ e.artifact or '—' }}</small>
+      </article>
+      <article class="ma-metric">
+        <span class="ma-label">Avg inference</span>
+        <strong>{% if lat.available and lat.avg_ms is not none %}{{ lat.avg_ms }} ms{% else %}—{% endif %}</strong>
+        <small>Local model.predict only</small>
+      </article>
+      <article class="ma-metric">
+        <span class="ma-label">Median / p95</span>
+        <strong>
+          {% if lat.available %}
+          {{ lat.median_ms }} / {{ lat.p95_ms }} ms
+          {% else %}—{% endif %}
+        </strong>
+        <small>n={{ lat.n_measurements if lat.n_measurements is not none else '—' }}</small>
+      </article>
+    </div>
+    {% if lat.available %}
+    <div class="ma-note-block">
+      <p><strong>Includes:</strong> {{ (lat.includes or [])|join('; ') }}</p>
+      <p><strong>Excludes:</strong> {{ (lat.excludes or [])|join('; ') }}</p>
+      <p><strong>Environment:</strong>
+        {{ (lat.environment or {}).runtime }} ·
+        {{ (lat.environment or {}).device }} ·
+        samples: {{ (lat.environment or {}).sample_source }}
+        {% if lat.cached %} · cached benchmark{% endif %}
+      </p>
+    </div>
+    {% else %}
+    <div class="ma-empty">
+      <h3>Latency not measured yet</h3>
+      <p>{{ lat.message or 'Use “Refresh timing” to run a short local benchmark. This does not retrain or replace the active model.' }}</p>
+    </div>
+    {% endif %}
+  </section>
+</main>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/model-analytics.js') }}?v=1"></script>
+{% endblock %}

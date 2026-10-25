@@ -192,6 +192,22 @@
   word-break:break-word;
 }
 
+.result-file-actions{
+  margin-top:14px;
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+}
+.result-file-actions .btn{
+  flex:1 1 140px;
+  min-height:44px;
+}
+.result-file-hint{
+  margin:8px 0 0;
+  font-size:12px;
+  line-height:1.4;
+  color:var(--ink-soft,#5c5348);
+}
 .result-actions{
   margin-top:14px;
   display:flex;
@@ -238,6 +254,8 @@
   .result-hero-confidence{text-align:center}
   .result-bar{max-width:200px;margin-left:auto;margin-right:auto}
   .result-meta{grid-template-columns:1fr}
+  .result-file-actions{flex-direction:column}
+  .result-file-actions .btn{width:100%;flex:none}
   .result-actions{flex-direction:column}
   .result-actions .btn{width:100%;flex:none}
   .result-variant-score{width:100%}

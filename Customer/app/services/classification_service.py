@@ -190,21 +190,26 @@ def classify_image(user: CustomerUser, file_storage) -> dict:
 
     model = None
     model_path = _model_file()
-    if model_path is not None:
-        try:
-            from app.ml.predictor import ensure_model
+    gate_enabled = bool(current_app.config.get("RELEVANCE_GATE_ENABLED", False))
+    gate = None
+    if gate_enabled:
+        if model_path is not None:
+            try:
+                from app.ml.predictor import ensure_model
 
-            model = ensure_model(str(model_path), customer_root=CUSTOMER_ROOT)
-        except Exception:
-            logger.exception("Could not load local model for relevance gate.")
+                model = ensure_model(str(model_path), customer_root=CUSTOMER_ROOT)
+            except Exception:
+                logger.exception("Could not load local model for relevance gate.")
 
-    gate = assess_relevance(
-        content,
-        model=model,
-        model_path=str(model_path) if model_path else None,
-        app_root=CUSTOMER_ROOT,
-        enabled=bool(current_app.config.get("RELEVANCE_GATE_ENABLED", True)),
-    )
+        gate = assess_relevance(
+            content,
+            model=model,
+            model_path=str(model_path) if model_path else None,
+            app_root=CUSTOMER_ROOT,
+            enabled=True,
+        )
+    else:
+        logger.info("relevance_gate_skipped RELEVANCE_GATE_ENABLED=false")
 
     if gate is not None and not gate.accept_textile:
         # Never assign Piña / Jusi / Cocoon for rejected relevance outcomes.
@@ -219,12 +224,14 @@ def classify_image(user: CustomerUser, file_storage) -> dict:
             display=display,
             confidence=confidence,
         )
+        image_b64 = base64.b64encode(content).decode("ascii")
         payload = {
             "id": str(row.id),
             "label": display,
             "confidence": float(row.confidence),
             "image_name": row.image_name,
             "image_path": row.image_path,
+            "image_data_url": f"data:image/jpeg;base64,{image_b64}",
             "created_at": row.created_at.isoformat() if row.created_at else "",
             "model_version": _model_version(),
         }
@@ -251,12 +258,14 @@ def classify_image(user: CustomerUser, file_storage) -> dict:
 
     conf = float(row.confidence)
     display = row.display_name or row.predicted_label
+    image_b64 = base64.b64encode(content).decode("ascii")
     payload = {
         "id": str(row.id),
         "label": display,
         "confidence": conf,
         "image_name": row.image_name,
         "image_path": row.image_path,
+        "image_data_url": f"data:image/jpeg;base64,{image_b64}",
         "created_at": row.created_at.isoformat() if row.created_at else "",
     }
     payload.update(hierarchical_result(display, conf, image_bytes=content))

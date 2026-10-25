@@ -2,12 +2,12 @@
 {% block title %}Users | {{ app_name }}{% endblock %}
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/shared.css') }}">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/topnav.css') }}?v=6">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/history.css') }}">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-app.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/topnav.css') }}?v=9">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}?v=7">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/history.css') }}?v=4">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-app.css') }}?v=7">
 <style>
-  .user-card{display:grid;gap:12px;padding:22px;margin-bottom:14px;background:#fffaf3;border:1px solid #e7dac7;border-radius:12px}
+  .user-card{display:grid;gap:12px;padding:22px;margin-bottom:14px;background:var(--surface,#fffdf8);border:1px solid var(--gold-line,#d4bc8a);border-radius:16px;box-shadow:0 10px 24px rgba(42,36,28,.06)}
   .user-card h3{margin:0;font-family:"Playfair Display",Georgia,serif;font-size:18px;color:#3b2919}
   .user-card .meta{margin:0;font-size:12px;color:#755f48}
   .user-actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
@@ -22,10 +22,11 @@
 {% block body %}
 {% include "_nav.html" %}
 <main class="dashboard">
-  <section class="overview-section">
+  <section class="overview-section reveal">
     <div class="section-heading">
       <p>ADMINISTRATION</p>
       <h2>User management</h2>
+      <hr class="stitch-divider" aria-hidden="true">
     </div>
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% for category, message in messages %}

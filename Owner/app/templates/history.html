@@ -2,16 +2,17 @@
 {% block title %}History | {{ app_name }}{% endblock %}
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/shared.css') }}">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/topnav.css') }}?v=6">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/history.css') }}?v=3">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-app.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/topnav.css') }}?v=9">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/history.css') }}?v=4">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-app.css') }}?v=7">
 {% endblock %}
 {% block body %}
 {% include "_nav.html" %}
 <main class="history-page">
-  <section class="history-page-header">
+  <section class="history-page-header reveal">
     <p class="eyebrow">BARONG TAGALOG</p>
     <h1>History</h1>
+    <hr class="stitch-divider" aria-hidden="true">
     <p class="page-description">Review previous textile classifications from the shared database.</p>
   </section>
 

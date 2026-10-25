@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-from flask import Blueprint, flash, redirect, render_template, request, url_for
+from flask import Blueprint, flash, jsonify, redirect, render_template, request, url_for
 
 from app.services.auth_service import AuthError, change_password
+from app.services.model_analytics_service import analytics_json
 from app.services.users_service import (
     UsersError,
     dashboard_stats,
@@ -52,6 +53,28 @@ def about():
     stats = dashboard_stats()
     response = render_template("about.html", user=user, stats=stats, active="about")
     return no_store(response)
+
+
+@bp.get("/model-analytics")
+@login_required
+def model_analytics():
+    user = current_user()
+    measure = (request.args.get("measure_latency") or "").lower() in {"1", "true", "yes"}
+    data = analytics_json(measure_latency=measure)
+    response = render_template(
+        "model_analytics.html",
+        user=user,
+        analytics=data,
+        active="analytics",
+    )
+    return no_store(response)
+
+
+@bp.get("/api/model-analytics")
+@login_required
+def model_analytics_api():
+    measure = (request.args.get("measure_latency") or "").lower() in {"1", "true", "yes"}
+    return jsonify(analytics_json(measure_latency=measure))
 
 
 @bp.get("/textile-types")

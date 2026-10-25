@@ -2,13 +2,14 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>{% block title %}{{ app_name }}{% endblock %}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}?v=2">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/topnav.css') }}?v=8">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/heritage.css') }}?v=2">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}?v=3">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/topnav.css') }}?v=9">
   {% block head %}{% endblock %}
 </head>
 <body data-static-root="{{ url_for('static', filename='') }}">

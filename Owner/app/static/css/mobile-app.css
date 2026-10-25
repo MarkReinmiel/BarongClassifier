@@ -83,7 +83,7 @@
 
     .nav-dropdown.active .nav-dropdown-toggle,
     .nav-dropdown.is-open .nav-dropdown-toggle {
-        background: rgba(196, 122, 192, 0.22);
+        background: rgba(166, 124, 61, 0.22);
         color: var(--accent-highlight);
     }
 
@@ -109,7 +109,7 @@
 
     .navbar-links .nav-dropdown-menu a:hover,
     .navbar-links .nav-dropdown-menu a.active {
-        background: rgba(196, 122, 192, 0.18);
+        background: rgba(166, 124, 61, 0.18);
         color: var(--accent-deep);
     }
 
@@ -248,7 +248,7 @@
         background:
             radial-gradient(
                 circle 420px at top left,
-                rgba(196, 122, 192, 0.12),
+                rgba(166, 124, 61, 0.12),
                 transparent 100%
             ),
             var(--bg);

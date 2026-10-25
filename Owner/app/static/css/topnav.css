@@ -1,18 +1,18 @@
 /* Customer-matching top navbar for Owner */
 
 :root {
-  --nav: #141C28;
-  --nav-elevated: #1E2A3A;
+  --nav: #15202B;
+  --nav-elevated: #1E2C3A;
   --nav-muted: #9AA6B8;
-  --hi: #B894C4;
-  --accent: #795780;
-  --deep: #634768;
-  --deeper: #4A3552;
-  --ink: #26354A;
-  --ink2: #5A6575;
-  --surface: #fff;
-  --line: #E2E4EA;
-  --shadow: rgba(38, 53, 74, 0.10);
+  --hi: #A67C3D;
+  --accent: #2F5A45;
+  --deep: #1E3A2F;
+  --deeper: #14261F;
+  --ink: #2A241C;
+  --ink2: #5C5348;
+  --surface: #FFFdf8;
+  --line: #E0D6C6;
+  --shadow: rgba(42, 36, 28, 0.10);
   --sans: "DM Sans", Arial, sans-serif;
 }
 
@@ -92,17 +92,37 @@ body {
   background: none;
   border: 0;
   color: var(--nav-muted);
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 500;
-  padding: 10px 12px;
+  padding: 8px 10px;
   cursor: pointer;
   border-radius: 999px;
   text-decoration: none;
   font-family: var(--sans);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: color 0.2s ease, background 0.2s ease;
+  white-space: nowrap;
+}
+
+.links a .nav-ico {
+  width: 16px;
+  height: 16px;
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+
+.links a .nav-ico svg {
+  width: 16px;
+  height: 16px;
+  display: block;
 }
 
 .links a:hover {
   color: #fff;
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .links a.on,
@@ -110,6 +130,7 @@ body {
   color: #fff;
   font-weight: 700;
   position: relative;
+  background: rgba(166, 124, 61, 0.16);
 }
 
 .links a.on::after,
@@ -323,23 +344,23 @@ body {
 }
 
 .nb[data-tone="home"].on {
-  background: #fce8ec;
-  color: #e04560;
+  background: #e8efe9;
+  color: #1e3a2f;
 }
 
 .nb[data-tone="types"].on {
-  background: #ece8f8;
-  color: #6b5cad;
+  background: #f3e6d0;
+  color: #8a6a2f;
 }
 
 .nb[data-tone="classify"].on {
-  background: #e0f7f4;
-  color: #1aa897;
+  background: #e6efe9;
+  color: #2f5a45;
 }
 
 .nb[data-tone="history"].on {
-  background: #fcefe3;
-  color: #e08a3c;
+  background: #f7f1e8;
+  color: #a67c3d;
 }
 
 .fab {

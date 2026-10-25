@@ -27,14 +27,8 @@ body {
 .textile-page {
     min-height: 100vh;
 
-    padding: 140px 7% 90px;
-    background:
-        radial-gradient(
-            circle at top right,
-            rgba(196, 122, 192, 0.12),
-            transparent 28%
-        ),
-        var(--bg);
+    padding: 100px 5% 90px;
+    background: transparent;
 
     box-sizing: border-box;
 
@@ -66,7 +60,7 @@ body {
 
     letter-spacing: 3px;
 
-    color: var(--accent);
+    color: var(--gold, var(--accent));
 }
 
 .textile-header h1 {
@@ -74,7 +68,7 @@ body {
 
     font-family: "Playfair Display", Georgia, serif;
 
-    font-size: 48px;
+    font-size: clamp(28px, 5vw, 44px);
     font-weight: 700;
 
     color: var(--ink);
@@ -160,13 +154,17 @@ body {
     align-items: center;
     justify-content: center;
 
-    background: #f2e5d1;
+    background: var(--gold-soft, #f2e5d1);
 
     border-radius: 50%;
 
-    color: #a8752f;
+    color: var(--forest, #1e3a2f);
 
     font-size: 12px;
+}
+
+.textile-icon svg {
+    display: block;
 }
 
 

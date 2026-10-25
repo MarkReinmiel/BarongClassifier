@@ -2,21 +2,22 @@
 {% block title %}Dashboard | {{ app_name }}{% endblock %}
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/shared.css') }}">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/topnav.css') }}?v=6">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}?v=6">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-app.css') }}?v=6">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/topnav.css') }}?v=9">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}?v=7">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-app.css') }}?v=7">
 {% endblock %}
 {% block body %}
 {% include "_nav.html" %}
 
 <main class="dashboard">
 
-  <section class="dashboard-hero">
+  <section class="dashboard-hero reveal">
     <div class="dashboard-content">
       <p class="dashboard-label">OWNER DASHBOARD</p>
       <h1>Welcome back, <span>{{ user.full_name or user.nickname or 'Owner' }}</span></h1>
+      <hr class="stitch-divider" aria-hidden="true">
       <p class="dashboard-description">
-        Review saved classifications, manage user accounts, and monitor how BarongClassifier performs.
+        Review classifications, manage accounts, and monitor BarongClassifier.
       </p>
       <div class="hero-actions">
         <a href="{{ url_for('classify.classify_page') }}" class="classify-button">
@@ -29,15 +30,15 @@
 
     <div class="dashboard-image">
       <div class="image-frame">
-        <img src="{{ url_for('static', filename='images/barong.jpg') }}" alt="Barong Tagalog textile">
+        <img src="{{ url_for('static', filename='images/barong.jpg') }}" alt="Barong Tagalog textile" loading="lazy">
       </div>
     </div>
   </section>
 
-  <section class="overview-section">
+  <section class="overview-section reveal reveal-delay-1">
     <div class="section-heading">
       <p>SYSTEM OVERVIEW</p>
-      <h2>BarongClassifier at a Glance</h2>
+      <h2>At a Glance</h2>
     </div>
     <div class="overview-cards">
       <article class="overview-card" onclick="window.location.href='{{ url_for('dashboard.textile_types') }}'" tabindex="0" role="button">
@@ -61,9 +62,9 @@
           </svg>
         </div>
         <div class="overview-info">
-          <span class="overview-number" id="overviewModelAccuracy">{{ stats.model_accuracy }}%</span>
+          <span class="overview-number" id="overviewModelAccuracy">{% if stats.model_accuracy is not none %}{{ stats.model_accuracy }}%{% else %}—{% endif %}</span>
           <h3>Model Accuracy</h3>
-          <p>MobileNetV2 test accuracy</p>
+          <p>Held-out test accuracy</p>
         </div>
       </div>
 

@@ -6,9 +6,17 @@
   var prompt = document.getElementById("prompt");
   var analyze = document.getElementById("analyze");
   var form = document.getElementById("classifyForm");
+  var loading = document.getElementById("classifyLoading");
   var url = null;
+  var submitting = false;
 
   if (!fileInput || !prev || !analyze || !form) return;
+
+  function showLoading(on) {
+    if (!loading) return;
+    loading.hidden = !on;
+    loading.setAttribute("aria-busy", on ? "true" : "false");
+  }
 
   function clearFile() {
     if (url) URL.revokeObjectURL(url);
@@ -36,7 +44,6 @@
     analyze.disabled = false;
     if (clearBtn) clearBtn.hidden = false;
 
-    // Keep the named form field populated for submit (gallery or camera).
     try {
       var transfer = new DataTransfer();
       transfer.items.add(file);
@@ -59,6 +66,10 @@
   }
 
   form.addEventListener("submit", function (event) {
+    if (submitting) {
+      event.preventDefault();
+      return;
+    }
     if (!fileInput.files || !fileInput.files.length) {
       if (camInput && camInput.files && camInput.files.length) {
         try {
@@ -66,16 +77,28 @@
           transfer.items.add(camInput.files[0]);
           fileInput.files = transfer.files;
         } catch (err) {
-          // fall through; server may still receive nothing
+          // fall through
         }
       }
     }
     if (!fileInput.files || !fileInput.files.length) {
       event.preventDefault();
       analyze.disabled = false;
+      showLoading(false);
       return;
     }
+    submitting = true;
     analyze.disabled = true;
     analyze.innerHTML = '<span class="spin"></span> Analyzing…';
+    showLoading(true);
+  });
+
+  window.addEventListener("pageshow", function () {
+    submitting = false;
+    showLoading(false);
+    if (analyze && fileInput.files && fileInput.files.length) {
+      analyze.disabled = false;
+      analyze.textContent = "Analyze Textile";
+    }
   });
 })();
