@@ -17,12 +17,45 @@ class TurnstileError(Exception):
         super().__init__(message)
 
 
+def request_hostname() -> str:
+    return (request.host or "").split(":")[0].strip().lower()
+
+
+def is_local_or_lan_host(hostname: str | None = None) -> bool:
+    """True for localhost / private LAN IPs (mobile testing over Wi-Fi)."""
+    host = (hostname or request_hostname()).strip().lower()
+    if not host or host in {"localhost", "127.0.0.1", "::1"}:
+        return True
+    parts = host.split(".")
+    if len(parts) == 4 and all(p.isdigit() for p in parts):
+        a, b = int(parts[0]), int(parts[1])
+        if a == 10 or a == 127:
+            return True
+        if a == 192 and b == 168:
+            return True
+        if a == 172 and 16 <= b <= 31:
+            return True
+    return False
+
+
+def turnstile_active() -> bool:
+    """Widget + verify only when enabled and not on local/LAN IP hosts."""
+    if not current_app.config.get("TURNSTILE_ENABLED"):
+        return False
+    if not (current_app.config.get("TURNSTILE_SITE_KEY") or "").strip():
+        return False
+    # Cloudflare Turnstile widgets usually reject raw LAN IPs until allowlisted.
+    # Skip on local/LAN so phone testing works; still enforce on real hostnames.
+    if is_local_or_lan_host():
+        return False
+    return True
+
+
 def verify_turnstile(token: str | None) -> None:
-    cfg = current_app.config
-    if not cfg.get("TURNSTILE_ENABLED"):
+    if not turnstile_active():
         return
 
-    secret = cfg.get("TURNSTILE_SECRET_KEY") or ""
+    secret = (current_app.config.get("TURNSTILE_SECRET_KEY") or "").strip()
     if not secret:
         logger.warning("Turnstile is enabled but TURNSTILE_SECRET_KEY is missing.")
         raise TurnstileError("Human verification is not configured.")
@@ -44,5 +77,16 @@ def verify_turnstile(token: str | None) -> None:
         logger.warning("Turnstile verification request failed.")
         raise TurnstileError("Human verification could not be checked. Try again.") from error
 
-    if not data.get("success"):
-        raise TurnstileError("Human verification failed. Try again.")
+    if data.get("success"):
+        return
+
+    codes = data.get("error-codes") or []
+    logger.warning("Turnstile rejected token error_codes=%s", codes)
+    if "timeout-or-duplicate" in codes:
+        raise TurnstileError("Human verification expired. Refresh and try again.")
+    if "hostname-mismatch" in codes:
+        raise TurnstileError(
+            "Human verification hostname is not allowed. Add this site hostname "
+            "in the Cloudflare Turnstile widget settings."
+        )
+    raise TurnstileError("Human verification failed. Try again.")
