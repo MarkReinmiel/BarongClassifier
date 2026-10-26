@@ -36,102 +36,191 @@
   });
 
   // Charts
+  var chartsBuilt = false;
   function buildCharts() {
-    if (typeof Chart === "undefined") return;
+    if (typeof Chart === "undefined") return false;
+    if (chartsBuilt) return true;
+    chartsBuilt = true;
+
+    var hunter = "#2F5A45";
+    var midnight = "#331832";
+    var grape = "#694D75";
+    var dusk = "#1B5299";
+    var soft = "#5A4063";
+
+    var perf = data.performance || {};
+    var headlineEl = document.getElementById("headlineMetricsChart");
+    if (headlineEl && perf.available) {
+      var values = [
+        perf.accuracy_pct,
+        perf.precision_pct,
+        perf.recall_pct,
+        perf.f1_pct
+      ].map(function (v) {
+        return v == null || Number.isNaN(Number(v)) ? null : Number(v);
+      });
+      new Chart(headlineEl, {
+        type: "bar",
+        data: {
+          labels: ["Accuracy", "Precision", "Recall", "F1-score"],
+          datasets: [
+            {
+              label: "Held-out %",
+              data: values,
+              backgroundColor: [
+                "rgba(47, 90, 69, 0.85)",
+                "rgba(105, 77, 117, 0.85)",
+                "rgba(27, 82, 153, 0.85)",
+                "rgba(51, 24, 50, 0.8)"
+              ],
+              borderColor: [hunter, grape, dusk, midnight],
+              borderWidth: 1.5,
+              borderRadius: 8,
+              maxBarThickness: 64
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              enabled: true,
+              intersect: true,
+              mode: "nearest",
+              backgroundColor: midnight,
+              titleColor: "#F3EBE3",
+              bodyColor: "#F3EBE3",
+              padding: 10,
+              displayColors: false,
+              callbacks: {
+                title: function (items) {
+                  return items[0] ? items[0].label : "";
+                },
+                label: function (ctx) {
+                  var v = ctx.parsed.y;
+                  if (v == null || Number.isNaN(v)) return "No value";
+                  return v.toFixed(1) + "%";
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              ticks: { color: soft, font: { weight: "600" } },
+              grid: { display: false }
+            },
+            y: {
+              min: 0,
+              max: 100,
+              ticks: {
+                color: soft,
+                callback: function (value) {
+                  return value + "%";
+                }
+              },
+              grid: { color: "rgba(51, 24, 50, 0.08)" },
+              title: { display: true, text: "Percent", color: soft }
+            }
+          }
+        }
+      });
+    }
+
     var history = data.history || {};
-    if (!history.available) return;
-    var epochs = history.epochs || [];
-    var series = history.series || {};
-    var forest = "#1E3A2F";
-    var gold = "#A67C3D";
-    var soft = "#5C5348";
+    if (history.available) {
+      var epochs = history.epochs || [];
+      var series = history.series || {};
+      var common = {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+          legend: { labels: { color: soft, boxWidth: 12 } },
+          tooltip: { mode: "index", intersect: false }
+        },
+        scales: {
+          x: {
+            title: { display: true, text: "Epoch", color: soft },
+            ticks: { color: soft, maxTicksLimit: 10 },
+            grid: { color: "rgba(51,24,50,0.06)" }
+          },
+          y: {
+            ticks: { color: soft },
+            grid: { color: "rgba(51,24,50,0.06)" }
+          }
+        }
+      };
 
-    var common = {
-      responsive: true,
-      maintainAspectRatio: true,
-      plugins: {
-        legend: { labels: { color: soft, boxWidth: 12 } },
-        tooltip: { mode: "index", intersect: false },
-      },
-      scales: {
-        x: {
-          title: { display: true, text: "Epoch", color: soft },
-          ticks: { color: soft, maxTicksLimit: 10 },
-          grid: { color: "rgba(42,36,28,0.06)" },
-        },
-        y: {
-          ticks: { color: soft },
-          grid: { color: "rgba(42,36,28,0.06)" },
-        },
-      },
-    };
+      var accEl = document.getElementById("accuracyChart");
+      if (accEl && series.accuracy && series.val_accuracy) {
+        new Chart(accEl, {
+          type: "line",
+          data: {
+            labels: epochs,
+            datasets: [
+              {
+                label: "Train accuracy",
+                data: series.accuracy,
+                borderColor: hunter,
+                backgroundColor: "rgba(47,90,69,0.12)",
+                tension: 0.25,
+                pointRadius: 2
+              },
+              {
+                label: "Val accuracy",
+                data: series.val_accuracy,
+                borderColor: grape,
+                backgroundColor: "rgba(105,77,117,0.12)",
+                tension: 0.25,
+                pointRadius: 2
+              }
+            ]
+          },
+          options: common
+        });
+      }
 
-    var accEl = document.getElementById("accuracyChart");
-    if (accEl && series.accuracy && series.val_accuracy) {
-      new Chart(accEl, {
-        type: "line",
-        data: {
-          labels: epochs,
-          datasets: [
-            {
-              label: "Train accuracy",
-              data: series.accuracy,
-              borderColor: forest,
-              backgroundColor: "rgba(30,58,47,0.12)",
-              tension: 0.25,
-              pointRadius: 2,
-            },
-            {
-              label: "Val accuracy",
-              data: series.val_accuracy,
-              borderColor: gold,
-              backgroundColor: "rgba(166,124,61,0.12)",
-              tension: 0.25,
-              pointRadius: 2,
-            },
-          ],
-        },
-        options: common,
-      });
+      var lossEl = document.getElementById("lossChart");
+      if (lossEl && series.loss && series.val_loss) {
+        new Chart(lossEl, {
+          type: "line",
+          data: {
+            labels: epochs,
+            datasets: [
+              {
+                label: "Train loss",
+                data: series.loss,
+                borderColor: hunter,
+                backgroundColor: "rgba(47,90,69,0.12)",
+                tension: 0.25,
+                pointRadius: 2
+              },
+              {
+                label: "Val loss",
+                data: series.val_loss,
+                borderColor: dusk,
+                backgroundColor: "rgba(27,82,153,0.12)",
+                tension: 0.25,
+                pointRadius: 2
+              }
+            ]
+          },
+          options: common
+        });
+      }
     }
-
-    var lossEl = document.getElementById("lossChart");
-    if (lossEl && series.loss && series.val_loss) {
-      new Chart(lossEl, {
-        type: "line",
-        data: {
-          labels: epochs,
-          datasets: [
-            {
-              label: "Train loss",
-              data: series.loss,
-              borderColor: forest,
-              backgroundColor: "rgba(30,58,47,0.12)",
-              tension: 0.25,
-              pointRadius: 2,
-            },
-            {
-              label: "Val loss",
-              data: series.val_loss,
-              borderColor: gold,
-              backgroundColor: "rgba(166,124,61,0.12)",
-              tension: 0.25,
-              pointRadius: 2,
-            },
-          ],
-        },
-        options: common,
-      });
-    }
+    return true;
   }
 
+  function tryBuildCharts() {
+    if (!buildCharts()) setTimeout(tryBuildCharts, 150);
+  }
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", buildCharts);
+    document.addEventListener("DOMContentLoaded", tryBuildCharts);
   } else {
-    buildCharts();
+    tryBuildCharts();
   }
-  // Chart.js is deferred — retry shortly if needed.
-  setTimeout(buildCharts, 200);
 
   // Version comparison
   var versions = data.versions || [];

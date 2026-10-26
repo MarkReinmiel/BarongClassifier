@@ -1,24 +1,30 @@
 /* Shared palette + motion — colors match existing brand */
 
 :root {
-    /* Heritage textile palette (Owner UI) — overridden further by heritage.css */
-    --bg: #F3EEE4;
-    --surface: #FFFdf8;
-    --surface-soft: #F7F1E8;
+    /* Owner palette: Hunter · Pale Oak · Midnight · Grape · Dusk */
+    --hunter: #2F5A45;
+    --pale-oak: #D9C5B2;
+    --midnight: #331832;
+    --grape: #694D75;
+    --dusk: #1B5299;
 
-    --ink: #2A241C;
-    --ink-soft: #5C5348;
+    --bg: #D9C5B2;
+    --surface: #F3EBE3;
+    --surface-soft: #E8D9C9;
+
+    --ink: #331832;
+    --ink-soft: #5A4063;
 
     --accent: #2F5A45;
-    --accent-deep: #1E3A2F;
-    --accent-deeper: #14261F;
+    --accent-deep: #243F32;
+    --accent-deeper: #331832;
 
-    --accent-highlight: #A67C3D;
+    --accent-highlight: #694D75;
 
-    --line: #E0D6C6;
-    --line-strong: #C9BBA3;
+    --line: #C4B09C;
+    --line-strong: #A89480;
 
-    --shadow: rgba(42, 36, 28, 0.12);
+    --shadow: rgba(51, 24, 50, 0.12);
 
     --ease: cubic-bezier(0.22, 1, 0.36, 1);
 }

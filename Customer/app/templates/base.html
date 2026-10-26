@@ -7,10 +7,11 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}?v=15">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}?v=21">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}?v=14">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/classifier.css') }}?v=16">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/responsive.css') }}?v=14">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/motion.css') }}?v=4">
   {% block head %}{% endblock %}
 </head>
 <body data-static-root="{{ url_for('static', filename='') }}">
@@ -31,17 +32,22 @@
         type="button"
         class="avatar-btn"
         id="profileBtn"
-        aria-label="Account menu"
+        aria-label="Account menu for {{ current_user.nickname or 'User' }}"
         aria-expanded="false"
         aria-controls="profileMenu"
+        aria-haspopup="true"
       >
         <img
           class="avatar"
           src="{{ user_avatar_url }}"
           alt=""
-          width="40"
-          height="40"
+          width="36"
+          height="36"
         >
+        <span class="profile-name">{{ current_user.nickname or 'User' }}</span>
+        <span class="profile-caret" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+        </span>
       </button>
       <div class="profile-menu" id="profileMenu" hidden>
         <div class="profile-meta">
@@ -96,7 +102,8 @@
   </nav>
   {% endif %}
 
-  <script src="{{ url_for('static', filename='js/main.js') }}?v=7"></script>
+  <script src="{{ url_for('static', filename='js/motion.js') }}?v=4"></script>
+  <script src="{{ url_for('static', filename='js/main.js') }}?v=8"></script>
   {% block scripts %}{% endblock %}
 </body>
 </html>

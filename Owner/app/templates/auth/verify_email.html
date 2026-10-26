@@ -2,14 +2,14 @@
 {% block title %}Verify code | {{ app_name }}{% endblock %}
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/shared.css') }}">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}?v=3">
 <style>body{padding-top:0 !important}</style>
 {% endblock %}
 {% block body %}
-<a href="{{ url_for('password.forgot_password') }}" class="back-home">← Back</a>
+<a href="{{ url_for('password.forgot_password') }}" class="back-home">? Back</a>
 <main class="auth-page">
   <section class="auth-brand">
-    <div class="brand-symbol">◆</div>
+    <div class="brand-symbol">?</div>
     <h1>BARONG<span>CLASSIFIER</span></h1>
     <p>Enter the 6-digit code sent to your email to continue password recovery.</p>
     <div class="brand-line"></div>
@@ -34,7 +34,7 @@
         <input type="text" name="d{{ i }}" inputmode="numeric" maxlength="1" autocomplete="one-time-code" aria-label="Digit {{ i }}">
         {% endfor %}
       </div>
-      <button class="auth-button" type="submit">Verify code <span>→</span></button>
+      <button class="auth-button" type="submit">Verify code <span>?</span></button>
     </form>
     <form method="post">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">

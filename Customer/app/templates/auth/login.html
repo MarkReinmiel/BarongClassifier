@@ -9,11 +9,21 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}?v=20">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}?v=20">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/motion.css') }}?v=3">
   {% if turnstile_enabled and turnstile_site_key %}
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
   {% endif %}
 </head>
 <body>
+  <div class="splash" id="appSplash" role="status" aria-live="polite">
+    <div class="splash-inner">
+      <img class="splash-logo" src="{{ url_for('static', filename='images/Barongclassi_logo.jpeg') }}" alt="">
+      <div class="splash-brand">BARONG CLASSIFIER</div>
+      <div class="splash-spin" aria-hidden="true"></div>
+      <p class="splash-caption">Loading experience</p>
+    </div>
+  </div>
+
   <div class="auth-shell auth-shell--hero">
     <div class="auth-hero">
       <div class="auth-logo auth-logo--hero">
@@ -62,7 +72,8 @@
       </section>
     </div>
   </div>
-  <script src="{{ url_for('static', filename='js/auth.js') }}?v=13"></script>
+  <script src="{{ url_for('static', filename='js/motion.js') }}?v=3"></script>
+  <script src="{{ url_for('static', filename='js/auth.js') }}?v=14"></script>
   {% if turnstile_enabled and turnstile_site_key %}
   <script src="{{ url_for('static', filename='js/turnstile.js') }}?v=1"></script>
   {% endif %}

@@ -51,11 +51,16 @@
       type="button"
       class="avatar-btn"
       id="profileBtn"
-      aria-label="Account menu"
+      aria-label="Account menu for {{ current_user.full_name or current_user.nickname or 'Owner' }}"
       aria-expanded="false"
       aria-controls="profileMenu"
+      aria-haspopup="true"
     >
-      <img class="avatar" src="{{ user_avatar_url }}" alt="" width="40" height="40">
+      <img class="avatar" src="{{ user_avatar_url }}" alt="" width="36" height="36">
+      <span class="profile-name">{{ current_user.full_name or current_user.nickname or 'Owner' }}</span>
+      <span class="profile-caret" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+      </span>
     </button>
     <div class="profile-menu" id="profileMenu" hidden>
       <div class="profile-meta">

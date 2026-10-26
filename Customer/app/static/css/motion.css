@@ -1,0 +1,148 @@
+/* Shared motion: splash, count-up/down, OTP stack, button hover — colors unchanged */
+
+/* ---- Splash (login / landing) ---- */
+.splash{
+  position:fixed;inset:0;z-index:10000;
+  display:grid;place-items:center;
+  background:var(--nav,#141C28);color:#fff;
+  transition:transform .7s cubic-bezier(.22,1,.36,1),opacity .45s ease;
+}
+.splash.is-done{
+  transform:translateY(-110%);
+  opacity:0;pointer-events:none;
+}
+.splash-inner{
+  display:flex;flex-direction:column;align-items:center;gap:18px;
+  text-align:center;padding:24px;
+}
+.splash-logo{
+  width:72px;height:72px;border-radius:50%;object-fit:cover;
+  border:1px solid rgba(255,255,255,.25);
+  box-shadow:0 12px 28px rgba(0,0,0,.28);
+  animation:splash-pulse 1.4s ease-in-out infinite;
+}
+.splash-brand{
+  font-family:var(--serif);
+  font-size:18px;font-weight:700;letter-spacing:.12em;
+}
+.splash-spin{
+  width:28px;height:28px;border-radius:50%;
+  border:2px solid rgba(255,255,255,.25);border-top-color:var(--hi,#B894C4);
+  animation:spin .75s linear infinite;
+}
+
+@keyframes splash-pulse{
+  0%,100%{transform:scale(1)}
+  50%{transform:scale(1.04)}
+}
+
+/* Landing reveal after splash */
+.auth-shell--hero.is-waiting{
+  opacity:0;transform:translateY(28px);
+}
+.auth-shell--hero.is-ready{
+  opacity:1;transform:translateY(0);
+  transition:opacity .55s ease, transform .65s cubic-bezier(.22,1,.36,1);
+}
+
+/* ---- Count-up / count-down ---- */
+.num{
+  display:inline-block;
+  min-width:1ch;
+  font-variant-numeric:tabular-nums;
+}
+.num.is-counting{
+  font-variant-numeric:tabular-nums;
+}
+
+/* ---- OTP digit boxes only (after verify): gather to middle one-by-one ---- */
+.otp.is-stack-enter{
+  position:relative;
+  display:block;
+  width:100%;
+  height:52px;
+  margin:12px 0 8px;
+  overflow:visible;
+}
+.otp.is-stack-enter input{
+  position:absolute;
+  left:50%;
+  top:0;
+  width:56px;
+  height:52px;
+  margin:0;
+  opacity:1;
+  border-color:var(--accent);
+  background:var(--surface);
+  box-shadow:
+    0 0 0 1px rgba(121,87,128,.12),
+    0 6px 14px rgba(38,53,74,.1);
+  transition:
+    transform .45s cubic-bezier(.22,1,.36,1),
+    box-shadow .3s ease,
+    border-color .3s ease,
+    background .3s ease;
+  pointer-events:none;
+  z-index:1;
+  will-change:transform;
+}
+.otp.is-stack-enter input.is-stacked{
+  border-color:var(--accent);
+  background:var(--surface);
+  box-shadow:
+    0 0 0 1px rgba(121,87,128,.14),
+    0 10px 20px rgba(38,53,74,.14);
+}
+/* ---- Button hover (motion only — colors unchanged) ---- */
+.btn{
+  transition:
+    transform .2s cubic-bezier(.22,1,.36,1),
+    box-shadow .2s ease,
+    filter .2s ease,
+    opacity .2s ease;
+}
+.btn:hover:not(:disabled){
+  transform:translateY(-2px);
+  box-shadow:0 12px 24px rgba(38,53,74,.16);
+  filter:brightness(1.03);
+}
+.btn:active:not(:disabled){
+  transform:translateY(0);
+  box-shadow:0 4px 10px rgba(38,53,74,.1);
+}
+.classify-source-btn,
+.capture-option,
+.history-filter-button,
+.history-today-button,
+.history-clear-button,
+.history-page-btn,
+.history-page-num,
+.float-panel-link,
+.avatar-btn,
+.pw-toggle,
+.resend:not(:disabled){
+  transition:transform .2s ease, box-shadow .2s ease, background .2s ease, border-color .2s ease;
+}
+.classify-source-btn:hover,
+.capture-option:hover,
+.history-filter-button:hover,
+.history-today-button:hover,
+.history-clear-button:hover,
+.history-page-btn:hover,
+.history-page-num:hover,
+.float-panel-link:hover{
+  transform:translateY(-2px);
+}
+.avatar-btn:hover{transform:none}
+.nb{
+  transition:flex .35s cubic-bezier(.22,1,.36,1),min-width .35s cubic-bezier(.22,1,.36,1),padding .35s ease,background .25s ease,color .25s ease,gap .25s ease,transform .2s ease !important;
+}
+.nb:hover{transform:scale(1.04)}
+.nb.on:hover{transform:none}
+
+@media (prefers-reduced-motion:reduce){
+  .splash,.splash-logo,.splash-spin,.otp.is-stack-enter input,.btn,.auth-shell--hero{
+    animation:none!important;transition:none!important;
+  }
+  .splash.is-done{transform:none;opacity:0;display:none}
+}

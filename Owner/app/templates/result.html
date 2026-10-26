@@ -54,7 +54,7 @@
         </div>
         <div class="detail-item">
           <span class="detail-label">{% if is_rejected %}Score{% else %}Model Confidence{% endif %}</span>
-          <strong id="confidence">{{ '%.1f'|format(result.confidence * 100) }}%</strong>
+          <strong id="confidence" class="num">{{ '%.1f'|format(result.confidence * 100) }}%</strong>
         </div>
         {% if result.main_class == 'pina' and not is_rejected %}
         <div class="detail-item">
@@ -64,7 +64,7 @@
         {% if result.variant_confidence is not none %}
         <div class="detail-item">
           <span class="detail-label">Variant confidence</span>
-          <strong id="variantConfidence">{{ '%.1f'|format(result.variant_confidence * 100) }}%</strong>
+          <strong id="variantConfidence" class="num">{{ '%.1f'|format(result.variant_confidence * 100) }}%</strong>
         </div>
         {% endif %}
         {% endif %}

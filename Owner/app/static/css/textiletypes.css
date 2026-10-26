@@ -27,7 +27,7 @@ body {
 .textile-page {
     min-height: 100vh;
 
-    padding: 100px 5% 90px;
+    padding: 20px 5% 72px;
     background: transparent;
 
     box-sizing: border-box;
@@ -41,9 +41,11 @@ body {
 ================================= */
 
 .textile-header {
-    max-width: 760px;
+    width: 100%;
+    max-width: 900px;
 
-    margin: 0 auto 55px;
+    margin: 0 auto 28px;
+    padding: 0;
 
     text-align: center;
 
@@ -51,7 +53,7 @@ body {
 }
 
 .eyebrow {
-    margin: 0 0 14px;
+    margin: 0 0 8px;
 
     font-family: "DM Sans", Arial, sans-serif;
 
@@ -61,10 +63,11 @@ body {
     letter-spacing: 3px;
 
     color: var(--gold, var(--accent));
+    text-align: center;
 }
 
 .textile-header h1 {
-    margin: 0;
+    margin: 0 auto;
 
     font-family: "Playfair Display", Georgia, serif;
 
@@ -72,16 +75,18 @@ body {
     font-weight: 700;
 
     color: var(--ink);
+    text-align: center;
 }
 
 .page-description {
     max-width: 600px;
 
-    margin: 18px auto 0;
+    margin: 12px auto 0;
 
     font-family: "DM Sans", Arial, sans-serif;
 
     font-size: 15px;
+    text-align: center;
     line-height: 1.8;
 
    color: var(--ink-soft);
@@ -516,56 +521,6 @@ body {
         font-size: 13px;
     }
 
-}
-
-/* =========================================
-   ABOUT PAGE HEADER
-========================================= */
-
-.textile-header {
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 15px 24px 0;
-}
-
-
-/* Small category label */
-
-.textile-header .eyebrow {
-    margin-bottom: 16px;
-
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.28em;
-
-    color: #9b8064;
-}
-
-
-/* Main About heading */
-
-.textile-header h1 {
-    margin-bottom: 20px;
-
-    font-family: "Playfair Display", serif;
-    font-size: clamp(42px, 5vw, 64px);
-    line-height: 1.1;
-
-    color: #302b27;
-}
-
-
-/* Description below heading */
-
-.textile-header .page-description {
-    max-width: 650px;
-    margin: 0 auto;
-
-    font-family: "DM Sans", sans-serif;
-    font-size: 14px;
-    line-height: 1.9;
-
-    color: #756b61;
 }
 
 /* =================================
@@ -1153,7 +1108,12 @@ body {
 @media (max-width: 800px) {
 
     .textile-page {
-        padding: calc(84px + env(safe-area-inset-top)) 18px calc(48px + env(safe-area-inset-bottom));
+        padding: 16px 18px calc(48px + env(safe-area-inset-bottom));
+    }
+
+    .textile-header {
+        margin-bottom: 20px;
+        text-align: center;
     }
 
     .textile-header h1 {

@@ -1,32 +1,39 @@
 /* BarongClassifier Owner — heritage textile design tokens & motion (UI only) */
 
 :root {
-  --bg: #F3EEE4;
-  --bg-deep: #E8E0D2;
-  --surface: #FFFdf8;
-  --surface-soft: #F7F1E8;
-  --ink: #2A241C;
-  --ink-soft: #5C5348;
-  --forest: #1E3A2F;
-  --forest-mid: #2F5A45;
-  --forest-soft: #E6EFE9;
-  --gold: #A67C3D;
-  --gold-soft: #F3E6D0;
-  --gold-line: #D4BC8A;
-  --nav: #15202B;
-  --nav-elevated: #1E2C3A;
-  --nav-muted: #9AA6B8;
-  --accent: var(--forest-mid);
+  /* Palette: Hunter Green · Pale Oak · Midnight Violet · Vintage Grape · Dusk Blue */
+  --hunter: #2F5A45;
+  --pale-oak: #D9C5B2;
+  --midnight: #331832;
+  --grape: #694D75;
+  --dusk: #1B5299;
+
+  --bg: var(--pale-oak);
+  --bg-deep: #C9B49E;
+  --surface: #F3EBE3;
+  --surface-soft: #E8D9C9;
+  --ink: var(--midnight);
+  --ink-soft: #5A4063;
+  --forest: #243F32;
+  --forest-mid: var(--hunter);
+  --forest-soft: #C9D6CE;
+  --gold: var(--grape);
+  --gold-soft: #E4D9E8;
+  --gold-line: #B39AB8;
+  --nav: var(--midnight);
+  --nav-elevated: #452245;
+  --nav-muted: #C4B0A0;
+  --accent: var(--hunter);
   --accent-deep: var(--forest);
-  --accent-deeper: #14261F;
-  --accent-highlight: var(--gold);
-  --hi: var(--gold);
+  --accent-deeper: var(--midnight);
+  --accent-highlight: var(--grape);
+  --hi: var(--dusk);
   --deep: var(--forest);
-  --deeper: var(--accent-deeper);
-  --line: #E0D6C6;
-  --line-strong: #C9BBA3;
-  --shadow: rgba(42, 36, 28, 0.10);
-  --ok: #2f6b4f;
+  --deeper: var(--midnight);
+  --line: #C4B09C;
+  --line-strong: #A89480;
+  --shadow: rgba(51, 24, 50, 0.12);
+  --ok: var(--hunter);
   --err: #8b2e3b;
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
   --serif: "Playfair Display", Georgia, serif;
@@ -52,20 +59,20 @@ body {
   font-family: var(--sans);
   background-color: var(--bg);
   background-image:
-    linear-gradient(180deg, rgba(243, 238, 228, 0.92), rgba(232, 224, 210, 0.96)),
+    linear-gradient(180deg, rgba(217, 197, 178, 0.96), rgba(201, 180, 158, 0.98)),
     repeating-linear-gradient(
       90deg,
       transparent 0,
       transparent 11px,
-      rgba(166, 124, 61, 0.035) 11px,
-      rgba(166, 124, 61, 0.035) 12px
+      rgba(105, 77, 117, 0.04) 11px,
+      rgba(105, 77, 117, 0.04) 12px
     ),
     repeating-linear-gradient(
       0deg,
       transparent 0,
       transparent 11px,
-      rgba(30, 58, 47, 0.03) 11px,
-      rgba(30, 58, 47, 0.03) 12px
+      rgba(47, 90, 69, 0.035) 11px,
+      rgba(47, 90, 69, 0.035) 12px
     );
   -webkit-font-smoothing: antialiased;
 }
@@ -73,6 +80,16 @@ body {
 *:focus-visible {
   outline: 2px solid var(--gold);
   outline-offset: 3px;
+}
+
+/* Count-up / count-down stats */
+.num{
+  display:inline-block;
+  min-width:1ch;
+  font-variant-numeric:tabular-nums;
+}
+.num.is-counting{
+  font-variant-numeric:tabular-nums;
 }
 
 a,
@@ -84,36 +101,9 @@ label,
   cursor: pointer;
 }
 
-/* Embroidered divider */
+/* Embroidered divider — hidden */
 .stitch-divider {
-  display: block;
-  width: min(220px, 55%);
-  height: 2px;
-  margin: var(--space-3) auto var(--space-4);
-  border: 0;
-  background: linear-gradient(90deg, transparent, var(--gold), transparent);
-  position: relative;
-  overflow: hidden;
-}
-
-.stitch-divider::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: repeating-linear-gradient(
-    90deg,
-    var(--forest) 0 6px,
-    transparent 6px 10px
-  );
-  transform: scaleX(0);
-  transform-origin: left center;
-  animation: stitch-draw 1.1s var(--ease) 0.2s both;
-}
-
-@keyframes stitch-draw {
-  to {
-    transform: scaleX(1);
-  }
+  display: none !important;
 }
 
 @keyframes fade-up {
