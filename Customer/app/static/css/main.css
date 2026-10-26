@@ -87,14 +87,21 @@ button,input,select{font-family:var(--sans)}
 .fab{display:none!important}
 .profile{position:relative;display:flex;align-items:center;margin-left:8px}
 .avatar-btn{
-  width:40px;height:40px;padding:0;border:none;border-radius:50%;
-  background:transparent;cursor:pointer;overflow:visible;display:grid;place-items:center;
+  display:inline-flex;align-items:center;gap:10px;max-width:min(260px,42vw);
+  min-height:40px;padding:4px 8px 4px 4px;border:none;border-radius:999px;
+  background:transparent;color:#fff;cursor:pointer;overflow:visible;font:inherit;
 }
-.avatar-btn:hover,.avatar-btn[aria-expanded="true"]{opacity:.9}
+.avatar-btn:hover,.avatar-btn[aria-expanded="true"]{background:rgba(255,255,255,.08)}
 .avatar{
-  width:36px;height:36px;object-fit:contain;display:block;border-radius:50%;
-  background:#F3EEF5;padding:2px;box-sizing:border-box;
+  width:34px;height:34px;object-fit:contain;display:block;flex:none;border-radius:50%;
+  background:#fff;padding:2px;box-sizing:border-box;
 }
+.profile-name{
+  min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  font-size:14px;font-weight:600;color:#fff;line-height:1.2;
+}
+.profile-caret{display:inline-flex;flex:none;color:rgba(255,255,255,.85);transition:transform .2s ease}
+.avatar-btn[aria-expanded="true"] .profile-caret{transform:rotate(180deg)}
 .profile-menu{
   position:absolute;top:calc(100% + 10px);right:0;min-width:220px;
   background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:14px;

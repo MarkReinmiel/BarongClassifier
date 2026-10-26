@@ -1,18 +1,18 @@
 /* Customer-matching top navbar for Owner */
 
 :root {
-  --nav: #15202B;
-  --nav-elevated: #1E2C3A;
-  --nav-muted: #9AA6B8;
-  --hi: #A67C3D;
+  --nav: #331832;
+  --nav-elevated: #452245;
+  --nav-muted: #C4B0A0;
+  --hi: #1B5299;
   --accent: #2F5A45;
-  --deep: #1E3A2F;
-  --deeper: #14261F;
-  --ink: #2A241C;
-  --ink2: #5C5348;
-  --surface: #FFFdf8;
-  --line: #E0D6C6;
-  --shadow: rgba(42, 36, 28, 0.10);
+  --deep: #243F32;
+  --deeper: #331832;
+  --ink: #331832;
+  --ink2: #5A4063;
+  --surface: #F3EBE3;
+  --line: #C4B09C;
+  --shadow: rgba(51, 24, 50, 0.12);
   --sans: "DM Sans", Arial, sans-serif;
 }
 
@@ -153,32 +153,59 @@ body {
 }
 
 .avatar-btn {
-  width: 40px;
-  height: 40px;
-  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  max-width: min(260px, 42vw);
+  min-height: 40px;
+  padding: 4px 8px 4px 4px;
   border: none;
-  border-radius: 50%;
+  border-radius: 999px;
   background: transparent;
+  color: #fff;
   cursor: pointer;
   overflow: visible;
-  display: grid;
-  place-items: center;
+  font: inherit;
 }
 
 .avatar-btn:hover,
 .avatar-btn[aria-expanded="true"] {
-  opacity: 0.9;
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .avatar {
-  width: 36px;
-  height: 36px;
+  width: 34px;
+  height: 34px;
   object-fit: contain;
   display: block;
+  flex: none;
   border-radius: 50%;
-  background: #f3eef5;
+  background: #fff;
   padding: 2px;
   box-sizing: border-box;
+}
+
+.profile-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--sans, "DM Sans", Arial, sans-serif);
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  line-height: 1.2;
+}
+
+.profile-caret {
+  display: inline-flex;
+  flex: none;
+  color: rgba(255, 255, 255, 0.85);
+  transition: transform 0.2s ease;
+}
+
+.avatar-btn[aria-expanded="true"] .profile-caret {
+  transform: rotate(180deg);
 }
 
 .profile-menu {

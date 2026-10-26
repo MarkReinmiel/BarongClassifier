@@ -7,11 +7,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}?v=20">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}?v=20">
-  {% if turnstile_enabled and turnstile_site_key %}
-  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
-  {% endif %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}?v=19">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}?v=19">
 </head>
 <body>
   <div class="auth-shell auth-shell--hero">
@@ -35,7 +32,7 @@
             <div class="flash {{ category }}" style="margin-bottom:12px">{{ message }}</div>
           {% endfor %}
         {% endwith %}
-        <form method="post" class="stack" id="registerForm" {% if turnstile_enabled and turnstile_site_key %}data-require-turnstile{% endif %}>
+        <form method="post" class="stack" id="registerForm">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <label>
             <span class="lbl">Email</span>
@@ -55,23 +52,12 @@
               <button type="button" class="pw-toggle" data-target="regConfirm">Show</button>
             </span>
           </label>
-          {% if turnstile_enabled and turnstile_site_key %}
-          <div class="turnstile-wrap">
-            <div class="cf-turnstile"
-                 data-sitekey="{{ turnstile_site_key }}"
-                 data-theme="light"
-                 data-size="flexible"></div>
-          </div>
-          {% endif %}
           <button class="btn p" type="submit" id="registerBtn">Create account</button>
         </form>
         <p class="auth-foot">Already have an account? <a href="{{ url_for('auth.login') }}">Sign in</a></p>
       </section>
     </div>
   </div>
-  <script src="{{ url_for('static', filename='js/auth.js') }}?v=13"></script>
-  {% if turnstile_enabled and turnstile_site_key %}
-  <script src="{{ url_for('static', filename='js/turnstile.js') }}?v=1"></script>
-  {% endif %}
+  <script src="{{ url_for('static', filename='js/auth.js') }}?v=12"></script>
 </body>
 </html>

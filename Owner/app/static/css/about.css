@@ -1,0 +1,261 @@
+/* Owner About — floating cards on Pale Oak background */
+
+.about-page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 16px 20px 72px;
+  box-sizing: border-box;
+}
+
+.about-hero {
+  text-align: center;
+  margin-bottom: 14px;
+}
+
+.about-eyebrow {
+  margin: 0 0 8px;
+  font-family: "DM Sans", Arial, sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  color: var(--grape, #694D75);
+}
+
+.about-hero h1 {
+  margin: 0 0 12px;
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: clamp(36px, 6vw, 52px);
+  font-weight: 700;
+  color: var(--midnight, #331832);
+  letter-spacing: -0.02em;
+}
+
+.about-lead {
+  margin: 0 auto;
+  max-width: 46ch;
+  font-family: "DM Sans", Arial, sans-serif;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--ink-soft, #5A4063);
+}
+
+.about-float {
+  margin: 0 auto 12px;
+  padding: 16px 16px 14px;
+  border-radius: 18px;
+  background: var(--surface, #F3EBE3);
+  border: 1px solid rgba(51, 24, 50, 0.08);
+  box-shadow:
+    0 14px 36px rgba(51, 24, 50, 0.1),
+    0 2px 0 rgba(255, 255, 255, 0.55) inset;
+}
+
+.about-float-head {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.about-index {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  font-family: "DM Sans", Arial, sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #fff;
+  background: var(--midnight, #331832);
+}
+
+.about-float-head h2 {
+  margin: 0 0 6px;
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 24px;
+  color: var(--midnight, #331832);
+}
+
+.about-float-head p {
+  margin: 0;
+  font-family: "DM Sans", Arial, sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ink-soft, #5A4063);
+}
+
+/* Dataset chips */
+.about-chip-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.about-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(217, 197, 178, 0.45);
+  border: 1px solid rgba(51, 24, 50, 0.06);
+}
+
+.about-chip--wide {
+  grid-column: 1 / -1;
+}
+
+.about-chip img {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  object-fit: cover;
+  flex: none;
+  background: #fff;
+}
+
+.about-chip span {
+  font-family: "DM Sans", Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--midnight, #331832);
+}
+
+/* Model info cards */
+.about-info-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.about-info-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px;
+  border-radius: 16px;
+  background: rgba(217, 197, 178, 0.4);
+  border: 1px solid rgba(51, 24, 50, 0.06);
+  min-height: 110px;
+  box-sizing: border-box;
+}
+
+.about-info-card--wide {
+  grid-column: 1 / -1;
+  min-height: 0;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+}
+
+.about-info-card--wide .about-info-label {
+  margin-left: 0;
+}
+
+.about-info-card--wide strong {
+  margin-left: auto;
+}
+
+.about-info-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  color: var(--hunter, #2F5A45);
+  background: rgba(47, 90, 69, 0.12);
+}
+
+.about-info-label {
+  font-family: "DM Sans", Arial, sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-soft, #5A4063);
+}
+
+.about-info-card strong {
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--midnight, #331832);
+  line-height: 1.25;
+}
+
+/* Performance stats */
+.about-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.about-stat {
+  text-align: center;
+  padding: 20px 12px;
+  border-radius: 16px;
+  background: rgba(217, 197, 178, 0.4);
+  border: 1px solid rgba(51, 24, 50, 0.06);
+}
+
+.about-stat strong {
+  display: block;
+  margin-bottom: 6px;
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: clamp(28px, 4vw, 36px);
+  font-weight: 700;
+  line-height: 1;
+  color: var(--hunter, #2F5A45);
+}
+
+.about-stat span {
+  font-family: "DM Sans", Arial, sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink-soft, #5A4063);
+}
+
+@media (max-width: 700px) {
+  .about-page {
+    padding: 12px 12px calc(88px + env(safe-area-inset-bottom));
+  }
+
+  .about-float {
+    padding: 12px;
+    border-radius: 16px;
+  }
+
+  .about-float-head {
+    gap: 10px;
+  }
+
+  .about-float-head h2 {
+    font-size: 20px;
+  }
+
+  .about-chip-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .about-chip--wide {
+    grid-column: auto;
+  }
+
+  .about-info-grid,
+  .about-stat-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .about-info-card--wide {
+    grid-column: auto;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .about-info-card--wide strong {
+    margin-left: 0;
+  }
+}

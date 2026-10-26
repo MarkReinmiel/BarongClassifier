@@ -28,17 +28,40 @@
   }
 
   var loginForm = document.getElementById("loginForm");
-  if (loginForm) {
-    loginForm.addEventListener("submit", function () {
-      setLoading(document.getElementById("loginBtn"), true);
+  var loginBtn = document.getElementById("loginBtn");
+  if (loginForm && loginBtn) {
+    loginForm.addEventListener("submit", function (event) {
+      if (!loginForm.checkValidity()) return;
+      // Don't lock the button if CSRF token is missing (would force a hard refresh).
+      var csrf = loginForm.querySelector('input[name="csrf_token"]');
+      if (!csrf || !csrf.value) {
+        event.preventDefault();
+        window.location.reload();
+        return;
+      }
+      setLoading(loginBtn, true);
     });
   }
   var registerForm = document.getElementById("registerForm");
-  if (registerForm) {
-    registerForm.addEventListener("submit", function () {
-      setLoading(document.getElementById("registerBtn"), true);
+  var registerBtn = document.getElementById("registerBtn");
+  if (registerForm && registerBtn) {
+    registerForm.addEventListener("submit", function (event) {
+      if (!registerForm.checkValidity()) return;
+      var csrf = registerForm.querySelector('input[name="csrf_token"]');
+      if (!csrf || !csrf.value) {
+        event.preventDefault();
+        window.location.reload();
+        return;
+      }
+      setLoading(registerBtn, true);
     });
   }
+
+  // After Back/forward cache or a failed 400, unlock buttons so user can retry.
+  window.addEventListener("pageshow", function () {
+    if (loginBtn) setLoading(loginBtn, false, "Sign in");
+    if (registerBtn) setLoading(registerBtn, false, "Create account");
+  });
 
   var otp = document.getElementById("otp");
   if (!otp) return;
@@ -141,6 +164,7 @@
     submitting = true;
     setLoading(verifyBtn, true);
     show("Checking the code...", "");
+    var verified = false;
     try {
       var response = await fetch("/auth/verify-code", {
         method: "POST",
@@ -161,18 +185,31 @@
         show(payload.error || "That code could not be verified.", "error");
         return;
       }
-      if (purpose === "registration") {
-        var modal = document.getElementById("successModal");
-        if (modal) modal.classList.add("open");
-        show("Email verified successfully.", "success");
-        return;
+      verified = true;
+      show("Verified.", "success");
+      var finish = function () {
+        if (purpose === "registration") {
+          var modal = document.getElementById("successModal");
+          if (modal) modal.classList.add("open");
+          show("Email verified successfully.", "success");
+          submitting = false;
+          setLoading(verifyBtn, false, "Verify Email");
+          return;
+        }
+        window.location.href = payload.redirect || "/dashboard";
+      };
+      if (typeof window.bcStackOtp === "function") {
+        window.bcStackOtp(otp, finish);
+      } else {
+        finish();
       }
-      window.location.href = payload.redirect || "/dashboard";
     } catch (error) {
       show("The server could not be reached.", "error");
     } finally {
-      submitting = false;
-      setLoading(verifyBtn, false, purpose === "device" ? "Verify Device" : "Verify Email");
+      if (!verified) {
+        submitting = false;
+        setLoading(verifyBtn, false, purpose === "device" ? "Verify Device" : "Verify Email");
+      }
     }
   });
 

@@ -2,19 +2,19 @@
 {% block title %}Owner sign in | {{ app_name }}{% endblock %}
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/shared.css') }}">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}?v=3">
 <style>body{padding-top:0 !important}</style>
 {% if turnstile_enabled and turnstile_site_key %}
 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 {% endif %}
 {% endblock %}
 {% block body %}
-<a href="{{ url_for('auth.login') }}" class="back-home">← Owner Portal</a>
+<a href="{{ url_for('auth.login') }}" class="back-home">Back to Owner Portal</a>
 <main class="auth-page">
   <section class="auth-brand">
     <div class="logo-row">
       <img src="{{ url_for('static', filename='images/Barongclassi_logo.jpeg') }}" alt="BarongClassifier">
-      <div class="brand-symbol" aria-hidden="true">◆</div>
+      <div class="brand-symbol" aria-hidden="true"></div>
     </div>
     <h1>BARONG<span>CLASSIFIER</span></h1>
     <p>Preserving Philippine heritage through technology.</p>
@@ -64,7 +64,7 @@
       {% endif %}
 
       <p class="sm" id="loginStatus" style="color:var(--err);min-height:18px;font-size:13px"></p>
-      <button class="auth-button" type="submit" id="loginBtn">Sign in <span>→</span></button>
+      <button class="auth-button" type="submit" id="loginBtn">Sign in <span></span></button>
     </form>
 
     <p class="auth-foot"><a href="{{ url_for('password.forgot_password') }}">Forgot password?</a></p>

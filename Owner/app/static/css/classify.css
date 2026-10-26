@@ -1,10 +1,10 @@
 /* Customer-matching classify page (Owner) */
 
 :root {
-  --soft: var(--surface-soft, #F5F1EC);
-  --deep: var(--accent-deep, #634768);
-  --deeper: var(--accent-deeper, #4A3552);
-  --hi: var(--accent-highlight, #B894C4);
+  --soft: var(--surface-soft, #E8D9C9);
+  --deep: var(--accent-deep, #243F32);
+  --deeper: var(--accent-deeper, #331832);
+  --hi: var(--hi, var(--accent-highlight, #694D75));
 }
 
 .classify-shell {

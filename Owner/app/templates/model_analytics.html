@@ -4,7 +4,7 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/shared.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/topnav.css') }}?v=10">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}?v=7">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/model-analytics.css') }}?v=1">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/model-analytics.css') }}?v=2">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-app.css') }}?v=7">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js" defer></script>
 {% endblock %}
@@ -93,27 +93,16 @@
     </div>
 
     {% if p.available %}
-    <div class="ma-metric-grid">
-      <article class="ma-metric" title="Share of test images predicted correctly. Uses the held-out test split only.">
-        <span class="ma-label">Accuracy</span>
-        <strong>{% if p.accuracy_pct is not none %}{{ '%.1f'|format(p.accuracy_pct) }}%{% else %}—{% endif %}</strong>
-        <small>Test split · n={{ p.test_images or '—' }}</small>
-      </article>
-      <article class="ma-metric" title="Macro-average precision: mean of per-class precision. Avoids dominance by larger classes.">
-        <span class="ma-label">Precision <span class="ma-tip">?</span></span>
-        <strong>{% if p.precision_pct is not none %}{{ '%.1f'|format(p.precision_pct) }}%{% else %}—{% endif %}</strong>
-        <small>Macro average</small>
-      </article>
-      <article class="ma-metric" title="Macro-average recall: mean of per-class recall (sensitivity).">
-        <span class="ma-label">Recall <span class="ma-tip">?</span></span>
-        <strong>{% if p.recall_pct is not none %}{{ '%.1f'|format(p.recall_pct) }}%{% else %}—{% endif %}</strong>
-        <small>Macro average</small>
-      </article>
-      <article class="ma-metric" title="Macro-average F1: harmonic mean of precision and recall, averaged across classes.">
-        <span class="ma-label">F1-score <span class="ma-tip">?</span></span>
-        <strong>{% if p.f1_pct is not none %}{{ '%.1f'|format(p.f1_pct) }}%{% else %}—{% endif %}</strong>
-        <small>Macro average</small>
-      </article>
+    <div class="ma-chart-card ma-chart-card--metrics">
+      <div class="ma-chart-card-meta">
+        <h3>Headline metrics</h3>
+        <p>Hover a bar to see the exact value{% if p.test_images is not none %} · test split n={{ p.test_images }}{% endif %}</p>
+      </div>
+      <canvas
+        id="headlineMetricsChart"
+        aria-label="Held-out accuracy, precision, recall, and F1-score"
+        role="img"
+      ></canvas>
     </div>
 
     <div class="ma-table-wrap">
@@ -380,22 +369,22 @@
     <div class="ma-metric-grid ma-metric-grid--3">
       <article class="ma-metric">
         <span class="ma-label">Model size</span>
-        <strong>{% if e.model_size_mb is not none %}{{ e.model_size_mb }} MB{% else %}—{% endif %}</strong>
+        <strong>{% if e.model_size_mb is not none %}<span class="num">{{ e.model_size_mb }}</span> MB{% else %}—{% endif %}</strong>
         <small>{{ e.model_format }} · {{ e.artifact or '—' }}</small>
       </article>
       <article class="ma-metric">
         <span class="ma-label">Avg inference</span>
-        <strong>{% if lat.available and lat.avg_ms is not none %}{{ lat.avg_ms }} ms{% else %}—{% endif %}</strong>
+        <strong>{% if lat.available and lat.avg_ms is not none %}<span class="num">{{ lat.avg_ms }}</span> ms{% else %}—{% endif %}</strong>
         <small>Local model.predict only</small>
       </article>
       <article class="ma-metric">
         <span class="ma-label">Median / p95</span>
         <strong>
           {% if lat.available %}
-          {{ lat.median_ms }} / {{ lat.p95_ms }} ms
+          <span class="num">{{ lat.median_ms }}</span> / <span class="num">{{ lat.p95_ms }}</span> ms
           {% else %}—{% endif %}
         </strong>
-        <small>n={{ lat.n_measurements if lat.n_measurements is not none else '—' }}</small>
+        <small>n={% if lat.n_measurements is not none %}<span class="num">{{ lat.n_measurements }}</span>{% else %}—{% endif %}</small>
       </article>
     </div>
     {% if lat.available %}
@@ -419,5 +408,5 @@
 </main>
 {% endblock %}
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/model-analytics.js') }}?v=1"></script>
+<script src="{{ url_for('static', filename='js/model-analytics.js') }}?v=2"></script>
 {% endblock %}
