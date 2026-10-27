@@ -9,6 +9,16 @@
     box-sizing: border-box;
 }
 
+.dashboard-lower {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.dashboard-main-col,
+.dashboard-side-col {
+    min-width: 0;
+}
+
 
 /* =================================
    WELCOME HERO
@@ -489,8 +499,130 @@
 
 
 /* =================================
+   LAPTOP / DESKTOP — lengthwise layout
+================================= */
+
+@media (min-width: 1101px) {
+    .dashboard {
+        max-width: none;
+        width: 100%;
+        margin: 0;
+        padding: 16px 56px 72px;
+        box-sizing: border-box;
+    }
+
+    .dashboard-hero,
+    .overview-section,
+    .dashboard-lower,
+    .how-section,
+    .tools-section,
+    .float-panel {
+        max-width: none;
+        width: 100%;
+    }
+
+    .dashboard-hero {
+        grid-template-columns: minmax(0, 1fr) minmax(260px, 360px);
+        gap: 32px;
+        padding: 24px 32px;
+        margin-bottom: 20px;
+    }
+
+    .dashboard-content {
+        max-width: none;
+    }
+
+    .dashboard-content h1 {
+        font-size: clamp(30px, 2.8vw, 40px);
+    }
+
+    .dashboard-description {
+        max-width: 60ch;
+    }
+
+    .image-frame img {
+        height: 190px;
+    }
+
+    .overview-section {
+        margin-bottom: 20px;
+    }
+
+    .overview-cards {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16px;
+    }
+
+    .dashboard-lower {
+        display: grid;
+        grid-template-columns: minmax(0, 1.85fr) minmax(320px, 0.85fr);
+        gap: 20px;
+        align-items: start;
+        margin-bottom: 20px;
+    }
+
+    .dashboard-main-col .tools-section {
+        margin: 0;
+        max-width: none;
+    }
+
+    .tools-section {
+        margin-bottom: 0;
+    }
+
+    .tools-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px;
+    }
+
+    .how-section {
+        margin: 0 auto 8px;
+        max-width: none;
+        width: 100%;
+    }
+
+    .steps {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 16px;
+    }
+
+    .step {
+        padding: 20px 18px;
+        min-height: 140px;
+    }
+
+    .step h3 {
+        font-size: 18px;
+    }
+
+    .step p {
+        font-size: 13px;
+    }
+
+    .dashboard-side-col .float-panel {
+        position: sticky;
+        top: 80px;
+        max-height: calc(100vh - 96px);
+        overflow: auto;
+        margin: 0;
+    }
+}
+
+/* =================================
    TABLET
 ================================= */
+
+@media (max-width: 1100px) {
+    .dashboard-lower {
+        display: block;
+        max-width: 1200px;
+    }
+
+    .dashboard-side-col .float-panel {
+        position: static;
+        max-height: none;
+    }
+}
 
 @media (max-width: 1000px) {
     .dashboard {

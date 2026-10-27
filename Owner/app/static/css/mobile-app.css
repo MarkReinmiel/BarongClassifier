@@ -255,7 +255,10 @@
     }
 
     .classifier-header,
-    .textile-header {
+    .textile-header,
+    .history-page-header,
+    .about-hero,
+    .ma-header {
         margin-bottom: 12px;
         padding: 0;
         background: transparent;
@@ -263,7 +266,7 @@
         box-shadow: none;
         border-radius: 0;
         max-width: none;
-        text-align: left;
+        text-align: center;
     }
 
     .dashboard-hero {

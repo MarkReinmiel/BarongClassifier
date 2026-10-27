@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Classify Textile | {{ app_name }}{% endblock %}
 {% block head %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/classifier.css') }}?v=16">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/classifier.css') }}?v=17">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/camera.css') }}?v=2">
 {% endblock %}
 {% block content %}
@@ -32,7 +32,7 @@
           <span class="classify-source-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10.5" r="1.5"/><path d="m21 16-5.5-5.5L9 17"/></svg>
           </span>
-          <span>Gallery</span>
+          <span>Browse from gallery</span>
         </label>
         <button type="button" class="classify-source-btn mobile-only mobile-only-camera" id="openCamera">
           <span class="classify-source-icon" aria-hidden="true">
