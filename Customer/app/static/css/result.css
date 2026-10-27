@@ -9,7 +9,7 @@
   background:#3B2F2A;
   border-color:#3B2F2A;
 }
-.result-page-title{margin:4px 0 12px}
+.result-page-title{margin:4px 0 12px;text-align:center}
 
 .result-hero{
   display:grid;

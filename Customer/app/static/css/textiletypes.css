@@ -1195,6 +1195,10 @@ body {
 }
 
 /* Customer shell adaptations (page sits inside .shell + top nav) */
+.textile-thumb {
+    display: none;
+}
+
 .textile-page--customer {
     min-height: auto;
     padding: 8px 0 24px;

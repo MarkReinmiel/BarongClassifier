@@ -1,22 +1,47 @@
 {% extends "base.html" %}
 {% block title %}Home | {{ app_name }}{% endblock %}
 {% block content %}
-<div>
+<div class="dash-welcome">
   <p class="eyebrow">Barong Tagalog Textile Classifier</p>
-  <h2>Welcome, <em style="color:var(--accent)">{{ user.nickname }}</em></h2>
+  <h2>Welcome, <em>{{ user.nickname }}</em></h2>
+  <p class="dash-lead">Identify and preserve Barong Tagalog textiles with AI-assisted classification.</p>
 </div>
-<a class="btn p" href="{{ url_for('classifier.classify_page') }}">Classify Textile →</a>
+<a class="btn p dash-cta" href="{{ url_for('classifier.classify_page') }}">Classify Textile →</a>
 <div class="g3">
-  <div class="card"><span class="num" data-count>{{ stats.textile_types }}</span><span class="lbl">Textile Types</span></div>
-  <div class="card"><span class="num" data-count>{{ stats.model_accuracy }}</span><span class="lbl">Model Accuracy</span></div>
-  <div class="card"><span class="num" data-count>{{ stats.images_classified }}</span><span class="lbl">Images Classified</span></div>
+  <div class="card"><span class="num" data-count data-motion="up">{{ stats.textile_types }}</span><span class="lbl">Textile Types</span></div>
+  <div class="card"><span class="num" data-count data-motion="up">{{ stats.model_accuracy }}</span><span class="lbl">Model Accuracy</span></div>
+  <div class="card"><span class="num" data-count data-motion="up">{{ stats.images_classified }}</span><span class="lbl">Images Classified</span></div>
 </div>
-<p class="eyebrow" style="margin-top:8px">How it works</p>
+<p class="how-heading">How it works</p>
 <div class="g2 grid-steps">
-  <div class="card step"><span class="num" data-count>01</span><b>Upload Image</b></div>
-  <div class="card step"><span class="num" data-count>02</span><b>Image Processing</b></div>
-  <div class="card step"><span class="num" data-count>03</span><b>AI Classification</b></div>
-  <div class="card step"><span class="num" data-count>04</span><b>View Result</b></div>
+  <div class="card step">
+    <span class="num" data-count data-motion="down" data-from="10">01</span>
+    <div class="step-copy">
+      <b>Upload Image</b>
+      <p class="step-desc">Capture or select a clear photo of the textile.</p>
+    </div>
+  </div>
+  <div class="card step">
+    <span class="num" data-count data-motion="down" data-from="11">02</span>
+    <div class="step-copy">
+      <b>Image Processing</b>
+      <p class="step-desc">Prepare the image for analysis.</p>
+    </div>
+  </div>
+  <div class="card step">
+    <span class="num" data-count data-motion="down" data-from="12">03</span>
+    <div class="step-copy">
+      <b>AI Classification</b>
+      <p class="step-desc">Identify the Barong textile type.</p>
+    </div>
+  </div>
+  <div class="card step">
+    <span class="num" data-count data-motion="down" data-from="13">04</span>
+    <div class="step-copy">
+      <b>View Result</b>
+      <p class="step-desc">See the prediction and confidence score.</p>
+    </div>
+  </div>
 </div>
 <section class="float-panel recent-panel">
   <div class="float-panel-head">
@@ -36,7 +61,7 @@
         <span class="file">{{ row.image_name }}</span>
       </div>
         <div class="float-meta">
-          <b class="num" data-count>{{ '%.0f'|format(row.confidence * 100) }}%</b>
+          <b class="num" data-count data-motion="up">{{ '%.0f'|format(row.confidence * 100) }}%</b>
         </div>
     </div>
     {% endfor %}
@@ -48,4 +73,4 @@
   {% endif %}
 </section>
 {% endblock %}
-{% block scripts %}<script src="{{ url_for('static', filename='js/dashboard.js') }}?v=13"></script>{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/dashboard.js') }}?v=14"></script>{% endblock %}

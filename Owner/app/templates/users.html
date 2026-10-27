@@ -5,7 +5,7 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/topnav.css') }}?v=9">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}?v=7">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/history.css') }}?v=4">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-app.css') }}?v=7">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-app.css') }}?v=9">
 <style>
   .user-card{display:grid;gap:12px;padding:22px;margin-bottom:14px;background:var(--surface,#fffdf8);border:1px solid var(--gold-line,#d4bc8a);border-radius:16px;box-shadow:0 10px 24px rgba(42,36,28,.06)}
   .user-card h3{margin:0;font-family:"Playfair Display",Georgia,serif;font-size:18px;color:#3b2919}
@@ -17,13 +17,15 @@
   .flash{border-radius:10px;padding:12px 14px;margin-bottom:12px}
   .flash.error{background:#f8e8eb;color:#8b2e3b}
   .flash.success{background:#e8f4ee;color:#2f6b4f}
+  .users-page-header{text-align:center;margin-bottom:18px}
+  .users-page-header .stitch-divider{margin-left:auto;margin-right:auto}
 </style>
 {% endblock %}
 {% block body %}
 {% include "_nav.html" %}
 <main class="dashboard">
   <section class="overview-section reveal">
-    <div class="section-heading">
+    <div class="section-heading users-page-header">
       <p>ADMINISTRATION</p>
       <h2>User management</h2>
       <hr class="stitch-divider" aria-hidden="true">
@@ -39,9 +41,9 @@
     {% for row in users %}
     <article class="user-card">
       <div>
-        <h3>{{ row.full_name or 'User' }} · {{ row.email }}</h3>
+        <h3>{{ row.full_name or 'User' }} � {{ row.email }}</h3>
         <p class="meta">
-          {{ row.role }} · {{ 'active' if row.is_active else 'inactive' }} · {{ 'verified' if row.email_verified else 'unverified' }}
+          {{ row.role }} � {{ 'active' if row.is_active else 'inactive' }} � {{ 'verified' if row.email_verified else 'unverified' }}
         </p>
       </div>
       <div class="user-actions">

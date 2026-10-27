@@ -51,23 +51,10 @@
     return parsed.prefix + shown + parsed.suffix;
   }
 
-  function animateNum(el) {
-    if (!el || el.dataset.motionDone === "1") return;
-    var parsed = parseDisplay(el.textContent);
-    if (!parsed || !isFinite(parsed.value)) return;
-    el.dataset.motionDone = "1";
-    if (reduce) return;
-
-    var to = parsed.value;
-    var fromAttr = el.getAttribute("data-from");
-    var from = fromAttr != null && fromAttr !== "" ? Number(fromAttr) : 0;
-    if (!isFinite(from)) from = 0;
-
+  function runCount(el, parsed, from, to, duration, done) {
     el.classList.add("is-counting");
     el.textContent = formatNum(parsed, from);
-
     var start = performance.now();
-    var duration = Math.min(1400, Math.max(600, Math.abs(to - from) * 40));
     function frame(now) {
       var t = Math.min(1, (now - start) / duration);
       var eased = 1 - Math.pow(1 - t, 3);
@@ -78,13 +65,56 @@
       } else {
         el.textContent = formatNum(parsed, to);
         el.classList.remove("is-counting");
+        if (done) done();
       }
     }
     requestAnimationFrame(frame);
   }
 
+  function animateNum(el, delay) {
+    if (!el || el.dataset.motionDone === "1") return;
+    var parsed = parseDisplay(el.textContent);
+    if (!parsed || !isFinite(parsed.value)) return;
+    el.dataset.motionDone = "1";
+    if (reduce) return;
+
+    var to = parsed.value;
+    var motion = (el.getAttribute("data-motion") || "up").toLowerCase();
+    var fromAttr = el.getAttribute("data-from");
+    var from;
+    if (fromAttr != null && fromAttr !== "" && isFinite(Number(fromAttr))) {
+      from = Number(fromAttr);
+    } else if (motion === "down") {
+      from = to + Math.max(8, Math.round(Math.abs(to) * 0.35) || 8);
+    } else {
+      from = 0;
+    }
+
+    var wait = Math.max(0, Number(delay) || 0);
+    var duration = Math.min(1400, Math.max(550, Math.abs(to - from) * 45));
+
+    window.setTimeout(function () {
+      if (motion === "updown") {
+        var peak = from;
+        runCount(el, parsed, 0, to, duration * 0.55, function () {
+          runCount(el, parsed, to, peak, duration * 0.35, function () {
+            runCount(el, parsed, peak, to, duration * 0.35);
+          });
+        });
+        return;
+      }
+      runCount(el, parsed, from, to, duration);
+    }, wait);
+  }
+
   function bootNumbers(root) {
-    (root || document).querySelectorAll(".num").forEach(animateNum);
+    var nodes = Array.prototype.slice.call((root || document).querySelectorAll(".num"));
+    nodes.forEach(function (el, index) {
+      var stagger = el.hasAttribute("data-stagger")
+        ? Number(el.getAttribute("data-stagger"))
+        : index * 90;
+      animateNum(el, stagger);
+    });
   }
   bootNumbers(document);
   window.bcMotion = { animateNum: animateNum, bootNumbers: bootNumbers };
