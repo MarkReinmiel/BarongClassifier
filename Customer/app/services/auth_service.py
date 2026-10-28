@@ -11,7 +11,13 @@ from app.extensions import db
 from app.models import CustomerUser, EmailVerification, TrustedDevice, utcnow
 from app.services.directory_service import email_exists_in_users_table, find_public_user_by_email
 from app.services.email_service import EmailDeliveryError, send_verification_email
-from app.utils.security import generate_code, hash_secret, hashes_match, new_device_token
+from app.utils.security import (
+    generate_code,
+    hash_secret,
+    hashes_match,
+    is_owner_role,
+    new_device_token,
+)
 from app.utils.validators import (
     is_valid_email,
     nickname_errors,
@@ -47,6 +53,12 @@ def register_user(email: str, password: str, confirm: str) -> CustomerUser:
         raise AuthError(message)
 
     # Supabase public.users is the shared directory — block duplicates there.
+    directory = find_public_user_by_email(email)
+    if directory and is_owner_role(directory.get("role")):
+        raise AuthError(
+            "This email is registered as an Owner account. Use the Owner portal to sign in.",
+            403,
+        )
     if email_exists_in_users_table(email) or CustomerUser.query.filter_by(email=email).first():
         raise AuthError(
             "An account with that email already exists. Please sign in instead.",
@@ -84,12 +96,25 @@ def authenticate(email: str, password: str) -> CustomerUser:
     if directory.get("is_active") is False or directory.get("status") == "disabled":
         raise AuthError("This account is disabled.", 403)
 
+    # Owner accounts must use the Owner portal only.
+    directory_role = (directory.get("role") or "").strip().lower()
+    if is_owner_role(directory_role):
+        raise AuthError(
+            "This is an Owner account. Please sign in on the Owner portal, not the Customer site.",
+            403,
+        )
+
     user = CustomerUser.query.filter_by(email=email).first()
     if not user:
         raise AuthError(
             "This email is in the users directory but has no Customer portal password. "
             "Please create a Customer account or use the main site sign-in.",
             404,
+        )
+    if is_owner_role(user.role):
+        raise AuthError(
+            "This is an Owner account. Please sign in on the Owner portal, not the Customer site.",
+            403,
         )
     if not check_password_hash(user.password_hash, password):
         raise AuthError("Invalid email or password.", 401)

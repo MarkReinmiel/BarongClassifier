@@ -87,6 +87,15 @@ def register():
 def login():
     if current_user():
         user = current_user()
+        from app.utils.security import is_owner_role
+
+        if user and is_owner_role(user.role):
+            session.clear()
+            flash(
+                "This is an Owner account. Please sign in on the Owner portal, not the Customer site.",
+                "error",
+            )
+            return render_template("auth/login.html")
         if user and not user.nickname_completed:
             return redirect(url_for("auth.nickname_setup"))
         return redirect(url_for("main.dashboard"))
@@ -144,6 +153,16 @@ def login():
 
 
 def _complete_login(user: CustomerUser, set_device: bool = False):
+    from app.utils.security import is_owner_role
+
+    if is_owner_role(user.role):
+        session.clear()
+        flash(
+            "This is an Owner account. Please sign in on the Owner portal, not the Customer site.",
+            "error",
+        )
+        return redirect(url_for("auth.login"))
+
     session.clear()
     session["user_id"] = str(user.id)
     session.permanent = True
