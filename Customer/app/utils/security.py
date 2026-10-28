@@ -48,12 +48,20 @@ def current_user() -> CustomerUser | None:
     return CustomerUser.query.filter_by(id=user_id, is_active=True).first()
 
 
+def is_owner_role(role: str | None) -> bool:
+    allowed = current_app.config.get("OWNER_ROLES") or frozenset({"owner"})
+    return (role or "").strip().lower() in allowed
+
+
 def login_required(view):
     @wraps(view)
     def wrapped(*args, **kwargs):
         user = current_user()
         if not user:
             return redirect(url_for("auth.login", next=request.path))
+        if is_owner_role(user.role):
+            session.clear()
+            abort(403)
         if not user.email_verified:
             session.clear()
             return redirect(url_for("auth.login"))
@@ -68,6 +76,9 @@ def nickname_required(view):
         user = current_user()
         if not user:
             return redirect(url_for("auth.login", next=request.path))
+        if is_owner_role(user.role):
+            session.clear()
+            abort(403)
         if not user.email_verified:
             session.clear()
             return redirect(url_for("auth.login"))

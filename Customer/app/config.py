@@ -116,6 +116,12 @@ class Config:
     DEVICE_TRUST_DAYS = int(_first("DEVICE_TRUST_DAYS", default="30"))
     DEVICE_COOKIE_NAME = "barong_device"
     BASE_URL = _first("BASE_URL", "CUSTOMER_URL", default="http://127.0.0.1:5000")
+    # Roles that belong on the Owner portal only (blocked from Customer sign-in).
+    OWNER_ROLES = frozenset(
+        item.strip().lower()
+        for item in _first("OWNER_ROLES", default="owner").split(",")
+        if item.strip()
+    )
 
     MAX_CONTENT_LENGTH = int(float(_first("MAX_UPLOAD_SIZE_MB", default="10")) * 1024 * 1024)
     MODEL_PATH = _first("MODEL_PATH", default="models/barong_model.keras")

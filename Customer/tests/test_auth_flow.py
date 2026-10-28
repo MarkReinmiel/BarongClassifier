@@ -160,3 +160,26 @@ def test_expired_code_rejected(app):
         db.session.commit()
         with pytest.raises(auth_service.AuthError):
             auth_service.verify_code(user, "registration", "123456")
+
+
+def test_owner_role_cannot_authenticate_on_customer(app):
+    from werkzeug.security import generate_password_hash
+
+    with app.app_context():
+        user = CustomerUser(
+            email="barongclassifier@gmail.com",
+            password_hash=generate_password_hash("secure-password-12", method="scrypt"),
+            full_name="Owner",
+            role="owner",
+            status="active",
+            email_verified=True,
+            nickname_completed=True,
+            is_active=True,
+        )
+        db.session.add(user)
+        db.session.commit()
+
+        with pytest.raises(auth_service.AuthError) as exc:
+            auth_service.authenticate("barongclassifier@gmail.com", "secure-password-12")
+        assert exc.value.status_code == 403
+        assert "Owner" in str(exc.value)
