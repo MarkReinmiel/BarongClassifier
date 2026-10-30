@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT / "Owner"))
+sys.path.insert(0, str(ROOT / "Frontend" / "src" / "owner"))
 
 from app import create_app  # noqa: E402
 from app.extensions import db  # noqa: E402

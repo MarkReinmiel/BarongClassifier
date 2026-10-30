@@ -20,7 +20,7 @@ from pathlib import Path
 from PIL import Image, UnidentifiedImageError
 
 ROOT = Path(__file__).resolve().parents[2]
-DATASET = ROOT / "dataset"
+DATASET = ROOT / "Backend" / "dataset"
 REPORTS = ROOT / "ml" / "reports"
 STAGING = ROOT / "ml" / "data" / "staging"
 IMG_EXT = {".jpg", ".jpeg", ".jpe", ".png", ".webp", ".bmp", ".tif", ".tiff"}

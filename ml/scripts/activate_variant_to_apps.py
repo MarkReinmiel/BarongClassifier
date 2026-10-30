@@ -13,8 +13,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 SRC = ROOT / "ml" / "models" / "variant" / "active"
-CUSTOMER = ROOT / "Customer" / "models"
-OWNER = ROOT / "Owner" / "models"
+CUSTOMER = ROOT / "Frontend" / "src" / "customer" / "models"
+OWNER = ROOT / "Frontend" / "src" / "owner" / "models"
 BACKEND = ROOT / "Backend" / "machine learning" / "artifacts"
 
 
