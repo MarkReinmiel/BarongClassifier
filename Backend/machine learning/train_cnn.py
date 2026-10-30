@@ -33,7 +33,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.utils.class_weight import compute_class_weight
 
 ROOT = Path(__file__).resolve().parents[2]
-DATASET_DIR = ROOT / "dataset"
+DATASET_DIR = ROOT / "Backend" / "dataset"
 ARTIFACT_DIR = Path(__file__).resolve().parent / "artifacts"
 
 CLASSES = ["cocoon", "jusi", "pina"]

@@ -19,7 +19,7 @@ Files involved:
 | `Frontend/src/js/cameraGuidance.js` | Thresholds (`CAMERA_GUIDANCE_CONFIG`) and the image analysis |
 | `Frontend/src/js/classify.js` | Camera, guide overlay, checklist, capture / retake, zoom |
 | `Frontend/src/pages/classify.html`, `Frontend/src/css/classify.css` | Markup and styles |
-| `Backend/machine learning/calibrate_camera_guidance.py` | Measures the same values on `dataset/` to pick thresholds |
+| `Backend/machine learning/calibrate_camera_guidance.py` | Measures the same values on `Backend/dataset/` to pick thresholds |
 
 ## What is measured
 
@@ -52,7 +52,7 @@ Glare only adds a warning to the checklist and never changes the colour.
 
 ## Thresholds (all in `CAMERA_GUIDANCE_CONFIG`)
 
-Values were measured on all 277 photos in `dataset/` with the same browser code that
+Values were measured on all 277 photos in `Backend/dataset/` with the same browser code that
 runs on the phone. The defaults are deliberately relaxed (less sensitive) and the
 distance band asks for a closer shot than the training photos:
 
@@ -84,7 +84,7 @@ so the phone doesn't use a cached copy.
 python "Backend/machine learning/calibrate_camera_guidance.py"
 ```
 
-It measures every photo in `dataset/` the same way as the browser (same staged shrink
+It measures every photo in `Backend/dataset/` the same way as the browser (same staged shrink
 to 224×224), prints per-class percentiles, simulates the photos closer and farther, and
 prints suggested threshold values. Run it again if the dataset changes.
 

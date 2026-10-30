@@ -23,7 +23,7 @@ from PIL import Image, UnidentifiedImageError
 from sklearn.model_selection import train_test_split
 
 ROOT = Path(__file__).resolve().parents[2]
-DATASET = ROOT / "dataset"
+DATASET = ROOT / "Backend" / "dataset"
 STAGING = ROOT / "ml" / "data" / "staging"
 MAIN = ROOT / "ml" / "data" / "main_classifier"
 REPORTS = ROOT / "ml" / "reports"
@@ -78,9 +78,9 @@ def probe(path: Path) -> dict:
 def collect_sources() -> list[dict]:
     """Build candidate rows with provisional main_class assignments."""
     sources: list[tuple[str, Path, str, str]] = [
-        ("dataset/cocoon", DATASET / "cocoon", "cocoon", "original_verified_folder"),
-        ("dataset/jusi", DATASET / "jusi", "jusi", "original_verified_folder"),
-        ("dataset/pina", DATASET / "pina", "pina", "original_verified_folder"),
+        ("Backend/dataset/cocoon", DATASET / "cocoon", "cocoon", "original_verified_folder"),
+        ("Backend/dataset/jusi", DATASET / "jusi", "jusi", "original_verified_folder"),
+        ("Backend/dataset/pina", DATASET / "pina", "pina", "original_verified_folder"),
         ("staging/cocoon-2", STAGING / "cocoon-2", "cocoon", "user_accepted_expansion"),
         ("staging/jusi_2", STAGING / "jusi_2", "jusi", "user_accepted_expansion"),
         ("staging/pia_2", STAGING / "pia_2", "pina", "user_accepted_as_pina"),

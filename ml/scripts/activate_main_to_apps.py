@@ -44,8 +44,14 @@ def main() -> int:
         raise SystemExit(f"Missing candidate under {ACTIVE}")
 
     targets = [
-        (ROOT / "Customer" / "models" / "barong_model.keras", ROOT / "Customer" / "models" / "labels.json"),
-        (ROOT / "Owner" / "models" / "barong_model.keras", ROOT / "Owner" / "models" / "labels.json"),
+        (
+            ROOT / "Frontend" / "src" / "customer" / "models" / "barong_model.keras",
+            ROOT / "Frontend" / "src" / "customer" / "models" / "labels.json",
+        ),
+        (
+            ROOT / "Frontend" / "src" / "owner" / "models" / "barong_model.keras",
+            ROOT / "Frontend" / "src" / "owner" / "models" / "labels.json",
+        ),
     ]
     log = {
         "deployed_at": datetime.now(timezone.utc).isoformat(),

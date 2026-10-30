@@ -1,0 +1,287 @@
+/* Shared palette + motion — colors match existing brand */
+
+:root {
+    /* Owner palette: Baltic · Almond Cream · Midnight · Palm · Rust */
+    --baltic: #33658A;
+    --almond-cream: #E3CEBB;
+    --midnight: #331832;
+    --palm: #758E4F;
+    --rust: #A3320B;
+
+    --hunter: #758E4F;
+    --pale-oak: #E3CEBB;
+    --grape: #A3320B;
+    --dusk: #33658A;
+
+    --bg: #E3CEBB;
+    --surface: #F7F0E8;
+    --surface-soft: #EDE0D1;
+
+    --ink: #331832;
+    --ink-soft: #5C4060;
+
+    --accent: #758E4F;
+    --accent-deep: #5A6F3C;
+    --accent-deeper: #331832;
+
+    --accent-highlight: #A3320B;
+    --hi: #33658A;
+    --nav: #331832;
+
+    --line: #D0B9A4;
+    --line-strong: #B89A82;
+
+    --shadow: rgba(51, 24, 50, 0.12);
+
+    --ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    -webkit-font-smoothing: antialiased;
+}
+
+*:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+}
+
+@keyframes fade-up {
+    from {
+        opacity: 0;
+        transform: translateY(18px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fade-in {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.reveal {
+    animation: fade-up 0.7s var(--ease) both;
+}
+
+.reveal-delay-1 {
+    animation-delay: 0.08s;
+}
+
+.reveal-delay-2 {
+    animation-delay: 0.16s;
+}
+
+.reveal-delay-3 {
+    animation-delay: 0.24s;
+}
+
+.reveal-delay-4 {
+    animation-delay: 0.32s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+
+    .reveal,
+    .reveal-delay-1,
+    .reveal-delay-2,
+    .reveal-delay-3,
+    .reveal-delay-4 {
+        animation: none;
+    }
+}
+
+/* =================================
+   DASHBOARD & CLASSIFY PAGE SPACING
+================================= */
+
+.dashboard-page,
+.classify-page {
+    min-height: 100vh;
+
+    padding: 55px 7% 90px;
+
+    box-sizing: border-box;
+}
+
+
+/* =========================================
+   RESPONSIVE DESIGN — ALL MOBILE DEVICES
+========================================= */
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    /* clip keeps horizontal overflow off without breaking position:sticky/fixed ancestors */
+    overflow-x: clip;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Main page containers */
+
+main,
+section,
+.container {
+    max-width: 100%;
+}
+
+/* =========================================
+   PHONES — INCLUDING IPHONE 16
+========================================= */
+
+/* =========================================
+   MOBILE NAVBAR
+========================================= */
+
+@media (max-width: 430px) {
+
+    /* ALL MAIN PAGES */
+
+    .dashboard,
+    .classifier-page,
+    .main-content {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        margin: 0;
+        padding: 32px 16px 50px;
+        box-sizing: border-box;
+    }
+
+
+    /* HEADINGS */
+
+    h1 {
+        max-width: 100%;
+        font-size: clamp(30px, 9vw, 40px);
+        line-height: 1.2;
+        overflow-wrap: break-word;
+    }
+
+    h2 {
+        font-size: clamp(24px, 7vw, 32px);
+        line-height: 1.25;
+    }
+
+
+    /* TEXT */
+
+    p {
+        max-width: 100%;
+        font-size: 14px;
+        line-height: 1.6;
+        overflow-wrap: break-word;
+    }
+
+
+    /* DASHBOARD HERO */
+
+    .dashboard-hero {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 28px;
+    }
+
+    .dashboard-content,
+    .dashboard-image {
+        width: 100%;
+        max-width: 100%;
+    }
+
+
+    /* CLASSIFICATION CONTENT */
+
+    .classifier-page,
+    .classifier-page > section {
+        width: 100%;
+        max-width: 100%;
+    }
+
+
+    /* UPLOAD AND PREVIEW CARDS */
+
+    .upload-card,
+    .upload-container,
+    .image-upload-card,
+    .preview-container,
+    .image-preview {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+
+    /* UPLOAD AREA */
+
+    .upload-area {
+        width: 100%;
+        max-width: 100%;
+        min-height: 240px;
+        padding: 24px 14px;
+        overflow: hidden;
+    }
+
+
+    /* IMAGES */
+
+    .dashboard-image img,
+    .image-frame img,
+    .image-preview img,
+    .preview-container img {
+        width: 100%;
+        max-width: 100%;
+        height: auto;
+        object-fit: contain;
+    }
+
+
+    /* BUTTONS */
+
+    .classify-button,
+    .browse-button,
+    button {
+        max-width: 100%;
+        white-space: normal;
+    }
+
+
+    /* CARDS AND GRIDS */
+
+    .overview-cards,
+    .steps {
+        grid-template-columns: 1fr;
+        width: 100%;
+        max-width: 100%;
+    }
+
+}

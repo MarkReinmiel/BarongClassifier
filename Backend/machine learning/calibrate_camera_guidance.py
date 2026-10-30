@@ -22,7 +22,7 @@ import numpy as np
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[2]
-DATASET_DIR = ROOT / "dataset"
+DATASET_DIR = ROOT / "Backend" / "dataset"
 CLASSES = ["cocoon", "jusi", "pina"]
 
 # Must match CAMERA_GUIDANCE_CONFIG.ANALYSIS_SIZE / GRID_CELLS / GLARE_LEVEL in JS.

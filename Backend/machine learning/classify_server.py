@@ -62,38 +62,72 @@ def load_keras_model(model_path):
     try:
         return tf.keras.models.load_model(model_path)
     except (TypeError, ValueError) as error:
-        if "renorm" not in str(error):
+        if "Unrecognized keyword arguments" not in str(error):
             raise
-        return _load_without_renorm(model_path)
+        return _load_on_older_keras(model_path, error)
 
 
-def _load_without_renorm(model_path):
-    """Load a model saved with Keras >= 3.14 on an older Keras 3 release.
+def _load_on_older_keras(model_path, error):
+    """Load a model saved with a newer Keras on this older Keras 3 release.
 
-    Keras 3.14 added renorm options to BatchNormalization and writes them into
-    the saved config. This model has renorm=False, and renorm never affects
-    inference, so the options are dropped while loading.
+    Keras 3.14 writes renorm options into BatchNormalization and
+    quantization_config into Dense. This model leaves both unused
+    (renorm=False, quantization_config=None), so those fields are dropped.
     """
-    batch_norm = tf.keras.layers.BatchNormalization
-    own_attribute = batch_norm.__dict__.get("from_config")
-    inherited = batch_norm.from_config.__func__
+    import ast
+    import re
+
+    from keras.src.ops.operation import Operation
+
+    original = Operation.from_config.__func__
+    drop_keys = set()
+
+    def unused_keys(message):
+        found = {}
+        for raw in re.findall(
+            r"Unrecognized keyword arguments passed to [^:]+: (\{.*?\})",
+            message,
+        ):
+            try:
+                values = ast.literal_eval(raw)
+            except (SyntaxError, ValueError):
+                continue
+            if isinstance(values, dict):
+                found.update(values)
+        return found
 
     def from_config(cls, config):
         config = dict(config)
-        if config.pop("renorm", False):
-            raise ValueError("This model uses batch renormalization; install keras>=3.14.")
-        config.pop("renorm_clipping", None)
-        config.pop("renorm_momentum", None)
-        return inherited(cls, config)
+        for key in drop_keys:
+            config.pop(key, None)
+        return original(cls, config)
 
-    batch_norm.from_config = classmethod(from_config)
+    Operation.from_config = classmethod(from_config)
     try:
-        return tf.keras.models.load_model(model_path)
+        for _ in range(6):
+            unused = unused_keys(str(error))
+            if not unused:
+                raise error
+            if unused.get("renorm"):
+                raise ValueError(
+                    "This model uses batch renormalization. Install keras>=3.14."
+                ) from error
+            if unused.get("quantization_config") is not None and (
+                "quantization_config" in unused
+            ):
+                raise ValueError(
+                    "This model uses quantization. Install keras>=3.14."
+                ) from error
+            drop_keys.update(unused)
+            try:
+                return tf.keras.models.load_model(model_path)
+            except (TypeError, ValueError) as next_error:
+                if "Unrecognized keyword arguments" not in str(next_error):
+                    raise
+                error = next_error
+        raise error
     finally:
-        if own_attribute is None:
-            del batch_norm.from_config
-        else:
-            batch_norm.from_config = own_attribute
+        Operation.from_config = classmethod(original)
 
 
 MODEL, CLASSES, IMAGE_SIZE = load_classifier()

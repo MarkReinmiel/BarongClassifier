@@ -13,8 +13,8 @@
 |--------|------|
 | **Frontend/** | Static UI reference (classify, camera, history) |
 | **Backend/** | Auth API + optional `machine learning/classify_server.py` |
-| **Customer/** | Flask portal (`:5000`) — auth, classify, history |
-| **Owner/** | Flask portal (`:5001`) — owner auth, classify, user admin |
+| **Frontend/src/customer/** | Flask portal (`:5000`) — auth, classify, history |
+| **Frontend/src/owner/** | Flask portal (`:5001`) — owner auth, classify, user admin |
 | **Supabase Postgres** | Users + `public.classifications` history |
 | **dataset/** | Canonical training images + new ZIP archives |
 
@@ -26,8 +26,8 @@ Customer and Owner both load a local Keras CNN (`models/barong_model.keras`) via
 
 | Location | File |
 |----------|------|
-| Customer | `Customer/models/barong_model.keras` (~21.7 MB) + `labels.json` |
-| Owner | `Owner/models/barong_model.keras` + `labels.json` |
+| Customer | `Frontend/src/customer/models/barong_model.keras` (~21.7 MB) + `labels.json` |
+| Owner | `Frontend/src/owner/models/barong_model.keras` + `labels.json` |
 | Backend artifacts (source of copy) | `Backend/machine learning/artifacts/barong_mobilenetv2.keras` |
 
 **Class order (labels.json):** `["cocoon", "jusi", "pina"]`  

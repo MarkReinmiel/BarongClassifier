@@ -11,10 +11,10 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 BACKUP_ROOT = ROOT / "ml" / "models" / "backups"
 TARGETS = [
-    ROOT / "Customer" / "models" / "barong_model.keras",
-    ROOT / "Customer" / "models" / "labels.json",
-    ROOT / "Owner" / "models" / "barong_model.keras",
-    ROOT / "Owner" / "models" / "labels.json",
+    ROOT / "Frontend" / "src" / "customer" / "models" / "barong_model.keras",
+    ROOT / "Frontend" / "src" / "customer" / "models" / "labels.json",
+    ROOT / "Frontend" / "src" / "owner" / "models" / "barong_model.keras",
+    ROOT / "Frontend" / "src" / "owner" / "models" / "labels.json",
     ROOT / "Backend" / "machine learning" / "artifacts" / "barong_mobilenetv2.keras",
     ROOT / "Backend" / "machine learning" / "artifacts" / "labels.json",
 ]
@@ -42,9 +42,10 @@ def main() -> int:
             continue
         out = dest / src.name
         # Disambiguate Customer vs Owner same filenames.
-        if "Customer" in src.parts:
+        parts_l = {p.lower() for p in src.parts}
+        if "customer" in parts_l:
             out = dest / f"customer_{src.name}"
-        elif "Owner" in src.parts:
+        elif "owner" in parts_l:
             out = dest / f"owner_{src.name}"
         elif "artifacts" in src.parts:
             out = dest / f"backend_{src.name}"

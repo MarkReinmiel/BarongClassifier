@@ -33,7 +33,7 @@ import tensorflow as tf
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT / "Customer"))
+sys.path.insert(0, str(ROOT / "Frontend" / "src" / "customer"))
 
 from app.ml.relevance_gate import (  # noqa: E402
     STATUS_CLASSIFIED,
@@ -171,7 +171,7 @@ def main() -> None:
     model_path = ACTIVE / "main_classifier.keras"
     if not model_path.is_file():
         # Fall back to app-deployed model
-        model_path = ROOT / "Customer" / "models" / "barong_model.keras"
+        model_path = ROOT / "Frontend" / "src" / "customer" / "models" / "barong_model.keras"
     if not model_path.is_file():
         raise FileNotFoundError("No main classifier keras file found.")
 
@@ -334,8 +334,8 @@ def main() -> None:
 
     targets = [
         ACTIVE / "relevance_gate.json",
-        ROOT / "Customer" / "models" / "relevance_gate.json",
-        ROOT / "Owner" / "models" / "relevance_gate.json",
+        ROOT / "Frontend" / "src" / "customer" / "models" / "relevance_gate.json",
+        ROOT / "Frontend" / "src" / "owner" / "models" / "relevance_gate.json",
         REPORTS / "relevance_gate_metrics.json",
     ]
     text = json.dumps(payload, indent=2)

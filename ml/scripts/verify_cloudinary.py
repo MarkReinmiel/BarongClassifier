@@ -1,7 +1,7 @@
-﻿"""Verify Cloudinary credentials from Owner/.env without printing secrets.
+﻿"""Verify Cloudinary credentials from Frontend/src/owner/.env without printing secrets.
 
-Usage (from Owner/):
-  .venv\\Scripts\\python.exe ..\\ml\\scripts\\verify_cloudinary.py
+Usage (from Frontend/src/owner/):
+  .venv\\Scripts\\python.exe ..\\..\\..\\ml\\scripts\\verify_cloudinary.py
 """
 from __future__ import annotations
 
@@ -14,7 +14,7 @@ from PIL import Image
 
 def main() -> int:
     root = Path(__file__).resolve().parents[2]
-    env = dotenv_values(root / "Owner" / ".env")
+    env = dotenv_values(root / "Frontend" / "src" / "owner" / ".env")
     cloud = (env.get("CLOUDINARY_CLOUD_NAME") or "").strip().strip('"').strip("'")
     key = (env.get("CLOUDINARY_API_KEY") or "").strip().strip('"').strip("'")
     secret = (env.get("CLOUDINARY_API_SECRET") or "").strip().strip('"').strip("'")

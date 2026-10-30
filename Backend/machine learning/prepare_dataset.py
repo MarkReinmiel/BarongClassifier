@@ -18,7 +18,7 @@ from pathlib import Path
 from PIL import Image, UnidentifiedImageError
 
 ROOT = Path(__file__).resolve().parents[2]
-DATASET_DIR = ROOT / "dataset"
+DATASET_DIR = ROOT / "Backend" / "dataset"
 
 # Actual archives in this project. They live inside class folders and use
 # Google Drive download names, not cocoon.zip / jusi.zip / pina.zip.

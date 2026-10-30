@@ -15,7 +15,7 @@ Laptop ── Backend/machine learning/artifacts/barong_mobilenetv2.keras
 | --- | --- | --- |
 | Website (HTML/CSS/JS, Supabase login) | `python -m http.server 5500` from the project root | 5500 |
 | CNN classifier | `python "Backend/machine learning/classify_server.py" --host 0.0.0.0` | 5501 |
-| Website over HTTPS (live phone camera) | `python local_https/serve_frontend.py` | 5443 |
+| Website over HTTPS (live phone camera) | `python Backend/local_https/serve_frontend.py` | 5443 |
 | CNN classifier over HTTPS | add `--https` to the classifier command | 5502 |
 
 The site works out the classifier address from the address in the browser bar
@@ -108,7 +108,7 @@ has its own session, so you log in once per device.
    and **Classification Status: Classified**. The result is saved to History as before.
 
 Test one photo of each class — Piña, Jusi, and Cocoon. The training photos in
-`dataset/pina`, `dataset/jusi`, `dataset/cocoon` (copy a few to the phone) or fresh
+`Backend/dataset/pina`, `Backend/dataset/jusi`, `Backend/dataset/cocoon` (copy a few to the phone) or fresh
 close-up photos both work.
 
 ## 9. Test the camera
@@ -141,7 +141,7 @@ optical zoom.
 ### Live camera on the phone: local HTTPS mode
 
 Use this when you want the in-page camera on the phone. It uses a self-signed
-certificate that is created automatically in `local_https/certs/` (not committed) for
+certificate that is created automatically in `Backend/local_https/certs/` (not committed) for
 `localhost` and your laptop's current Wi-Fi IP. It is recreated when the IP changes.
 
 One-time setup (already done on this laptop):
@@ -159,7 +159,7 @@ python "Backend/machine learning/classify_server.py" --host 0.0.0.0 --https
 
 ```powershell
 # Terminal 2 — website over HTTPS on port 5443
-python local_https/serve_frontend.py
+python Backend/local_https/serve_frontend.py
 ```
 
 On the phone (Chrome), in this order:
