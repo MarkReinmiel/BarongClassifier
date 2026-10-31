@@ -19,6 +19,22 @@
     min-width: 0;
 }
 
+.tools-grid .recent-panel {
+    min-height: 132px;
+    margin: 0;
+    max-width: none;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.tools-grid .recent-panel .float-list {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+}
+
 
 /* =================================
    WELCOME HERO
@@ -345,8 +361,9 @@
 
 .tools-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 12px;
+    align-items: stretch;
 }
 
 .tool-card {
@@ -515,8 +532,12 @@
     .overview-section,
     .dashboard-lower,
     .how-section,
-    .tools-section,
-    .float-panel {
+    .tools-section {
+        max-width: none;
+        width: 100%;
+    }
+
+    .tools-grid .recent-panel {
         max-width: none;
         width: 100%;
     }
@@ -553,26 +574,15 @@
         gap: 16px;
     }
 
-    .dashboard-lower {
-        display: grid;
-        grid-template-columns: minmax(0, 1.85fr) minmax(320px, 0.85fr);
-        gap: 20px;
-        align-items: start;
+    .tools-section {
         margin-bottom: 20px;
-    }
-
-    .dashboard-main-col .tools-section {
-        margin: 0;
         max-width: none;
     }
 
-    .tools-section {
-        margin-bottom: 0;
-    }
-
     .tools-grid {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: repeat(4, minmax(0, 1fr));
         gap: 14px;
+        align-items: stretch;
     }
 
     .how-section {
@@ -599,13 +609,6 @@
         font-size: 13px;
     }
 
-    .dashboard-side-col .float-panel {
-        position: sticky;
-        top: 80px;
-        max-height: calc(100vh - 96px);
-        overflow: auto;
-        margin: 0;
-    }
 }
 
 /* =================================
@@ -613,14 +616,8 @@
 ================================= */
 
 @media (max-width: 1100px) {
-    .dashboard-lower {
-        display: block;
-        max-width: 1200px;
-    }
-
-    .dashboard-side-col .float-panel {
-        position: static;
-        max-height: none;
+    .tools-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
 
