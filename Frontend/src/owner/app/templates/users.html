@@ -41,9 +41,9 @@
     {% for row in users %}
     <article class="user-card">
       <div>
-        <h3>{{ row.full_name or 'User' }} � {{ row.email }}</h3>
+        <h3>{{ row.full_name or 'User' }} · {{ row.email }}</h3>
         <p class="meta">
-          {{ row.role }} � {{ 'active' if row.is_active else 'inactive' }} � {{ 'verified' if row.email_verified else 'unverified' }}
+          {{ row.role }} · {{ 'active' if row.is_active else 'inactive' }} · {{ 'verified' if row.email_verified else 'unverified' }}
         </p>
       </div>
       <div class="user-actions">

@@ -18,14 +18,14 @@ button,input,select{font-family:var(--sans)}
 .eyebrow{font-size:11px;font-weight:600;letter-spacing:.18em;color:var(--accent);margin:0 0 4px;text-transform:uppercase}
 .sm{font-size:12px}
 .top{
-  height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;
+  height:64px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;padding:0 16px;
   background:var(--nav);border-bottom:1px solid rgba(255,255,255,.08);
   position:sticky;top:0;z-index:20;color:#fff;
 }
-.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:12px;letter-spacing:.08em;color:#fff}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:12px;letter-spacing:.08em;color:#fff;justify-self:start;min-width:0}
 .brand img{width:40px;height:40px;border-radius:50%;object-fit:cover;flex:none;border:1px solid rgba(255,255,255,.2)}
 .brand small{display:none;font-weight:400;letter-spacing:0;color:var(--nav-muted);font-size:12px}
-.links{display:none;gap:4px;align-items:center}
+.links{display:none;gap:4px;align-items:center;justify-self:center}
 .links a,.links button{background:none;border:0;color:var(--nav-muted);font-size:14px;font-weight:500;padding:10px 12px;cursor:pointer;border-radius:999px}
 .links a:hover,.links button:hover{color:#fff}
 .links a.on,.links a[aria-current="page"]{color:#fff;font-weight:700;position:relative}
@@ -85,7 +85,7 @@ button,input,select{font-family:var(--sans)}
 .nb[data-tone="classify"].on{background:#E0F7F4;color:#1AA897}
 .nb[data-tone="history"].on{background:#FCEFE3;color:#E08A3C}
 .fab{display:none!important}
-.top-end{display:flex;align-items:center;gap:4px;margin-left:auto;position:relative}
+.top-end{display:flex;align-items:center;gap:4px;justify-self:end;margin-left:0;position:relative}
 .top-menu{position:relative;display:flex;align-items:center}
 .top-menu-btn{
   width:40px;height:40px;padding:0;border:0;border-radius:10px;

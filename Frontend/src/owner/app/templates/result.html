@@ -32,7 +32,7 @@
       </div>
       <p class="result-file-hint">Save lets you choose a folder. Download sends the photo to your Downloads / Gallery.</p>
       <div id="imageModal" class="image-modal" hidden role="dialog" aria-modal="true" aria-label="Enlarged textile image">
-        <button type="button" id="closeImageModal" class="close-image-modal" aria-label="Close enlarged image">�</button>
+        <button type="button" id="closeImageModal" class="close-image-modal" aria-label="Close enlarged image">×</button>
         <img id="fullResultImage" src="{{ result.image_data_url }}" alt="Full submitted textile image" class="modal-image">
       </div>
     </div>
@@ -58,7 +58,7 @@
         </div>
         {% if result.main_class == 'pina' and not is_rejected %}
         <div class="detail-item">
-          <span class="detail-label">Pi�a variant</span>
+          <span class="detail-label">Piña variant</span>
           <strong id="variantLabel">{{ result.variant_label or 'Undetermined' }}</strong>
         </div>
         {% if result.variant_confidence is not none %}
@@ -76,7 +76,7 @@
         {% endif %}
         <div class="detail-item">
           <span class="detail-label">Image Name</span>
-          <strong id="resultFileName">{{ result.image_name or '�' }}</strong>
+          <strong id="resultFileName">{{ result.image_name or '—' }}</strong>
         </div>
         <div class="detail-item">
           <span class="detail-label">Classification Status</span>
