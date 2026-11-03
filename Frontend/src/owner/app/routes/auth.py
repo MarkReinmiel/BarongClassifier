@@ -23,6 +23,21 @@ def _safe_next(value: str | None) -> str | None:
     return value
 
 
+def _redirect_within_app(path: str | None):
+    """Redirect under this app's SCRIPT_NAME (e.g. /owner).
+
+    ``redirect('/dashboard')`` would leave /owner and hit the Customer app.
+    """
+    if not path:
+        return redirect(url_for("dashboard.home"))
+    root = request.script_root or ""
+    if root and (path == root or path.startswith(root + "/")):
+        return redirect(path)
+    if path.startswith("/"):
+        return redirect(f"{root}{path}")
+    return redirect(url_for("dashboard.home"))
+
+
 @bp.get("/")
 def home():
     user = current_user()
@@ -47,12 +62,12 @@ def login():
             verify_turnstile(request.form.get("cf-turnstile-response"))
             user = authenticate_owner(email_value, password)
             session.clear()
-            session["owner_user_id"] = user.id
+            session["owner_user_id"] = str(user.id)
             session["owner_role"] = user.role
             session.permanent = remember
             touch_login(user)
             nxt = _safe_next(request.args.get("next") or request.form.get("next"))
-            return redirect(nxt or url_for("dashboard.home"))
+            return _redirect_within_app(nxt)
         except (AuthError, TurnstileError) as exc:
             error = str(exc)
         except Exception:

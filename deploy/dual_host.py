@@ -141,6 +141,31 @@ class DualDispatcher:
         root = Path(flask_app.config["_DUAL_PROJECT_ROOT"])
         _prefer_project_path(root)
         _restore_app_modules(prefix)
+        self._ensure_sqlalchemy(flask_app, prefix)
+
+    @staticmethod
+    def _ensure_sqlalchemy(flask_app, prefix: str) -> None:
+        """Make sure this Flask app is registered with its SQLAlchemy instance."""
+        db = flask_app.extensions.get("sqlalchemy")
+        if db is None:
+            logger.error("No sqlalchemy extension on %s", prefix)
+            return
+        engines = getattr(db, "_app_engines", None)
+        if isinstance(engines, dict) and flask_app in engines:
+            return
+        try:
+            # Older/newer Flask-SQLAlchemy: probe via app context.
+            with flask_app.app_context():
+                _ = db.engine  # noqa: F841
+            return
+        except Exception:
+            logger.warning("SQLAlchemy engine missing for %s — rebinding", prefix)
+        try:
+            db.init_app(flask_app)
+            with flask_app.app_context():
+                _ = db.engine  # noqa: F841
+        except Exception:
+            logger.exception("Failed to rebind SQLAlchemy for %s", prefix)
 
     def __call__(self, environ, start_response):
         path = environ.get("PATH_INFO") or "/"

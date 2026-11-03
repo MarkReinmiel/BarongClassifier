@@ -35,7 +35,24 @@ def current_user() -> OwnerUser | None:
     user_id = session.get("owner_user_id")
     if not user_id:
         return None
-    return OwnerUser.query.filter_by(id=user_id, is_active=True).first()
+    try:
+        return OwnerUser.query.filter_by(id=str(user_id), is_active=True).first()
+    except RuntimeError as exc:
+        # Dual-host: SQLAlchemy instance lost this Flask app — rebind and retry.
+        if "not registered" not in str(exc).lower():
+            current_app.logger.exception("Owner current_user() lookup failed")
+            return None
+        try:
+            from app.extensions import db
+
+            db.init_app(current_app._get_current_object())
+            return OwnerUser.query.filter_by(id=str(user_id), is_active=True).first()
+        except Exception:
+            current_app.logger.exception("Owner current_user() rebind failed")
+            return None
+    except Exception:
+        current_app.logger.exception("Owner current_user() lookup failed")
+        return None
 
 
 def is_owner_role(role: str | None) -> bool:
