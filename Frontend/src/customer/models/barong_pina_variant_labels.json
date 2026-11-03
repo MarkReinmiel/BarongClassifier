@@ -1,0 +1,15 @@
+{
+  "classes": [
+    "pina",
+    "pina_silk"
+  ],
+  "display": {
+    "pina": "Pi\u00f1a",
+    "pina_silk": "Pi\u00f1a Silk"
+  },
+  "image_size": 224,
+  "version": "variant_20261024_153608",
+  "acceptance_threshold": 0.800000011920929,
+  "role": "pina_variant",
+  "provisional": true
+}

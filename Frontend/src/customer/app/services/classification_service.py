@@ -276,10 +276,18 @@ def classify_image(user: CustomerUser, file_storage) -> dict:
 
 def _model_file() -> Path | None:
     configured = current_app.config.get("MODEL_PATH") or "models/barong_model.keras"
-    candidate = Path(configured)
-    if not candidate.is_file():
-        candidate = CUSTOMER_ROOT / candidate
-    return candidate if candidate.is_file() else None
+    configured_path = Path(configured)
+    repo_root = CUSTOMER_ROOT.parents[2]  # Frontend/src/customer → repo root
+    candidates = [
+        configured_path if configured_path.is_absolute() else None,
+        CUSTOMER_ROOT / configured_path,
+        repo_root / "Customer" / "models" / "barong_model.keras",
+        repo_root / "ml" / "models" / "active" / "main_classifier.keras",
+    ]
+    for candidate in candidates:
+        if candidate is not None and candidate.is_file():
+            return candidate
+    return None
 
 
 def _predict_local(content: bytes) -> tuple[str, float] | None:
