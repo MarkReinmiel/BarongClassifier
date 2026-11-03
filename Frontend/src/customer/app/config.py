@@ -84,7 +84,10 @@ class Config:
     MAIL_HOST = _first("MAIL_HOST", "SMTP_HOST", "MAIL_SERVER", default="smtp.gmail.com")
     MAIL_PORT = int(_first("MAIL_PORT", "SMTP_PORT", default="587"))
     MAIL_USERNAME = _first("MAIL_USERNAME", "SMTP_USERNAME")
-    MAIL_PASSWORD = _first("MAIL_PASSWORD", "SMTP_PASSWORD")
+    # Gmail App Passwords often include spaces/quotes in .env — normalize for SMTP.
+    MAIL_PASSWORD = (
+        _first("MAIL_PASSWORD", "SMTP_PASSWORD").strip().strip("\"'").replace(" ", "")
+    )
     MAIL_FROM_ADDRESS = _first(
         "MAIL_FROM_ADDRESS",
         "SMTP_FROM_EMAIL",

@@ -67,23 +67,34 @@ def send_verification_email(recipient: str, code: str, purpose: str = "registrat
     )
     message.add_alternative(_html(app_name, code, purpose, hours), subtype="html")
 
+    password = str(cfg.get("MAIL_PASSWORD") or "").strip().strip("\"'").replace(" ", "")
+    username = str(cfg.get("MAIL_USERNAME") or "").strip()
+    host = str(cfg.get("MAIL_HOST") or "").strip()
+    port = int(cfg.get("MAIL_PORT") or 587)
+
     try:
         if cfg.get("MAIL_USE_SSL"):
             with smtplib.SMTP_SSL(
-                cfg["MAIL_HOST"],
-                cfg["MAIL_PORT"],
-                timeout=20,
+                host,
+                port,
+                timeout=30,
                 context=ssl.create_default_context(),
             ) as server:
-                server.login(cfg["MAIL_USERNAME"], cfg["MAIL_PASSWORD"])
+                server.login(username, password)
                 server.send_message(message)
             return
 
-        with smtplib.SMTP(cfg["MAIL_HOST"], cfg["MAIL_PORT"], timeout=20) as server:
+        with smtplib.SMTP(host, port, timeout=30) as server:
             if cfg.get("MAIL_USE_TLS", True):
+                server.ehlo()
                 server.starttls(context=ssl.create_default_context())
-            server.login(cfg["MAIL_USERNAME"], cfg["MAIL_PASSWORD"])
+                server.ehlo()
+            server.login(username, password)
             server.send_message(message)
     except (OSError, smtplib.SMTPException) as error:
-        logger.warning("Verification email could not be sent.")
+        logger.warning(
+            "Verification email could not be sent (%s): %s",
+            type(error).__name__,
+            error,
+        )
         raise EmailDeliveryError("The verification email could not be sent.") from error
