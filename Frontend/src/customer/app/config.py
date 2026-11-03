@@ -103,6 +103,9 @@ class Config:
         "",
     }
     MAIL_USE_SSL = _first("SMTP_USE_SSL", "MAIL_USE_SSL").lower() in {"1", "true", "ssl"}
+    MAIL_TIMEOUT_SECONDS = int(_first("MAIL_TIMEOUT_SECONDS", default="12"))
+    # Optional HTTPS email API (recommended on Render when Gmail SMTP hangs).
+    RESEND_API_KEY = _first("RESEND_API_KEY")
 
     EMAIL_VERIFICATION_ENABLED = _first("EMAIL_VERIFICATION_ENABLED", default="true").lower() in {
         "1",

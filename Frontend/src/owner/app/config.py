@@ -89,6 +89,8 @@ class Config:
         "",
     }
     MAIL_USE_SSL = _first("SMTP_USE_SSL", "MAIL_USE_SSL").lower() in {"1", "true", "ssl"}
+    MAIL_TIMEOUT_SECONDS = int(_first("MAIL_TIMEOUT_SECONDS", default="12"))
+    RESEND_API_KEY = _first("RESEND_API_KEY")
 
     EMAIL_VERIFICATION_EXPIRE_MINUTES = int(
         _first("EMAIL_VERIFICATION_EXPIRE_MINUTES", "PASSWORD_RESET_EXPIRE_MINUTES", default="10")

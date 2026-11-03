@@ -67,6 +67,17 @@ def register():
             return _json_error(error)
         flash(str(error), "error")
         return render_template("auth/register.html", email=email), status
+    except Exception:
+        current_app.logger.exception("Registration failed unexpectedly.")
+        try:
+            db.session.rollback()
+        except Exception:
+            pass
+        message = "Registration could not be completed. Please try again."
+        if wants_json or request.is_json:
+            return jsonify({"error": message}), 500
+        flash(message, "error")
+        return render_template("auth/register.html", email=email), 500
 
     session.clear()
     session["pending_user_id"] = str(user.id)
