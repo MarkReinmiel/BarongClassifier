@@ -60,7 +60,9 @@ def register():
             verify_turnstile(request.form.get("cf-turnstile-response"))
         user = auth_service.register_user(email, password, confirm)
     except (AuthError, TurnstileError) as error:
-        status = getattr(error, "status_code", 400)
+        # Never return 5xx for expected auth/email failures — Cloudflare/Render
+        # often replace those with a bare "Internal Server Error" HTML page.
+        status = min(int(getattr(error, "status_code", 400) or 400), 400)
         if wants_json or request.is_json:
             if isinstance(error, TurnstileError):
                 return jsonify({"error": str(error)}), 400
@@ -75,9 +77,12 @@ def register():
             pass
         message = "Registration could not be completed. Please try again."
         if wants_json or request.is_json:
-            return jsonify({"error": message}), 500
+            return jsonify({"error": message}), 400
         flash(message, "error")
-        return render_template("auth/register.html", email=email), 500
+        return render_template("auth/register.html", email=email), 400
+
+    if user.email_verified or not current_app.config.get("EMAIL_VERIFICATION_ENABLED", True):
+        return _complete_login(user)
 
     session.clear()
     session["pending_user_id"] = str(user.id)
@@ -142,18 +147,44 @@ def login():
             flash(str(error), "error")
             return redirect(url_for("auth.verify_email"))
         flash(str(error), "error")
-        return render_template("auth/login.html"), error.status_code
+        # Cap at 400 so Cloudflare/Render do not replace the page with
+        # a bare "Internal Server Error" for 5xx auth failures.
+        return render_template("auth/login.html"), 400
+    except Exception:
+        current_app.logger.exception("Login failed unexpectedly.")
+        try:
+            db.session.rollback()
+        except Exception:
+            pass
+        flash("Sign in could not be completed. Please try again.", "error")
+        return render_template("auth/login.html"), 400
 
     cookie_name = current_app.config["DEVICE_COOKIE_NAME"]
     raw_device = request.cookies.get(cookie_name)
     if auth_service.device_is_trusted(user, raw_device):
         return _complete_login(user)
 
+    # Optional extra check — never block a valid password on email/DB issues.
+    if not current_app.config.get("EMAIL_VERIFICATION_ENABLED", True):
+        return _complete_login(user, set_device=True)
+
     try:
         auth_service.issue_and_send_code(user, "device")
     except AuthError as error:
-        flash(str(error), "error")
-        return render_template("auth/login.html"), error.status_code
+        current_app.logger.warning(
+            "Device verification email failed; completing login anyway. %s",
+            error,
+        )
+        return _complete_login(user, set_device=True)
+    except Exception:
+        current_app.logger.exception(
+            "Device verification failed unexpectedly; completing login anyway."
+        )
+        try:
+            db.session.rollback()
+        except Exception:
+            pass
+        return _complete_login(user, set_device=True)
 
     session.clear()
     session["pending_user_id"] = str(user.id)
@@ -178,21 +209,36 @@ def _complete_login(user: CustomerUser, set_device: bool = False):
     session["user_id"] = str(user.id)
     session.permanent = True
     session.modified = True
-    user.last_login_at = utcnow()
-    db.session.commit()
+    try:
+        user.last_login_at = utcnow()
+        db.session.commit()
+    except Exception:
+        # public.users sync triggers can conflict on email; do not fail login.
+        current_app.logger.exception("Could not persist last_login_at during login.")
+        try:
+            db.session.rollback()
+        except Exception:
+            pass
 
     target = url_for("auth.nickname_setup") if not user.nickname_completed else url_for("main.dashboard")
     response = make_response(redirect(target))
     if set_device:
-        token = auth_service.trust_device(user, client_label())
-        response.set_cookie(
-            current_app.config["DEVICE_COOKIE_NAME"],
-            token,
-            httponly=True,
-            samesite="Lax",
-            secure=bool(current_app.config.get("SESSION_COOKIE_SECURE")),
-            max_age=current_app.config["DEVICE_TRUST_DAYS"] * 86400,
-        )
+        try:
+            token = auth_service.trust_device(user, client_label())
+            response.set_cookie(
+                current_app.config["DEVICE_COOKIE_NAME"],
+                token,
+                httponly=True,
+                samesite="Lax",
+                secure=bool(current_app.config.get("SESSION_COOKIE_SECURE")),
+                max_age=current_app.config["DEVICE_TRUST_DAYS"] * 86400,
+            )
+        except Exception:
+            current_app.logger.exception("Could not trust device during login.")
+            try:
+                db.session.rollback()
+            except Exception:
+                pass
     return response
 
 

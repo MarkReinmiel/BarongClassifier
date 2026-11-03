@@ -55,6 +55,17 @@ def login():
             return redirect(nxt or url_for("dashboard.home"))
         except (AuthError, TurnstileError) as exc:
             error = str(exc)
+        except Exception:
+            from flask import current_app
+
+            current_app.logger.exception("Owner login failed unexpectedly.")
+            try:
+                from app.extensions import db
+
+                db.session.rollback()
+            except Exception:
+                pass
+            error = "Sign in could not be completed. Please try again."
 
     response = render_template(
         "auth/login.html",
