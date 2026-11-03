@@ -86,8 +86,15 @@ def create_app(config_object: type[Config] = Config) -> Flask:
 
         from app.services.turnstile_service import turnstile_active
 
-        user = current_user()
-        active = turnstile_active()
+        try:
+            user = current_user()
+        except Exception:
+            logger.exception("current_user() failed in template context")
+            user = None
+        try:
+            active = turnstile_active()
+        except Exception:
+            active = False
         return {
             "app_name": flask_app.config["APP_NAME"],
             "current_user": user,
