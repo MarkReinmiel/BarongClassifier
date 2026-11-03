@@ -65,18 +65,20 @@ def register_user(email: str, password: str, confirm: str) -> CustomerUser:
             409,
         )
 
+    skip_email = not current_app.config.get("EMAIL_VERIFICATION_ENABLED", True)
     user = CustomerUser(
         email=email,
         password_hash=generate_password_hash(password, method="scrypt"),
         full_name="",
         role="customer",
-        status="pending_verification",
-        email_verified=False,
+        status="active" if skip_email else "pending_verification",
+        email_verified=bool(skip_email),
         nickname_completed=False,
     )
     db.session.add(user)
     db.session.flush()
-    issue_and_send_code(user, "registration")
+    if not skip_email:
+        issue_and_send_code(user, "registration")
     db.session.commit()
     return user
 
@@ -167,7 +169,9 @@ def issue_and_send_code(user: CustomerUser, purpose: str) -> dict:
         send_verification_email(user.email, code, purpose)
     except EmailDeliveryError as error:
         db.session.rollback()
-        raise AuthError(str(error), 502) from error
+        # Use 400 (not 502): Cloudflare/Render often replace 5xx with a bare
+        # "Internal Server Error" page and hide our flash message.
+        raise AuthError(str(error), 400) from error
     db.session.commit()
     return {
         "resend_after_seconds": int(cooldown.total_seconds()),

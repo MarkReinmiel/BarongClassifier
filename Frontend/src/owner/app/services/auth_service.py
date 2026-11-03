@@ -220,8 +220,18 @@ def reset_password(user: OwnerUser, password: str, confirm: str) -> None:
 
 
 def touch_login(user: OwnerUser) -> None:
+    from flask import current_app
+
     user.last_login_at = utcnow()
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception:
+        # public.users sync triggers can conflict; never fail the sign-in itself.
+        current_app.logger.exception("Could not persist owner last_login_at.")
+        try:
+            db.session.rollback()
+        except Exception:
+            pass
 
 
 def change_password(user: OwnerUser, current_password: str, new_password: str, confirm: str) -> None:

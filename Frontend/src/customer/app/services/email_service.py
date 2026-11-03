@@ -69,11 +69,15 @@ def _send_via_resend(
             )
     except Exception as error:
         logger.warning("Resend request failed (%s): %s", type(error).__name__, error)
-        raise EmailDeliveryError("The verification email could not be sent.") from error
+        raise EmailDeliveryError(
+            "Verification email could not be sent via Resend. Check RESEND_API_KEY."
+        ) from error
 
     if response.status_code >= 400:
         logger.warning("Resend rejected email status=%s body=%s", response.status_code, response.text[:300])
-        raise EmailDeliveryError("The verification email could not be sent.")
+        raise EmailDeliveryError(
+            "Verification email could not be sent via Resend. Check RESEND_API_KEY and MAIL_FROM_ADDRESS."
+        )
 
 
 def _send_via_smtp(message: EmailMessage) -> None:
@@ -111,7 +115,11 @@ def _send_via_smtp(message: EmailMessage) -> None:
             type(error).__name__,
             error,
         )
-        raise EmailDeliveryError("The verification email could not be sent.") from error
+        raise EmailDeliveryError(
+            "Verification email could not be sent. Render free plans block Gmail SMTP — "
+            "add RESEND_API_KEY in Render (https://resend.com), or set "
+            "EMAIL_VERIFICATION_ENABLED=false temporarily."
+        ) from error
 
 
 def send_verification_email(recipient: str, code: str, purpose: str = "registration") -> None:
