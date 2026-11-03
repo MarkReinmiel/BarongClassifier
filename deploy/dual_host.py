@@ -36,8 +36,12 @@ CUSTOMER_ROOT = REPO_ROOT / "Frontend" / "src" / "customer"
 OWNER_ROOT = REPO_ROOT / "Frontend" / "src" / "owner"
 OWNER_PATH_PREFIX = (os.getenv("OWNER_PATH_PREFIX") or "/owner").rstrip("/") or "/owner"
 
+CUSTOMER_PREFIX = "_dual_customer"
+OWNER_PREFIX = "_dual_owner"
 
-def _purge_app_modules() -> None:
+
+def _purge_live_app_modules() -> None:
+    """Remove bare ``app`` / ``app.*`` keys only (keep stashed copies)."""
     for name in list(sys.modules):
         if name == "app" or name.startswith("app."):
             del sys.modules[name]
@@ -49,13 +53,42 @@ def _stash_app_modules(prefix: str) -> None:
             sys.modules[f"{prefix}.{name}"] = sys.modules.pop(name)
 
 
+def _restore_app_modules(prefix: str) -> None:
+    """Expose stashed ``{prefix}.app.*`` modules as live ``app.*`` for this request.
+
+    Both portals ship a package named ``app``. Flask-SQLAlchemy resolves the
+    engine from the extension bound during ``init_app``. Lazy imports and some
+    FSA internals look up ``sys.modules['app']``, so the active portal's modules
+    must be remounted on every request.
+    """
+    _purge_live_app_modules()
+    prefix_app = f"{prefix}.app"
+    for name, module in list(sys.modules.items()):
+        if name == prefix_app or name.startswith(prefix_app + "."):
+            live = name[len(prefix) + 1 :]  # "_dual_owner.app.models" -> "app.models"
+            sys.modules[live] = module
+
+
+def _prefer_project_path(project_root: Path) -> None:
+    root = str(project_root.resolve())
+    customer = str(CUSTOMER_ROOT.resolve())
+    owner = str(OWNER_ROOT.resolve())
+    others = [
+        p
+        for p in sys.path
+        if Path(p).resolve().as_posix()
+        not in {Path(root).resolve().as_posix(), Path(customer).resolve().as_posix(), Path(owner).resolve().as_posix()}
+    ]
+    sys.path = [root] + others
+
+
 def _load_flask_app(project_root: Path, prefix: str):
     root = str(project_root.resolve())
     if not (project_root / "app" / "__init__.py").is_file():
         raise RuntimeError(f"Missing Flask package at {project_root / 'app'}")
 
-    sys.path = [root] + [p for p in sys.path if Path(p).resolve() != Path(root).resolve()]
-    _purge_app_modules()
+    _prefer_project_path(project_root)
+    _purge_live_app_modules()
 
     try:
         from dotenv import load_dotenv
@@ -66,6 +99,18 @@ def _load_flask_app(project_root: Path, prefix: str):
 
     module = importlib.import_module("app")
     flask_app = module.create_app()
+
+    # Keep a direct handle so request routing can remount the correct ``app`` package.
+    flask_app.config["_DUAL_MODULE_PREFIX"] = prefix
+    flask_app.config["_DUAL_PROJECT_ROOT"] = root
+
+    with flask_app.app_context():
+        # Fail fast at boot if SQLAlchemy did not bind to this app object.
+        from app.extensions import db
+        from sqlalchemy import text
+
+        db.session.execute(text("select 1"))
+
     _stash_app_modules(prefix)
     return flask_app
 
@@ -91,6 +136,12 @@ class DualDispatcher:
         self.owner_hosts = owner_hosts
         self.owner_prefix = OWNER_PATH_PREFIX
 
+    def _activate(self, flask_app) -> None:
+        prefix = flask_app.config["_DUAL_MODULE_PREFIX"]
+        root = Path(flask_app.config["_DUAL_PROJECT_ROOT"])
+        _prefer_project_path(root)
+        _restore_app_modules(prefix)
+
     def __call__(self, environ, start_response):
         path = environ.get("PATH_INFO") or "/"
         host = _request_host(environ)
@@ -104,23 +155,26 @@ class DualDispatcher:
             if not rest.startswith("/"):
                 rest = "/" + rest
             environ["PATH_INFO"] = rest
+            self._activate(self.owner_app)
             return self.owner_app(environ, start_response)
 
         if host in self.owner_hosts or host.startswith("owner."):
+            self._activate(self.owner_app)
             return self.owner_app(environ, start_response)
 
         if self.customer_hosts and host not in self.customer_hosts:
             # Unknown host still defaults to Customer
             pass
+        self._activate(self.customer_app)
         return self.customer_app(environ, start_response)
 
 
 def _build_application():
     logging.basicConfig(level=logging.INFO)
     logger.info("Loading Customer app from %s", CUSTOMER_ROOT)
-    customer_app = _load_flask_app(CUSTOMER_ROOT, "_dual_customer")
+    customer_app = _load_flask_app(CUSTOMER_ROOT, CUSTOMER_PREFIX)
     logger.info("Loading Owner app from %s", OWNER_ROOT)
-    owner_app = _load_flask_app(OWNER_ROOT, "_dual_owner")
+    owner_app = _load_flask_app(OWNER_ROOT, OWNER_PREFIX)
 
     # Avoid Customer/Owner cookie clashes on the same hostname (/owner path).
     owner_app.config["SESSION_COOKIE_PATH"] = OWNER_PATH_PREFIX

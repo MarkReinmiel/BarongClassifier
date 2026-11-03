@@ -67,10 +67,18 @@ def create_app(config_object: type[Config] = Config) -> Flask:
         from app.services.turnstile_service import turnstile_active
         from app.utils.security import current_user
 
-        active = turnstile_active()
+        try:
+            user = current_user()
+        except Exception:
+            logger.exception("current_user() failed in template context")
+            user = None
+        try:
+            active = turnstile_active()
+        except Exception:
+            active = False
         return {
             "app_name": flask_app.config["APP_NAME"],
-            "current_user": current_user(),
+            "current_user": user,
             "turnstile_enabled": active,
             "turnstile_site_key": (flask_app.config.get("TURNSTILE_SITE_KEY") or "") if active else "",
             "user_avatar_url": url_for("static", filename="images/avatar-unknown.svg") + "?v=1",
