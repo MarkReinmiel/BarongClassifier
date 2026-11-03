@@ -1,7 +1,10 @@
 """One WSGI app for Render: Customer + Owner on a single Web Service (one bill).
 
 Start (repo root, empty Root Directory):
-  gunicorn -b 0.0.0.0:$PORT deploy.dual_host:application
+  gunicorn -b 0.0.0.0:$PORT --workers 1 --timeout 120 --graceful-timeout 30 deploy.dual_host:application
+
+Build (repo root):
+  pip install -r requirements.txt
 
 Access without a custom domain:
   Customer → https://YOUR-SERVICE.onrender.com/

@@ -70,6 +70,14 @@ def create_app(config_object: type[Config] = Config) -> Flask:
     def too_large(_error):
         return render_template("errors/413.html"), 413
 
+    @flask_app.errorhandler(500)
+    def server_error(_error):
+        try:
+            db.session.rollback()
+        except Exception:
+            pass
+        return render_template("errors/500.html"), 500
+
     @flask_app.context_processor
     def inject_globals():
         from flask import url_for

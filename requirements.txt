@@ -1,0 +1,3 @@
+# Dual-host Render deploy (repo root, empty Root Directory).
+# Installs shared deps for Customer + Owner Flask apps.
+-r Frontend/src/customer/requirements.txt
