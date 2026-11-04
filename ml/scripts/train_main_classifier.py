@@ -28,6 +28,7 @@ from sklearn.utils.class_weight import compute_class_weight
 
 ROOT = Path(__file__).resolve().parents[2]
 MANIFEST = ROOT / "ml" / "reports" / "source_manifest.csv"
+MAIN_DATA = ROOT / "ml" / "data" / "main_classifier"
 ACTIVE = ROOT / "ml" / "models" / "active"
 REPORTS = ROOT / "ml" / "reports"
 
@@ -41,6 +42,11 @@ BATCH_SIZE = 32
 HEAD_LR = 1e-3
 FINE_LR = 1e-5
 FINE_TUNE_AT = 30
+IMG_EXT = {".jpg", ".jpeg", ".jpe", ".png", ".webp", ".bmp"}
+# Prefer balanced folder dataset (300/class) when present; else Stage B manifest.
+USE_FOLDER_IF_BALANCED = True
+FOLDER_VAL_FRAC = 0.15
+FOLDER_TEST_FRAC = 0.15
 
 
 def configure() -> None:
@@ -61,6 +67,72 @@ def load_manifest() -> list[dict]:
     if not rows:
         raise FileNotFoundError(f"No trainable rows in {MANIFEST}. Run prepare_main_dataset.py first.")
     return rows
+
+
+def folder_class_counts() -> dict[str, int]:
+    counts = {}
+    for class_name in CLASSES:
+        folder = MAIN_DATA / class_name
+        if not folder.is_dir():
+            counts[class_name] = 0
+            continue
+        counts[class_name] = sum(
+            1 for p in folder.rglob("*") if p.is_file() and p.suffix.lower() in IMG_EXT
+        )
+    return counts
+
+
+def load_from_folders() -> tuple[np.ndarray, np.ndarray, list[str]]:
+    """Load all images under main_classifier/{class} and assign stratified splits."""
+    from sklearn.model_selection import train_test_split
+
+    paths: list[Path] = []
+    labels_list: list[int] = []
+    for class_name in CLASSES:
+        folder = MAIN_DATA / class_name
+        files = sorted(
+            p for p in folder.rglob("*") if p.is_file() and p.suffix.lower() in IMG_EXT
+        )
+        for path in files:
+            paths.append(path)
+            labels_list.append(CLASSES.index(class_name))
+
+    if not paths:
+        raise FileNotFoundError(f"No images under {MAIN_DATA}")
+
+    idx = np.arange(len(paths))
+    y = np.asarray(labels_list, dtype=np.int32)
+    idx_tv, idx_te = train_test_split(
+        idx, test_size=FOLDER_TEST_FRAC, random_state=SEED, stratify=y
+    )
+    y_tv = y[idx_tv]
+    val_ratio = FOLDER_VAL_FRAC / (1.0 - FOLDER_TEST_FRAC)
+    idx_tr, idx_va = train_test_split(
+        idx_tv, test_size=val_ratio, random_state=SEED, stratify=y_tv
+    )
+
+    split_of = {}
+    for i in idx_tr:
+        split_of[int(i)] = "train"
+    for i in idx_va:
+        split_of[int(i)] = "val"
+    for i in idx_te:
+        split_of[int(i)] = "test"
+
+    images = np.empty((len(paths), IMAGE_SIZE, IMAGE_SIZE, 3), dtype=np.uint8)
+    labels = np.empty(len(paths), dtype=np.int32)
+    splits: list[str] = []
+    for i, path in enumerate(paths):
+        with Image.open(path) as image:
+            resized = image.convert("RGB").resize(
+                (IMAGE_SIZE, IMAGE_SIZE), Image.Resampling.LANCZOS
+            )
+            images[i] = np.asarray(resized, dtype=np.uint8)
+        labels[i] = labels_list[i]
+        splits.append(split_of[i])
+        if (i + 1) % 50 == 0 or i + 1 == len(paths):
+            print(f"Loaded {i + 1}/{len(paths)}", flush=True)
+    return images, labels, splits
 
 
 def load_images(rows: list[dict]) -> tuple[np.ndarray, np.ndarray, list[str]]:
@@ -136,11 +208,19 @@ def main() -> int:
     ACTIVE.mkdir(parents=True, exist_ok=True)
     REPORTS.mkdir(parents=True, exist_ok=True)
 
-    rows = load_manifest()
-    print(f"Trainable rows: {len(rows)}")
-    print(Counter((r["split"], r["main_class"]) for r in rows))
+    counts = folder_class_counts()
+    use_folder = USE_FOLDER_IF_BALANCED and all(counts.get(c, 0) >= 300 for c in CLASSES)
+    if use_folder:
+        print(f"Using balanced folder dataset under {MAIN_DATA}: {counts}")
+        x, y, splits = load_from_folders()
+        print(f"Trainable images: {len(y)}")
+        print(Counter((splits[i], CLASSES[int(y[i])]) for i in range(len(y))))
+    else:
+        rows = load_manifest()
+        print(f"Trainable rows (manifest): {len(rows)}")
+        print(Counter((r["split"], r["main_class"]) for r in rows))
+        x, y, splits = load_images(rows)
 
-    x, y, splits = load_images(rows)
     x_tr, y_tr = subset(x, y, splits, "train")
     x_va, y_va = subset(x, y, splits, "val")
     x_te, y_te = subset(x, y, splits, "test")
@@ -216,6 +296,7 @@ def main() -> int:
                 f"- Artifact: `{model_path}`",
                 f"- Test accuracy: **{acc:.3f}** on {len(y_te)} images",
                 f"- Train / val / test images: {len(y_tr)} / {len(y_va)} / {len(y_te)}",
+                f"- Data source: {'balanced folders (300/class)' if use_folder else 'source_manifest.csv'}",
                 "- Piña Silk variant: **retired** — silk images folded into Piña.",
                 "- Deployed to Customer/Owner: **no** (pending activation gate).",
                 "",
