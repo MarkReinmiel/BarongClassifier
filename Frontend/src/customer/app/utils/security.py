@@ -90,6 +90,9 @@ def nickname_required(view):
 
 
 def no_store(response):
+    from flask import make_response
+
+    response = make_response(response)
     response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
     response.headers["Pragma"] = "no-cache"
     return response

@@ -26,6 +26,11 @@ from app.utils.security import mask_email, no_store
 bp = Blueprint("password", __name__, url_prefix="/auth")
 
 
+@bp.after_request
+def _private_headers(response):
+    return no_store(response)
+
+
 def _reset_user() -> CustomerUser | None:
     user_id = session.get("reset_user_id")
     if not user_id:
@@ -50,12 +55,11 @@ def forgot_password():
         except (AuthError, TurnstileError) as exc:
             error = str(exc)
 
-    response = render_template(
+    return render_template(
         "auth/forgot_password.html",
         error=error,
         email_value=email_value,
     )
-    return no_store(response)
 
 
 @bp.get("/verify-reset-code")
@@ -86,13 +90,12 @@ def verify_reset_code():
         except AuthError as exc:
             error = str(exc)
 
-    response = render_template(
+    return render_template(
         "auth/verify_reset_code.html",
         error=error,
         masked_email=mask_email(user.email),
         resend_wait=resend_wait_seconds(user, PURPOSE_RESET),
     )
-    return no_store(response)
 
 
 @bp.get("/reset-password")
@@ -122,5 +125,4 @@ def reset_password():
                 flash(str(exc), "error")
                 return redirect(url_for("auth.login"))
 
-    response = render_template("auth/reset_password.html", error=error)
-    return no_store(response)
+    return render_template("auth/reset_password.html", error=error)
