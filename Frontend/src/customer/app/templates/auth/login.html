@@ -8,9 +8,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}?v=32">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}?v=32">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}?v=34">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/motion.css') }}?v=4">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-ui.css') }}?v=11">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-ui.css') }}?v=12">
 </head>
 <body class="auth-body auth-body--home">
   <div class="splash" id="appSplash" role="status" aria-live="polite">
@@ -22,7 +22,7 @@
     </div>
   </div>
 
-  <a class="auth-back" href="{{ url_for('main.index') }}"><span class="auth-back-arrow" aria-hidden="true">?</span> Back to home</a>
+  <a class="auth-back" href="{{ url_for('main.index') }}"><span class="auth-back-arrow" aria-hidden="true"></span> Back to home</a>
 
   <div class="auth-split">
     <section class="auth-split-brand" aria-label="Barongcognition">
@@ -35,7 +35,7 @@
       <h1 class="auth-title">Preserving Filipino textile heritage.</h1>
       <div class="auth-accent-rule" aria-hidden="true"><span></span></div>
       <p class="auth-subtitle">
-        Identify Pi�a, Jusi, and Cocoon with care � so the craft of the Barong Tagalog stays known and honored.
+        Identify Pi&ntilde;a, Jusi, and Cocoon with care &mdash; so the craft of the Barong Tagalog stays known and honored.
       </p>
 
       <figure class="auth-hero-media">
@@ -79,7 +79,7 @@
         </form>
         <p class="auth-foot">
           <a class="auth-forgot" href="{{ url_for('password.forgot_password') }}">Forgot password?</a>
-          <span class="auth-foot-sep" aria-hidden="true">�</span>
+          <span class="auth-foot-sep" aria-hidden="true">&middot;</span>
           New here? <a href="{{ url_for('auth.register') }}">Create an account</a>
         </p>
       </section>

@@ -137,9 +137,10 @@ button,input,select{font-family:var(--sans)}
 }
 .avatar-letter{
   display:inline-grid;place-items:center;padding:0;
-  background:var(--accent);color:#fff;
+  background:var(--hi);color:var(--deeper);
   font-size:15px;font-weight:700;letter-spacing:0;line-height:1;
-  border:1px solid rgba(184,148,196,.45);
+  border:1px solid rgba(184,148,196,.65);
+  box-shadow:inset 0 0 0 1px rgba(74,53,82,.12);
   user-select:none;
 }
 .profile-name{

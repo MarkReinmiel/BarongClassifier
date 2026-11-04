@@ -499,6 +499,21 @@
   }
 
   /* —— Auth (login / register) —— */
+  .auth-body--home .auth-split {
+    grid-template-columns: 1fr !important;
+    width: min(100%, 480px);
+    gap: 20px;
+    padding: 88px 16px 48px;
+  }
+
+  .auth-body--home .auth-split-brand {
+    order: 1;
+  }
+
+  .auth-body--home .auth-split-form {
+    order: 2;
+  }
+
   .auth-shell--hero {
     position: relative;
     padding: 40px 16px 88px;
