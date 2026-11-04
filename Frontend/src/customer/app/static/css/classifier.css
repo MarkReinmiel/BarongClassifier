@@ -121,7 +121,8 @@ main.shell:has(.classify-shell) {
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  object-fit: cover;
+  object-fit: contain;
+  background: #0a0a0a;
   border: 1px solid var(--line);
 }
 

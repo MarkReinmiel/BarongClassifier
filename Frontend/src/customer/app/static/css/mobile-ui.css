@@ -19,15 +19,16 @@
   body {
     background: var(--bg);
     color: var(--ink);
+    padding-top: calc(56px + env(safe-area-inset-top, 0px));
   }
 
   .top {
-    height: calc(56px + env(safe-area-inset-top));
-    padding: env(safe-area-inset-top) 14px 0;
+    min-height: calc(56px + env(safe-area-inset-top, 0px));
+    padding: env(safe-area-inset-top, 0px) 14px 0;
     background: var(--nav);
   }
 
-  .brand b {
+  .brand {
     font-size: 11px;
     letter-spacing: 0.1em;
   }
@@ -349,22 +350,34 @@
     background: transparent;
   }
 
-  .textile-page--customer .textile-header {
+  .textile-page.textile-page--customer .textile-page-header,
+  .textile-page.textile-page--customer .history-page-header {
     text-align: center;
-    margin: 0 auto 14px;
-    max-width: none;
+    margin: 0 0 8px;
   }
 
-  .textile-page--customer .textile-header h1 {
-    font-size: 28px;
-    color: var(--ink);
+  .textile-page.textile-page--customer .textile-page-header .eyebrow,
+  .textile-page.textile-page--customer .history-page-header .eyebrow {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    margin: 0 auto 4px !important;
+    color: #795780 !important;
+    text-transform: uppercase !important;
   }
 
-  .textile-page--customer .page-description {
-    margin: 8px auto 0;
+  .textile-page.textile-page--customer .textile-page-header h2,
+  .textile-page.textile-page--customer .history-page-header h2 {
+    font-size: 28px !important;
+    color: #26354A !important;
+  }
+
+  .textile-page.textile-page--customer > .page-description {
+    margin: 0 auto 16px;
     font-size: 13px;
     line-height: 1.45;
     text-align: center;
+    color: #5A6575;
   }
 
   .history-page-header {

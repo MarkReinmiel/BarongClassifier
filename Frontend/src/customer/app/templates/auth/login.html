@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -7,29 +7,31 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}?v=21">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}?v=21">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/motion.css') }}?v=3">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-ui.css') }}?v=2">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}?v=22">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}?v=25">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/motion.css') }}?v=4">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-ui.css') }}?v=3">
   {% if turnstile_enabled and turnstile_site_key %}
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
   {% endif %}
 </head>
-<body>
+<body class="auth-body">
   <div class="splash" id="appSplash" role="status" aria-live="polite">
     <div class="splash-inner">
-      <img class="splash-logo" src="{{ url_for('static', filename='images/Barongclassi_logo.jpeg') }}" alt="">
-      <div class="splash-brand">BARONG CLASSIFIER</div>
+      <img class="splash-logo" src="{{ url_for('static', filename='images/barongcognition_logo.png') }}" alt="">
+      <div class="splash-brand">Barongcognition</div>
       <div class="splash-spin" aria-hidden="true"></div>
       <p class="splash-caption">Loading experience</p>
     </div>
   </div>
 
-  <div class="auth-shell auth-shell--hero">
-    <div class="auth-hero">
+  <a class="auth-back" href="{{ url_for('main.index') }}"><span class="auth-back-arrow" aria-hidden="true">←</span> Back to home</a>
+
+  <div class="auth-split">
+    <section class="auth-split-brand" aria-label="Barongcognition">
       <div class="auth-logo auth-logo--hero">
-        <img src="{{ url_for('static', filename='images/Barongclassi_logo.jpeg') }}" alt="">
-        <span>BARONG CLASSIFIER</span>
+        <img src="{{ url_for('static', filename='images/barongcognition_logo.png') }}" alt="Barongcognition logo">
+        <span>Barongcognition</span>
       </div>
 
       <p class="auth-kicker">Barong Tagalog</p>
@@ -38,41 +40,56 @@
         Identify Piña, Jusi, and Cocoon fabrics with care — so the craft of the Barong Tagalog stays known and honored.
       </p>
 
-      <section class="auth-card auth-card--hero">
-        <h2 class="auth-card-heading">Sign in</h2>
-        <p class="lead sm">Use your verified email and password to continue.</p>
-        {% with messages = get_flashed_messages(with_categories=true) %}
-          {% for category, message in messages %}
-            <div class="flash {{ category }}" style="margin-bottom:12px">{{ message }}</div>
-          {% endfor %}
-        {% endwith %}
-        <form method="post" class="stack" id="loginForm" {% if turnstile_enabled and turnstile_site_key %}data-require-turnstile{% endif %}>
-          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-          <label>
-            <span class="lbl">Email</span>
-            <input class="field" type="email" name="email" value="{{ request.form.email or '' }}" required autocomplete="email" placeholder="you@email.com">
+      <figure class="auth-hero-media">
+        <img
+          src="{{ url_for('static', filename='images/barong.jpg') }}"
+          alt="Close-up of embroidered Barong Tagalog textile"
+          loading="eager"
+        >
+      </figure>
+    </section>
+
+    <section class="auth-card auth-card--panel" aria-label="Sign in">
+      <h2 class="auth-card-heading">Sign in</h2>
+      <p class="lead sm">Use your verified email and password to continue.</p>
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+          <div class="flash {{ category }}" style="margin-bottom:12px">{{ message }}</div>
+        {% endfor %}
+      {% endwith %}
+      <form method="post" class="stack" id="loginForm" {% if turnstile_enabled and turnstile_site_key %}data-require-turnstile{% endif %}>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <label>
+          <span class="lbl">Email</span>
+          <input class="field" type="email" name="email" value="{{ request.form.email or '' }}" required autocomplete="email" placeholder="you@email.com">
+        </label>
+        <label>
+          <span class="lbl">Password</span>
+          <span class="pw-wrap">
+            <input class="field" type="password" name="password" id="loginPassword" required autocomplete="current-password" minlength="12" placeholder="Enter your password">
+            <button type="button" class="pw-toggle" data-target="loginPassword">Show</button>
+          </span>
+        </label>
+        <div class="auth-row">
+          <label class="auth-check">
+            <input type="checkbox" name="remember" value="1" checked>
+            <span>Remember me</span>
           </label>
-          <label>
-            <span class="lbl">Password</span>
-            <span class="pw-wrap">
-              <input class="field" type="password" name="password" id="loginPassword" required autocomplete="current-password" minlength="12">
-              <button type="button" class="pw-toggle" data-target="loginPassword">Show</button>
-            </span>
-          </label>
-          {% if turnstile_enabled and turnstile_site_key %}
-          <div class="turnstile-wrap">
-            <div class="cf-turnstile"
-                 data-sitekey="{{ turnstile_site_key }}"
-                 data-theme="light"
-                 data-size="flexible"></div>
-          </div>
-          {% endif %}
-          <button class="btn p" type="submit" id="loginBtn">Sign in</button>
-        </form>
-        <p class="auth-foot">New here? <a href="{{ url_for('auth.register') }}">Create an account</a></p>
-      </section>
-    </div>
+        </div>
+        {% if turnstile_enabled and turnstile_site_key %}
+        <div class="turnstile-wrap">
+          <div class="cf-turnstile"
+               data-sitekey="{{ turnstile_site_key }}"
+               data-theme="dark"
+               data-size="flexible"></div>
+        </div>
+        {% endif %}
+        <button class="btn p auth-submit" type="submit" id="loginBtn">Sign in</button>
+      </form>
+      <p class="auth-foot">New here? <a href="{{ url_for('auth.register') }}">Create an account</a></p>
+    </section>
   </div>
+
   <script src="{{ url_for('static', filename='js/motion.js') }}?v=3"></script>
   <script src="{{ url_for('static', filename='js/auth.js') }}?v=14"></script>
   {% if turnstile_enabled and turnstile_site_key %}

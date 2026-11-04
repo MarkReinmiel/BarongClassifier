@@ -17,7 +17,113 @@
   --serif: "Playfair Display", Georgia, serif;
   --sans: "DM Sans", Arial, sans-serif;
   --lp-gutter: clamp(16px, 3.5vw, 40px);
+  --lp-gold: #C5A072;
 }
+
+/* Gold line + diamond ornaments (style only — backgrounds unchanged) */
+.lp-rule{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin:14px 0 18px;
+  max-width:220px;
+}
+.lp-rule::before{
+  content:"";
+  flex:1 1 auto;
+  height:1px;
+  background:var(--lp-gold);
+  min-width:48px;
+}
+.lp-rule > span{
+  flex:none;
+  width:9px;
+  height:9px;
+  border:1.5px solid var(--lp-gold);
+  transform:rotate(45deg);
+  background:transparent;
+}
+.lp-rule--start{justify-content:flex-start}
+.lp-rule--center{
+  max-width:280px;
+  margin-left:auto;
+  margin-right:auto;
+  justify-content:center;
+}
+.lp-rule--center::before,
+.lp-rule--center::after{
+  content:"";
+  flex:1 1 auto;
+  height:1px;
+  background:var(--lp-gold);
+  min-width:40px;
+}
+.lp-rule--center > span{
+  /* filled diamond for centered brand mark */
+  background:var(--lp-gold);
+  border-color:var(--lp-gold);
+  width:8px;
+  height:8px;
+}
+
+.lp-hero-brand{
+  display:inline-flex;
+  align-items:center;
+  gap:12px;
+  margin:0 0 18px;
+  color:var(--bg);
+}
+.lp-hero-brand img{
+  width:48px;
+  height:48px;
+  border-radius:50%;
+  object-fit:contain;
+  background:#0a0a0a;
+  border:1px solid rgba(197,160,114,.55);
+  flex:none;
+}
+.lp-hero-brand span{
+  font-family:var(--serif);
+  font-style:italic;
+  font-weight:700;
+  font-size:clamp(22px, 3.5vw, 28px);
+  letter-spacing:.02em;
+  line-height:1.1;
+}
+
+.lp-mark{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  text-align:center;
+  margin:0;
+  max-width:420px;
+}
+.lp-mark-name{
+  margin:0;
+  font-family:var(--serif);
+  font-style:italic;
+  font-weight:700;
+  font-size:clamp(28px, 4.5vw, 40px);
+  letter-spacing:.02em;
+  color:var(--bg);
+  line-height:1.1;
+}
+.lp-mark .lp-rule{margin:12px auto 10px}
+.lp-mark-sub{
+  margin:0;
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:.22em;
+  text-transform:uppercase;
+  color:var(--lp-gold);
+}
+
+.lp-cta .lp-rule{margin:16px auto 14px}
+.lp-about-copy .lp-rule,
+.lp-fabrics > .lp-rule,
+.lp-how > .lp-rule{margin-top:12px;margin-bottom:20px}
+.lp-section-title{margin-bottom:0}
 
 *,
 *::before,
@@ -89,7 +195,8 @@ body {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  object-fit: cover;
+  object-fit: contain;
+  background: #0a0a0a;
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
@@ -328,7 +435,7 @@ body {
 
 .lp-section-title {
   font-size: clamp(26px, 4vw, 38px);
-  margin-bottom: 18px;
+  margin-bottom: 0;
 }
 
 .lp-fabric-grid {
@@ -407,7 +514,7 @@ body {
 }
 
 .lp-foot {
-  padding: 18px var(--lp-gutter) calc(18px + env(safe-area-inset-bottom));
+  padding: 36px var(--lp-gutter) calc(28px + env(safe-area-inset-bottom));
   text-align: center;
   background: var(--nav);
   color: var(--nav-muted);
@@ -417,6 +524,30 @@ body {
 .lp-foot p {
   margin: 0;
   color: inherit;
+}
+
+.lp-mark--footer {
+  margin: 0 auto 22px;
+}
+
+.lp-mark--footer .lp-mark-logo {
+  width: 72px;
+  height: 72px;
+}
+
+.lp-mark--footer .lp-mark-name {
+  font-size: clamp(24px, 4vw, 34px);
+  color: #f5ebe0;
+}
+
+.lp-mark--footer .lp-mark-sub {
+  color: var(--lp-gold);
+}
+
+.lp-foot-line {
+  margin: 0;
+  color: var(--nav-muted);
+  font-size: 12px;
 }
 
 @media (min-width: 800px) {
