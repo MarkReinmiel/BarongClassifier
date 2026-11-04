@@ -1,21 +1,21 @@
 {
-  "deployed_at": "2026-11-04T13:21:12.435129+00:00",
-  "source_model_sha256": "fcf6d8578987400f57c802cf9a3fb5d4b174ce272926cba47e8a01614c1c35c7",
+  "deployed_at": "2026-11-04T18:20:04.863260+00:00",
+  "source_model_sha256": "c7bbe2e5516f7bcb67fc0237b6c0e308091d4a48823eacf6565c1fe1d8e5a579",
   "targets": [
     {
       "model": "C:\\Users\\louis\\OneDrive\\Documents\\GitHub\\BarongClassifier\\Frontend\\src\\customer\\models\\barong_model.keras",
       "labels": "C:\\Users\\louis\\OneDrive\\Documents\\GitHub\\BarongClassifier\\Frontend\\src\\customer\\models\\labels.json",
-      "model_sha256": "fcf6d8578987400f57c802cf9a3fb5d4b174ce272926cba47e8a01614c1c35c7"
+      "model_sha256": "c7bbe2e5516f7bcb67fc0237b6c0e308091d4a48823eacf6565c1fe1d8e5a579"
     },
     {
       "model": "C:\\Users\\louis\\OneDrive\\Documents\\GitHub\\BarongClassifier\\Frontend\\src\\owner\\models\\barong_model.keras",
       "labels": "C:\\Users\\louis\\OneDrive\\Documents\\GitHub\\BarongClassifier\\Frontend\\src\\owner\\models\\labels.json",
-      "model_sha256": "fcf6d8578987400f57c802cf9a3fb5d4b174ce272926cba47e8a01614c1c35c7"
+      "model_sha256": "c7bbe2e5516f7bcb67fc0237b6c0e308091d4a48823eacf6565c1fe1d8e5a579"
     },
     {
       "model": "C:\\Users\\louis\\OneDrive\\Documents\\GitHub\\BarongClassifier\\Backend\\machine learning\\artifacts\\barong_mobilenetv2.keras",
       "labels": "C:\\Users\\louis\\OneDrive\\Documents\\GitHub\\BarongClassifier\\Backend\\machine learning\\artifacts\\labels.json",
-      "model_sha256": "fcf6d8578987400f57c802cf9a3fb5d4b174ce272926cba47e8a01614c1c35c7"
+      "model_sha256": "c7bbe2e5516f7bcb67fc0237b6c0e308091d4a48823eacf6565c1fe1d8e5a579"
     }
   ]
 }
