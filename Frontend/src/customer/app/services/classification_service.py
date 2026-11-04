@@ -145,11 +145,6 @@ def _persist_classification(
 
 def classify_image(user: CustomerUser, file_storage) -> dict:
     from app.services.image_service import prepare_image_bytes
-    from app.ml.relevance_gate import (
-        DISPLAY_UNDEFINED,
-        STATUS_CLASSIFIED,
-        assess_relevance,
-    )
 
     if not user or not user.id:
         raise ClassificationError("Sign in again.", 401)
@@ -161,29 +156,43 @@ def classify_image(user: CustomerUser, file_storage) -> dict:
     model_path = _model_file()
     gate_enabled = bool(current_app.config.get("RELEVANCE_GATE_ENABLED", False))
     gate = None
+    status_classified = "classified"
+    display_undefined = "Undefined Textile"
     if gate_enabled:
-        if model_path is not None:
-            try:
-                from app.ml.predictor import ensure_model
+        try:
+            from app.ml.relevance_gate import (
+                DISPLAY_UNDEFINED,
+                STATUS_CLASSIFIED,
+                assess_relevance,
+            )
+        except ImportError:
+            logger.exception("Relevance gate dependencies are missing; continuing without gate.")
+            gate_enabled = False
+        else:
+            status_classified = STATUS_CLASSIFIED
+            display_undefined = DISPLAY_UNDEFINED
+            if model_path is not None:
+                try:
+                    from app.ml.predictor import ensure_model
 
-                model = ensure_model(str(model_path), customer_root=CUSTOMER_ROOT)
-            except Exception:
-                logger.exception("Could not load local model for relevance gate.")
+                    model = ensure_model(str(model_path), customer_root=CUSTOMER_ROOT)
+                except Exception:
+                    logger.exception("Could not load local model for relevance gate.")
 
-        gate = assess_relevance(
-            content,
-            model=model,
-            model_path=str(model_path) if model_path else None,
-            app_root=CUSTOMER_ROOT,
-            enabled=True,
-        )
+            gate = assess_relevance(
+                content,
+                model=model,
+                model_path=str(model_path) if model_path else None,
+                app_root=CUSTOMER_ROOT,
+                enabled=True,
+            )
     else:
         logger.info("relevance_gate_skipped RELEVANCE_GATE_ENABLED=false")
 
     if gate is not None and not gate.accept_textile:
         # Never assign Piña / Jusi / Cocoon for rejected relevance outcomes.
         label_text = "undefined_textile"
-        display = DISPLAY_UNDEFINED
+        display = display_undefined
         confidence = validate_confidence(max(0.0, min(1.0, float(gate.confidence))))
         row = _persist_classification(
             user=user,
@@ -238,7 +247,7 @@ def classify_image(user: CustomerUser, file_storage) -> dict:
         "created_at": row.created_at.isoformat() if row.created_at else "",
     }
     payload.update(hierarchical_result(display, conf, image_bytes=content))
-    if gate is not None and gate.status == STATUS_CLASSIFIED:
+    if gate is not None and gate.status == status_classified:
         payload["gate"] = gate.details
     return payload
 
@@ -262,11 +271,17 @@ def _model_file() -> Path | None:
 def _predict_local(content: bytes) -> tuple[str, float] | None:
     model_path = _model_file()
     if model_path is None:
+        logger.error("Local CNN model file was not found under models/.")
         return None
     try:
         from app.ml.predictor import predict
 
         return predict(content, model_path=str(model_path), customer_root=CUSTOMER_ROOT)
+    except ImportError:
+        logger.exception(
+            "Local CNN runtime missing (install numpy/tensorflow for deploy)."
+        )
+        return None
     except Exception:
         logger.exception("Local CNN prediction failed.")
         return None
@@ -329,6 +344,7 @@ def _predict(content: bytes, filename: str) -> tuple[str, float]:
         return remote
 
     raise ClassificationError(
-        "No classifier is available. Place models/barong_model.keras or set CLASSIFY_SERVER_URL.",
+        "No classifier is available. Deploy needs models/barong_model.keras plus "
+        "numpy/tensorflow (see requirements.txt), or set CLASSIFY_SERVER_URL.",
         503,
     )

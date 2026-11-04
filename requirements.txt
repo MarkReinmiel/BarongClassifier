@@ -1,3 +1,6 @@
 # Dual-host Render deploy (repo root, empty Root Directory).
-# Installs shared deps for Customer + Owner Flask apps.
+# Installs shared deps for Customer + Owner Flask apps + in-process CNN.
 -r Frontend/src/customer/requirements.txt
+numpy>=1.26
+tensorflow>=2.16
+keras>=3.14

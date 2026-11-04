@@ -179,12 +179,6 @@ def _persist_classification(
 
 
 def classify_upload(user: OwnerUser, file_storage) -> dict:
-    from app.ml.relevance_gate import (
-        DISPLAY_UNDEFINED,
-        STATUS_CLASSIFIED,
-        assess_relevance,
-    )
-
     if not user or not user.id:
         raise ClassificationError("Sign in again.", 401)
 
@@ -195,22 +189,36 @@ def classify_upload(user: OwnerUser, file_storage) -> dict:
     model_path = _model_file()
     gate_enabled = bool(current_app.config.get("RELEVANCE_GATE_ENABLED", False))
     gate = None
+    display_undefined = "Undefined Textile"
+    status_classified = "classified"
     if gate_enabled:
-        if model_path is not None:
-            try:
-                from app.ml.predictor import ensure_model
+        try:
+            from app.ml.relevance_gate import (
+                DISPLAY_UNDEFINED,
+                STATUS_CLASSIFIED,
+                assess_relevance,
+            )
+        except ImportError:
+            logger.exception("Relevance gate dependencies are missing; continuing without gate.")
+            gate_enabled = False
+        else:
+            display_undefined = DISPLAY_UNDEFINED
+            status_classified = STATUS_CLASSIFIED
+            if model_path is not None:
+                try:
+                    from app.ml.predictor import ensure_model
 
-                model = ensure_model(str(model_path), customer_root=OWNER_ROOT)
-            except Exception:
-                logger.exception("Could not load local model for relevance gate.")
+                    model = ensure_model(str(model_path), customer_root=OWNER_ROOT)
+                except Exception:
+                    logger.exception("Could not load local model for relevance gate.")
 
-        gate = assess_relevance(
-            content,
-            model=model,
-            model_path=str(model_path) if model_path else None,
-            app_root=OWNER_ROOT,
-            enabled=True,
-        )
+            gate = assess_relevance(
+                content,
+                model=model,
+                model_path=str(model_path) if model_path else None,
+                app_root=OWNER_ROOT,
+                enabled=True,
+            )
     else:
         logger.info("relevance_gate_skipped RELEVANCE_GATE_ENABLED=false")
 
@@ -219,7 +227,7 @@ def classify_upload(user: OwnerUser, file_storage) -> dict:
 
     if gate is not None and not gate.accept_textile:
         label_text = "undefined_textile"
-        display = DISPLAY_UNDEFINED
+        display = display_undefined
         confidence = validate_confidence(max(0.0, min(1.0, float(gate.confidence))))
         _row_id, image_url = _persist_classification(
             user=user,
@@ -278,7 +286,7 @@ def classify_upload(user: OwnerUser, file_storage) -> dict:
         "image_path": image_url,
     }
     payload.update(_hierarchical_result(display, confidence, image_bytes=content))
-    if gate is not None and gate.status == STATUS_CLASSIFIED:
+    if gate is not None and gate.status == status_classified:
         payload["gate"] = gate.details
     return payload
 

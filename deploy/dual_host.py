@@ -5,6 +5,7 @@ Start (repo root, empty Root Directory):
 
 Build (repo root):
   pip install -r requirements.txt
+  # Includes numpy/tensorflow so Customer+Owner local CNN works on Render.
 
 Access without a custom domain:
   Customer → https://YOUR-SERVICE.onrender.com/
