@@ -3,18 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Sign up | {{ app_name }}</title>
+  <title>Create account | {{ app_name }}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}?v=32">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}?v=34">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-ui.css') }}?v=12">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}?v=33">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}?v=43">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-ui.css') }}?v=13">
 </head>
 <body class="auth-body auth-body--home">
   <a class="auth-back" href="{{ url_for('main.index') }}"><span class="auth-back-arrow" aria-hidden="true"></span> Back to home</a>
 
-  <div class="auth-split">
+  <div class="auth-split auth-split--open">
     <section class="auth-split-brand" aria-label="Barongcognition">
       <div class="auth-logo auth-logo--hero">
         <img src="{{ url_for('static', filename='images/barongcognition_logo.png') }}" alt="Barongcognition logo">
@@ -22,13 +22,16 @@
       </div>
 
       <p class="auth-kicker">Barong Tagalog</p>
-      <h1 class="auth-title">Preserving Filipino textile heritage.</h1>
-      <div class="auth-accent-rule" aria-hidden="true"><span></span></div>
+      <h1 class="auth-title">Join the work of keeping textile knowledge alive.</h1>
       <p class="auth-subtitle">
-        Honor the craft of Pi&ntilde;a, Jusi, and Cocoon &mdash; so the beauty of the Barong Tagalog remains known for generations.
+        Create an account to classify Barong fabrics and keep a history of your results.
       </p>
 
-      <figure class="auth-hero-media">
+      <figure class="auth-hero-media auth-hero-media--frame">
+        <span class="frame-corner frame-tl" aria-hidden="true"></span>
+        <span class="frame-corner frame-tr" aria-hidden="true"></span>
+        <span class="frame-corner frame-bl" aria-hidden="true"></span>
+        <span class="frame-corner frame-br" aria-hidden="true"></span>
         <img
           src="{{ url_for('static', filename='images/barong.jpg') }}"
           alt="Close-up of embroidered Barong Tagalog textile"
@@ -55,14 +58,14 @@
           <label>
             <span class="lbl">Password</span>
             <span class="pw-wrap">
-              <input class="field" type="password" name="password" id="regPassword" required minlength="12" autocomplete="new-password" placeholder="Enter your password">
+              <input class="field" type="password" name="password" id="regPassword" required minlength="12" autocomplete="new-password" placeholder="Create a password">
               <button type="button" class="pw-toggle" data-target="regPassword">Show</button>
             </span>
           </label>
           <label>
             <span class="lbl">Confirm password</span>
             <span class="pw-wrap">
-              <input class="field" type="password" name="confirm_password" id="regConfirm" required minlength="12" autocomplete="new-password" placeholder="Confirm your password">
+              <input class="field" type="password" name="confirm_password" id="regConfirm" required minlength="12" autocomplete="new-password" placeholder="Re-enter your password">
               <button type="button" class="pw-toggle" data-target="regConfirm">Show</button>
             </span>
           </label>
@@ -72,6 +75,6 @@
       </section>
     </div>
   </div>
-  <script src="{{ url_for('static', filename='js/auth.js') }}?v=12"></script>
+  <script src="{{ url_for('static', filename='js/auth.js') }}?v=15"></script>
 </body>
 </html>

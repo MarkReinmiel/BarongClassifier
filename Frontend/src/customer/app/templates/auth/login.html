@@ -6,11 +6,11 @@
   <title>Sign in | {{ app_name }}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}?v=32">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}?v=34">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}?v=33">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}?v=43">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/motion.css') }}?v=4">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-ui.css') }}?v=12">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-ui.css') }}?v=13">
 </head>
 <body class="auth-body auth-body--home">
   <div class="splash" id="appSplash" role="status" aria-live="polite">
@@ -24,7 +24,7 @@
 
   <a class="auth-back" href="{{ url_for('main.index') }}"><span class="auth-back-arrow" aria-hidden="true"></span> Back to home</a>
 
-  <div class="auth-split">
+  <div class="auth-split auth-split--open">
     <section class="auth-split-brand" aria-label="Barongcognition">
       <div class="auth-logo auth-logo--hero">
         <img src="{{ url_for('static', filename='images/barongcognition_logo.png') }}" alt="Barongcognition logo">
@@ -32,13 +32,16 @@
       </div>
 
       <p class="auth-kicker">Barong Tagalog</p>
-      <h1 class="auth-title">Preserving Filipino textile heritage.</h1>
-      <div class="auth-accent-rule" aria-hidden="true"><span></span></div>
+      <h1 class="auth-title">Preserving heritage, one textile at a time.</h1>
       <p class="auth-subtitle">
-        Identify Pi&ntilde;a, Jusi, and Cocoon with care &mdash; so the craft of the Barong Tagalog stays known and honored.
+        Identify Pi&ntilde;a, Jusi, and Cocoon fabrics with care &mdash; so the craft of the Barong Tagalog stays known and honored.
       </p>
 
-      <figure class="auth-hero-media">
+      <figure class="auth-hero-media auth-hero-media--frame">
+        <span class="frame-corner frame-tl" aria-hidden="true"></span>
+        <span class="frame-corner frame-tr" aria-hidden="true"></span>
+        <span class="frame-corner frame-bl" aria-hidden="true"></span>
+        <span class="frame-corner frame-br" aria-hidden="true"></span>
         <img
           src="{{ url_for('static', filename='images/barong.jpg') }}"
           alt="Close-up of embroidered Barong Tagalog textile"
@@ -74,12 +77,11 @@
               <input type="checkbox" name="remember" value="1" checked>
               <span>Remember me</span>
             </label>
+            <a class="auth-forgot" href="{{ url_for('password.forgot_password') }}">Forgot password?</a>
           </div>
           <button class="btn p auth-submit" type="submit" id="loginBtn">Sign in</button>
         </form>
         <p class="auth-foot">
-          <a class="auth-forgot" href="{{ url_for('password.forgot_password') }}">Forgot password?</a>
-          <span class="auth-foot-sep" aria-hidden="true">&middot;</span>
           New here? <a href="{{ url_for('auth.register') }}">Create an account</a>
         </p>
       </section>
@@ -87,6 +89,6 @@
   </div>
 
   <script src="{{ url_for('static', filename='js/motion.js') }}?v=3"></script>
-  <script src="{{ url_for('static', filename='js/auth.js') }}?v=14"></script>
+  <script src="{{ url_for('static', filename='js/auth.js') }}?v=15"></script>
 </body>
 </html>
