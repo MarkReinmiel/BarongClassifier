@@ -216,7 +216,7 @@ def main() -> int:
                 f"- Artifact: `{model_path}`",
                 f"- Test accuracy: **{acc:.3f}** on {len(y_te)} images",
                 f"- Train / val / test images: {len(y_tr)} / {len(y_va)} / {len(y_te)}",
-                "- Variant (Piña Silk) model: **not trained** (labels unverified).",
+                "- Piña Silk variant: **retired** — silk images folded into Piña.",
                 "- Deployed to Customer/Owner: **no** (pending activation gate).",
                 "",
                 "## Classification report",
@@ -232,7 +232,7 @@ def main() -> int:
                 "## Limitations",
                 "- physical_sample_id mostly unknown; splits use filename/IMG groups.",
                 "- pia_2 / pia_2.1 included under user provisional acceptance.",
-                "- pia_silk excluded from all training.",
+                "- Former pia_silk / pina_silk images trained as Piña.",
             ]
         ),
         encoding="utf-8",

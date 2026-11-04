@@ -135,9 +135,9 @@
 }
 .avatar-btn:hover{transform:none}
 .nb{
-  transition:flex .35s cubic-bezier(.22,1,.36,1),min-width .35s cubic-bezier(.22,1,.36,1),padding .35s ease,background .25s ease,color .25s ease,gap .25s ease,transform .2s ease !important;
+  transition:background .25s ease,color .25s ease,transform .2s ease !important;
 }
-.nb:hover{transform:scale(1.04)}
+.nb:hover{transform:scale(1.03)}
 .nb.on:hover{transform:none}
 
 @media (prefers-reduced-motion:reduce){

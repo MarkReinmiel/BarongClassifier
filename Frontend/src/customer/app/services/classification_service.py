@@ -56,49 +56,18 @@ def _model_version() -> str:
 def hierarchical_result(
     display_label: str, confidence: float, image_bytes: bytes | None = None
 ) -> dict:
-    """Main-class fields plus Piña-variant prediction when main class is Piña."""
+    """Main-class fields only (Piña Silk variant retired — silk folds into Piña)."""
+    del image_bytes  # kept for call-site compatibility
     raw = str(display_label or "").strip().lower().replace("ñ", "n")
-    variant = "undetermined"
-    variant_display = "Undetermined"
-    variant_confidence = None
     message = ""
     status = "classified"
 
     if "pina" in raw:
         main_key = "pina"
-        variant_hit = None
-        if image_bytes:
-            try:
-                from app.ml.variant_predictor import load_variant_model, predict_variant
-
-                load_variant_model(
-                    CUSTOMER_ROOT,
-                    configured=current_app.config.get("VARIANT_MODEL_PATH"),
-                )
-                variant_hit = predict_variant(image_bytes)
-            except Exception:
-                logger.exception("Variant model unavailable.")
-        if variant_hit:
-            variant = variant_hit["variant"]
-            variant_display = variant_hit["variant_label"]
-            variant_confidence = variant_hit.get("variant_confidence")
-            message = variant_hit.get("message") or ""
-            if variant_hit.get("status") == "uncertain":
-                status = "uncertain"
-        else:
-            message = (
-                "Piña detected, but the Piña / Piña Silk variant could not be determined "
-                "reliably yet."
-            )
-            status = "uncertain"
     elif "jusi" in raw:
         main_key = "jusi"
-        variant = "not_applicable"
-        variant_display = "Not applicable"
     elif "cocoon" in raw:
         main_key = "cocoon"
-        variant = "not_applicable"
-        variant_display = "Not applicable"
     else:
         main_key = raw or "unknown"
         message = "This image could not be classified reliably. Please capture another image."
@@ -107,10 +76,10 @@ def hierarchical_result(
     return {
         "main_class": main_key,
         "main_class_label": display_name_for(main_key if main_key != "unknown" else display_label),
-        "variant": variant,
-        "variant_label": variant_display,
+        "variant": "not_applicable",
+        "variant_label": "Not applicable",
         "main_confidence": float(confidence),
-        "variant_confidence": variant_confidence,
+        "variant_confidence": None,
         "status": status if main_key in {"pina", "jusi", "cocoon"} else "uncertain",
         "message": message,
         "model_version": _model_version(),

@@ -7,7 +7,7 @@ const TEXTILES = {
     origin: "Philippines",
     uses: "Formal Barong Tagalog, ceremonial wear",
     characteristics: "Fine, sheer, lustrous",
-    images: ["images/textiles/pina.png", "images/textiles/pina-seda.png"],
+    images: ["images/textiles/pina.png"],
   },
   jusi: {
     title: "Jusi",

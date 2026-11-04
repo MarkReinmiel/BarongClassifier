@@ -7,6 +7,7 @@
   function imageEl() {
     return (
       document.getElementById("resultImage") ||
+      document.querySelector(".result-image-container img") ||
       document.querySelector(".result-hero-photo img")
     );
   }

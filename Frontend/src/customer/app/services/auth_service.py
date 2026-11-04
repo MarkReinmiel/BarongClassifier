@@ -10,7 +10,11 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from app.extensions import db
 from app.models import CustomerUser, EmailVerification, TrustedDevice, utcnow
 from app.services.directory_service import email_exists_in_users_table, find_public_user_by_email
-from app.services.email_service import EmailDeliveryError, send_verification_email
+from app.services.email_service import (
+    EmailDeliveryError,
+    send_password_changed_email,
+    send_verification_email,
+)
 from app.utils.security import (
     generate_code,
     hash_secret,
@@ -36,6 +40,7 @@ def _aware(value: datetime | None) -> datetime | None:
 
 MAX_ATTEMPTS = 5
 LOCK_MINUTES = 15
+PURPOSE_RESET = "password_reset"
 
 
 class AuthError(Exception):
@@ -278,3 +283,56 @@ def save_nickname(user: CustomerUser, nickname: str) -> None:
     user.nickname_completed = True
     user.updated_at = utcnow()
     db.session.commit()
+
+
+def request_password_reset(email: str) -> CustomerUser:
+    """Require an existing Customer account before sending a reset code."""
+    email = normalize_email(email)
+    if not is_valid_email(email):
+        raise AuthError("Enter a valid email address.")
+
+    directory = find_public_user_by_email(email)
+    if directory and is_owner_role(directory.get("role")):
+        raise AuthError(
+            "This email is registered as an Owner account. Use the Owner portal to reset.",
+            403,
+        )
+
+    user = CustomerUser.query.filter_by(email=email).first()
+    if not user or not user.password_hash:
+        raise AuthError("No Customer account was found for that email.", 404)
+    if is_owner_role(user.role):
+        raise AuthError(
+            "This email is registered as an Owner account. Use the Owner portal to reset.",
+            403,
+        )
+    if not user.is_active or user.status == "disabled":
+        raise AuthError("This account is disabled.", 403)
+    if not user.email_verified or user.status == "pending_verification":
+        raise AuthError("Verify your email before resetting your password.", 403)
+
+    issue_and_send_code(user, PURPOSE_RESET)
+    return user
+
+
+def reset_password(user: CustomerUser, password: str, confirm: str) -> None:
+    for message in password_errors(password, confirm):
+        raise AuthError(message)
+
+    user.password_hash = generate_password_hash(password, method="scrypt")
+    user.updated_at = utcnow()
+    now = utcnow()
+    for row in EmailVerification.query.filter_by(
+        user_id=user.id, purpose=PURPOSE_RESET, consumed_at=None
+    ).all():
+        row.consumed_at = now
+        row.status = "consumed"
+    db.session.commit()
+
+    try:
+        send_password_changed_email(user.email)
+    except EmailDeliveryError:
+        raise AuthError(
+            "Password updated, but the confirmation email could not be sent.",
+            400,
+        )

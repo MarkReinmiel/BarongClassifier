@@ -44,9 +44,11 @@ def create_app(config_object: type[Config] = Config) -> Flask:
     from app.routes.classifier import bp as classifier_bp
     from app.routes.history import bp as history_bp
     from app.routes.main import bp as main_bp
+    from app.routes.password import bp as password_bp
 
     flask_app.register_blueprint(main_bp)
     flask_app.register_blueprint(auth_bp)
+    flask_app.register_blueprint(password_bp)
     flask_app.register_blueprint(classifier_bp)
     flask_app.register_blueprint(history_bp)
 
@@ -60,6 +62,10 @@ def create_app(config_object: type[Config] = Config) -> Flask:
             target = url_for("auth.login")
         elif path.startswith("/auth/register"):
             target = url_for("auth.register")
+        elif path.startswith("/auth/forgot-password"):
+            target = url_for("password.forgot_password")
+        elif path.startswith("/auth/reset-password"):
+            target = url_for("password.reset_password")
         return redirect(target)
 
     @flask_app.errorhandler(404)

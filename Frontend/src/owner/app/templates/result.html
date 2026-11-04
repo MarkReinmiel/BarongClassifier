@@ -2,7 +2,7 @@
 {% block title %}Classification Result | {{ app_name }}{% endblock %}
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/shared.css') }}">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/topnav.css') }}?v=13">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/topnav.css') }}?v=14">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/classify.css') }}?v=16">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/result.css') }}?v=3">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-app.css') }}?v=9">
@@ -56,18 +56,6 @@
           <span class="detail-label">{% if is_rejected %}Score{% else %}Model Confidence{% endif %}</span>
           <strong id="confidence" class="num">{{ '%.1f'|format(result.confidence * 100) }}%</strong>
         </div>
-        {% if result.main_class == 'pina' and not is_rejected %}
-        <div class="detail-item">
-          <span class="detail-label">Piña variant</span>
-          <strong id="variantLabel">{{ result.variant_label or 'Undetermined' }}</strong>
-        </div>
-        {% if result.variant_confidence is not none %}
-        <div class="detail-item">
-          <span class="detail-label">Variant confidence</span>
-          <strong id="variantConfidence" class="num">{{ '%.1f'|format(result.variant_confidence * 100) }}%</strong>
-        </div>
-        {% endif %}
-        {% endif %}
         {% if result.message %}
         <div class="detail-item detail-item-wide">
           <span class="detail-label">Note</span>

@@ -39,12 +39,10 @@ def is_local_or_lan_host(hostname: str | None = None) -> bool:
 
 
 def turnstile_active() -> bool:
-    """Widget + verify only when enabled and not on local/LAN IP hosts."""
+    """Widget + verify when enabled and keys are configured."""
     if not current_app.config.get("TURNSTILE_ENABLED"):
         return False
     if not (current_app.config.get("TURNSTILE_SITE_KEY") or "").strip():
-        return False
-    if is_local_or_lan_host():
         return False
     return True
 

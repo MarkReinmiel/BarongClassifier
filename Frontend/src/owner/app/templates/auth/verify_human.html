@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Human verification | {{ app_name }}{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/shared.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}?v=9">
+<style>body{padding-top:0 !important}</style>
+{% if turnstile_enabled and turnstile_site_key %}
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+{% endif %}
+{% endblock %}
+{% block body %}
+<a href="{{ url_for('auth.login') }}" class="back-home">← Back to sign in</a>
+<main class="auth-page">
+  <div class="auth-shell">
+    <section class="auth-brand">
+      <div class="logo-row">
+        <img src="{{ url_for('static', filename='images/Barongclassi_logo.jpeg') }}" alt="Barong Classifier">
+      </div>
+      <h1>Barongcognition</h1>
+      <p>One security check before Owner access</p>
+      <div class="brand-foot">
+        <span class="brand-line" aria-hidden="true"></span>
+        <small>Culture, heritage, innovation</small>
+      </div>
+    </section>
+
+    <section class="auth-card">
+      <p class="form-label">Owner access</p>
+      <h2>Human verification</h2>
+      <p class="form-description">Signed in as <strong>{{ email_hint }}</strong>. Complete the check to open the Owner portal.</p>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+          <div class="flash {{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endwith %}
+      {% if error %}<div class="flash error">{{ error }}</div>{% endif %}
+
+      <form method="post" id="humanForm" data-loading {% if turnstile_enabled and turnstile_site_key %}data-require-turnstile{% endif %}>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        {% if turnstile_enabled and turnstile_site_key %}
+        <div class="turnstile-wrap">
+          <div class="cf-turnstile"
+               data-sitekey="{{ turnstile_site_key }}"
+               data-theme="light"
+               data-size="flexible"></div>
+        </div>
+        <p class="sm" data-turnstile-status style="color:var(--err);min-height:18px;font-size:13px"></p>
+        {% else %}
+        <p class="form-description">Human verification is not configured. Continue to finish sign in.</p>
+        {% endif %}
+
+        <button class="auth-button" type="submit">Continue</button>
+      </form>
+
+      <p class="auth-foot">
+        <a class="auth-forgot" href="{{ url_for('auth.login') }}">Use a different account</a>
+      </p>
+    </section>
+  </div>
+</main>
+{% endblock %}
+{% block scripts %}
+{% if turnstile_enabled and turnstile_site_key %}
+<script src="{{ url_for('static', filename='js/turnstile.js') }}?v=1"></script>
+{% endif %}
+{% endblock %}

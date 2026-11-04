@@ -1,21 +1,21 @@
 {
-  "deployed_at": "2026-10-24T13:17:23.776097+00:00",
-  "source_model_sha256": "b798808dec4d71abf0e2513654b6adbedfa9adadb75d5afc9b6826660cb56d00",
+  "deployed_at": "2026-11-04T13:21:12.435129+00:00",
+  "source_model_sha256": "fcf6d8578987400f57c802cf9a3fb5d4b174ce272926cba47e8a01614c1c35c7",
   "targets": [
     {
-      "model": "C:\\Users\\louis\\OneDrive\\Documents\\GitHub\\BarongClassifier\\Customer\\models\\barong_model.keras",
-      "labels": "C:\\Users\\louis\\OneDrive\\Documents\\GitHub\\BarongClassifier\\Customer\\models\\labels.json",
-      "model_sha256": "b798808dec4d71abf0e2513654b6adbedfa9adadb75d5afc9b6826660cb56d00"
+      "model": "C:\\Users\\louis\\OneDrive\\Documents\\GitHub\\BarongClassifier\\Frontend\\src\\customer\\models\\barong_model.keras",
+      "labels": "C:\\Users\\louis\\OneDrive\\Documents\\GitHub\\BarongClassifier\\Frontend\\src\\customer\\models\\labels.json",
+      "model_sha256": "fcf6d8578987400f57c802cf9a3fb5d4b174ce272926cba47e8a01614c1c35c7"
     },
     {
-      "model": "C:\\Users\\louis\\OneDrive\\Documents\\GitHub\\BarongClassifier\\Owner\\models\\barong_model.keras",
-      "labels": "C:\\Users\\louis\\OneDrive\\Documents\\GitHub\\BarongClassifier\\Owner\\models\\labels.json",
-      "model_sha256": "b798808dec4d71abf0e2513654b6adbedfa9adadb75d5afc9b6826660cb56d00"
+      "model": "C:\\Users\\louis\\OneDrive\\Documents\\GitHub\\BarongClassifier\\Frontend\\src\\owner\\models\\barong_model.keras",
+      "labels": "C:\\Users\\louis\\OneDrive\\Documents\\GitHub\\BarongClassifier\\Frontend\\src\\owner\\models\\labels.json",
+      "model_sha256": "fcf6d8578987400f57c802cf9a3fb5d4b174ce272926cba47e8a01614c1c35c7"
     },
     {
       "model": "C:\\Users\\louis\\OneDrive\\Documents\\GitHub\\BarongClassifier\\Backend\\machine learning\\artifacts\\barong_mobilenetv2.keras",
       "labels": "C:\\Users\\louis\\OneDrive\\Documents\\GitHub\\BarongClassifier\\Backend\\machine learning\\artifacts\\labels.json",
-      "model_sha256": "b798808dec4d71abf0e2513654b6adbedfa9adadb75d5afc9b6826660cb56d00"
+      "model_sha256": "fcf6d8578987400f57c802cf9a3fb5d4b174ce272926cba47e8a01614c1c35c7"
     }
   ]
 }
