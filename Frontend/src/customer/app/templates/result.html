@@ -1,12 +1,11 @@
 {% extends "base.html" %}
-{% block title %}Result | {{ app_name }}{% endblock %}
+{% block title %}Classification Result | {{ app_name }}{% endblock %}
 {% block head %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/result.css') }}?v=5">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/result.css') }}?v=6">
 {% endblock %}
 {% block content %}
-{% set conf = (result.confidence or 0) * 100 %}
 {% set photo = result.image_path if result.image_path and result.image_path.startswith('https://') else none %}
-{% set has_photo = photo or result.image_data_url %}
+{% set image_src = result.image_data_url or photo %}
 {% set status = result.status or 'classified' %}
 {% set status_labels = {
   'classified': 'Classified',
@@ -16,80 +15,88 @@
 } %}
 {% set is_rejected = status in ['undefined_textile', 'uncertain', 'poor_image_quality'] %}
 
-<a class="btn s result-back" href="{{ url_for('classifier.classify_page') }}">← Back to Classify</a>
-<h2 class="result-page-title">Classification Result</h2>
+<section class="classifier-page">
+  <header class="classifier-header reveal">
+    <a href="{{ url_for('classifier.classify_page') }}" class="backbutton">&larr; Back to Classify</a>
+    <p class="classifier-label">BARONG TAGALOG TEXTILE CLASSIFIER</p>
+    <h1>Classification Result</h1>
+    <hr class="stitch-divider" aria-hidden="true">
+    <p class="classifier-description">Review the details of your submitted textile image.</p>
+  </header>
 
-<article class="result-hero{% if is_rejected %} result-hero--rejected{% endif %}">
-  <div class="result-hero-photo">
-    {% if result.image_data_url %}
-    <img id="resultImage" src="{{ result.image_data_url }}" alt="Submitted image">
-    {% elif photo %}
-    <img id="resultImage" src="{{ photo }}" alt="Submitted image" crossorigin="anonymous">
-    {% else %}
-    <div class="result-hero-photo-fallback" aria-hidden="true">◈</div>
-    {% endif %}
-    <span class="result-hero-photo-label">Your photo</span>
-  </div>
-  <div class="result-hero-prediction">
-    <span class="result-kicker">{% if is_rejected %}Result{% else %}Predicted Textile Type{% endif %}</span>
-    <h3 id="predictedType">{{ result.label }}</h3>
-  </div>
-  <div class="result-hero-confidence">
-    <span class="result-kicker">{% if is_rejected %}Score{% else %}Model Confidence{% endif %}</span>
-    <strong>{{ '%.1f'|format(conf) }}%</strong>
-    <div class="result-bar" aria-hidden="true">
-      <span style="width: {{ [conf, 100]|min }}%"></span>
+  <section class="classifier-card result-layout">
+    <div class="result-analysis">
+      <p class="result-label">CLASSIFICATION RESULT</p>
+      <h2>Textile Analysis</h2>
+      <div class="result-image-container">
+        {% if image_src %}
+        <img id="resultImage" src="{{ image_src }}" alt="Classified textile image"{% if photo and not result.image_data_url %} crossorigin="anonymous"{% endif %}>
+        {% else %}
+        <div class="result-image-fallback" aria-hidden="true">◈</div>
+        {% endif %}
+      </div>
+      <div class="result-image-actions" {% if not image_src %}hidden{% endif %}>
+        <button type="button" id="viewImageButton" class="view-image-button">View Image</button>
+        <button type="button" id="saveImageBtn" class="result-file-btn result-file-btn--save">Save Image</button>
+        <button type="button" id="downloadImageBtn" class="result-file-btn result-file-btn--download">Download</button>
+      </div>
+      <p class="result-file-hint" {% if not image_src %}hidden{% endif %}>Save lets you choose a folder. Download sends the photo to your Downloads / Gallery.</p>
+      <div id="imageModal" class="image-modal" hidden role="dialog" aria-modal="true" aria-label="Enlarged textile image">
+        <button type="button" id="closeImageModal" class="close-image-modal" aria-label="Close enlarged image">×</button>
+        {% if image_src %}
+        <img id="fullResultImage" src="{{ image_src }}" alt="Full submitted textile image" class="modal-image"{% if photo and not result.image_data_url %} crossorigin="anonymous"{% endif %}>
+        {% endif %}
+      </div>
     </div>
-  </div>
-</article>
 
-{% if result.message %}
-<p class="result-message {{ status }}">{{ result.message }}</p>
-{% endif %}
-
-{% if result.main_class == 'pina' and not is_rejected %}
-<section class="result-variant-card">
-  <div class="result-variant-copy">
-    <span class="result-kicker">Piña variant</span>
-    <strong>{{ result.variant_label or 'Undetermined' }}</strong>
-  </div>
-  {% if result.variant_confidence is not none %}
-  {% set vconf = result.variant_confidence * 100 %}
-  <div class="result-variant-score">
-    <div class="result-bar result-bar--dark" aria-hidden="true">
-      <span style="width: {{ [vconf, 100]|min }}%"></span>
+    <div class="result-details-panel">
+      <h2>Classification Details</h2>
+      <div class="result-details">
+        <div class="detail-item">
+          <span class="detail-label">{% if is_rejected %}Result{% else %}Predicted Textile Type{% endif %}</span>
+          <strong id="predictedType">{{ result.label }}</strong>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">{% if is_rejected %}Score{% else %}Model Confidence{% endif %}</span>
+          <strong id="confidence" class="num">{{ '%.1f'|format((result.confidence or 0) * 100) }}%</strong>
+        </div>
+        {% if result.message %}
+        <div class="detail-item detail-item-wide">
+          <span class="detail-label">Note</span>
+          <strong class="result-hierarchy-message {{ status }}" style="font-weight:500">{{ result.message }}</strong>
+        </div>
+        {% endif %}
+        <div class="detail-item">
+          <span class="detail-label">Image Name</span>
+          <strong id="resultFileName">{{ result.image_name or '—' }}</strong>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Classification Status</span>
+          <strong id="classificationStatus">{{ status_labels.get(status, status) }}</strong>
+        </div>
+      </div>
+      <div class="result-actions">
+        <a class="classify-button" href="{{ url_for('classifier.classify_page') }}">{% if is_rejected %}Try again{% else %}Classify another{% endif %}</a>
+        <a class="remove-button" href="{{ url_for('history.history_page') }}">View history</a>
+      </div>
     </div>
-    <strong>{{ '%.1f'|format(vconf) }}%</strong>
-  </div>
-  {% endif %}
+  </section>
 </section>
-{% endif %}
-
-<div class="result-meta">
-  <div class="result-meta-card">
-    <span class="result-kicker">Image Name</span>
-    <strong id="resultFileName">{{ result.image_name or '—' }}</strong>
-  </div>
-  <div class="result-meta-card">
-    <span class="result-kicker">Classification Status</span>
-    <strong>{{ status_labels.get(status, status) }}</strong>
-  </div>
-</div>
-
-<div class="result-file-actions" {% if not has_photo %}hidden{% endif %}>
-  <button type="button" id="saveImageBtn" class="btn g result-file-btn">Save Image</button>
-  <button type="button" id="downloadImageBtn" class="btn g result-file-btn">Download</button>
-</div>
-<p class="result-file-hint" {% if not has_photo %}hidden{% endif %}>
-  Save lets you choose a folder. Download sends the photo to your Downloads / Gallery.
-</p>
-
-<div class="result-actions">
-  <a class="btn g" href="{{ url_for('history.history_page') }}">History</a>
-  <a class="btn p" href="{{ url_for('classifier.classify_page') }}">{% if is_rejected %}Try Again →{% else %}Classify Another →{% endif %}</a>
-</div>
 {% endblock %}
 {% block scripts %}
 {{ super() }}
 <script src="{{ url_for('static', filename='js/result-image-actions.js') }}?v=1"></script>
+<script>
+document.getElementById("viewImageButton")?.addEventListener("click", () => {
+  const modal = document.getElementById("imageModal");
+  if (modal) modal.hidden = false;
+});
+document.getElementById("closeImageModal")?.addEventListener("click", () => {
+  const modal = document.getElementById("imageModal");
+  if (modal) modal.hidden = true;
+});
+document.getElementById("imageModal")?.addEventListener("click", (event) => {
+  if (event.target.id === "imageModal") event.currentTarget.hidden = true;
+});
+</script>
 {% endblock %}

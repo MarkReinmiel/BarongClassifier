@@ -18,11 +18,12 @@ class EmailDeliveryError(RuntimeError):
 
 
 def _html(app_name: str, code: str, purpose: str, hours: int) -> str:
-    reason = (
-        "finish creating your BarongClassifier account"
-        if purpose == "registration"
-        else "confirm a sign-in from a new browser"
-    )
+    if purpose == "registration":
+        reason = "finish creating your BarongClassifier account"
+    elif purpose == "password_reset":
+        reason = "reset your BarongClassifier password"
+    else:
+        reason = "confirm a sign-in from a new browser"
     return f"""<!DOCTYPE html>
 <html lang="en"><body style="margin:0;padding:0;background:#E5DED4;font-family:Georgia,serif;color:#2F323A;">
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="padding:24px 12px;">
@@ -147,7 +148,10 @@ def send_verification_email(recipient: str, code: str, purpose: str = "registrat
 
     hours = max(1, int(cfg["EMAIL_VERIFICATION_EXPIRE_MINUTES"]) // 60)
     app_name = cfg["APP_NAME"]
-    subject = f"{app_name} verification code"
+    if purpose == "password_reset":
+        subject = f"{app_name} password reset code"
+    else:
+        subject = f"{app_name} verification code"
     text_body = (
         f"Your {app_name} verification code is {code}. "
         f"It expires in {hours} hours. Do not share this code. "
@@ -156,6 +160,46 @@ def send_verification_email(recipient: str, code: str, purpose: str = "registrat
     html_body = _html(app_name, code, purpose, hours)
 
     # Prefer Resend HTTPS on hosts that block outbound SMTP (common on Render).
+    if resend_key:
+        _send_via_resend(
+            api_key=resend_key,
+            from_addr=from_addr,
+            from_name=from_name,
+            recipient=recipient,
+            subject=subject,
+            text_body=text_body,
+            html_body=html_body,
+        )
+        return
+
+    message = EmailMessage()
+    message["Subject"] = subject
+    message["From"] = f"{from_name} <{from_addr}>"
+    message["To"] = recipient
+    message.set_content(text_body)
+    message.add_alternative(html_body, subtype="html")
+    _send_via_smtp(message)
+
+
+def send_password_changed_email(recipient: str) -> None:
+    cfg = current_app.config
+    resend_key = str(cfg.get("RESEND_API_KEY") or "").strip()
+    from_addr = str(cfg.get("MAIL_FROM_ADDRESS") or cfg.get("MAIL_USERNAME") or "").strip()
+    from_name = str(cfg.get("MAIL_FROM_NAME") or cfg.get("APP_NAME") or "BarongClassifier").strip()
+    app_name = cfg["APP_NAME"]
+    subject = f"{app_name} password changed"
+    text_body = (
+        f"Your {app_name} password was changed. "
+        "If you did not do this, contact support immediately."
+    )
+    html_body = f"""<!DOCTYPE html><html><body style="font-family:Georgia,serif;color:#2F323A;padding:24px;">
+<p>Your <strong>{app_name}</strong> password was changed.</p>
+<p>If you did not do this, contact support immediately.</p>
+</body></html>"""
+
+    if not from_addr:
+        raise EmailDeliveryError("Email delivery is not configured.")
+
     if resend_key:
         _send_via_resend(
             api_key=resend_key,

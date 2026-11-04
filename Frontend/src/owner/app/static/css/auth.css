@@ -327,11 +327,27 @@ body {
   color: var(--ink-soft);
 }
 
-.auth-foot a {
+.auth-foot a,
+.auth-forgot {
   font-weight: 600;
   color: var(--baltic);
   text-decoration: underline;
   text-underline-offset: 3px;
+}
+
+.auth-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 4px 0 10px;
+}
+
+.auth-forgot {
+  display: inline-block;
+  font-size: 13px;
+  white-space: nowrap;
 }
 
 .flash {
@@ -487,6 +503,18 @@ body {
 
   .auth-card {
     padding: 28px 22px 32px;
+  }
+
+  .auth-row {
+    width: 100%;
+  }
+
+  .auth-forgot,
+  .auth-foot,
+  .auth-foot a {
+    display: inline-block;
+    visibility: visible;
+    opacity: 1;
   }
 }
 

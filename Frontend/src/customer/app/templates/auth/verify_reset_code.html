@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Verify reset code | {{ app_name }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}?v=32">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}?v=32">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-ui.css') }}?v=11">
+</head>
+<body class="auth-body auth-body--home">
+  <a class="auth-back" href="{{ url_for('password.forgot_password') }}"><span class="auth-back-arrow" aria-hidden="true">←</span> Back</a>
+
+  <div class="auth-split">
+    <section class="auth-split-brand" aria-label="Barongcognition">
+      <div class="auth-logo auth-logo--hero">
+        <img src="{{ url_for('static', filename='images/barongcognition_logo.png') }}" alt="Barongcognition logo">
+        <span>Barongcognition</span>
+      </div>
+      <p class="auth-kicker">Email verification</p>
+      <h1 class="auth-title">Preserving Filipino textile heritage.</h1>
+      <div class="auth-accent-rule" aria-hidden="true"><span></span></div>
+      <p class="auth-subtitle">
+        Enter the 6-digit code from your inbox to continue password recovery.
+      </p>
+    </section>
+
+    <div class="auth-split-form">
+      <section class="auth-card auth-card--panel" aria-label="Verify reset code">
+        <h2 class="auth-card-heading">Check your inbox</h2>
+        <p class="lead sm">Code sent to <strong>{{ masked_email }}</strong>.</p>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% for category, message in messages %}
+            <div class="flash {{ category }}" style="margin-bottom:12px">{{ message }}</div>
+          {% endfor %}
+        {% endwith %}
+        {% if error %}<div class="flash error" style="margin-bottom:12px">{{ error }}</div>{% endif %}
+        <form method="post" class="stack" id="verifyResetForm">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="action" value="verify">
+          <input type="hidden" name="code" id="codeHidden" value="">
+          <div class="otp" role="group" aria-label="Six-digit verification code">
+            {% for i in range(1,7) %}
+            <input type="text" name="d{{ i }}" inputmode="numeric" maxlength="1" autocomplete="one-time-code" aria-label="Digit {{ i }}">
+            {% endfor %}
+          </div>
+          <button class="btn p auth-submit" type="submit">Verify code</button>
+        </form>
+        <form method="post" class="stack" style="margin-top:8px">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="action" value="resend">
+          <button type="submit" class="resend auth-link" id="resendBtn" data-wait="{{ resend_wait }}">Resend code</button>
+        </form>
+        <p class="auth-foot"><a href="{{ url_for('auth.login') }}">Back to sign in</a></p>
+      </section>
+    </div>
+  </div>
+  <script src="{{ url_for('static', filename='js/reset_verify.js') }}?v=1"></script>
+</body>
+</html>

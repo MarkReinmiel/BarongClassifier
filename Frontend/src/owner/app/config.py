@@ -6,10 +6,34 @@ import os
 from pathlib import Path
 from urllib.parse import quote_plus
 
-from dotenv import load_dotenv
+from dotenv import dotenv_values, load_dotenv
 
 ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = Path(__file__).resolve().parents[3]
 load_dotenv(ROOT / ".env")
+
+
+def _ensure_turnstile_env() -> None:
+    """Pull Turnstile keys from monorepo Owner/.env when local .env omits them."""
+    if (os.getenv("TURNSTILE_SITE_KEY") or "").strip():
+        return
+    fallback = REPO_ROOT / "Owner" / ".env"
+    if not fallback.is_file():
+        return
+    values = dotenv_values(fallback)
+    site = (values.get("TURNSTILE_SITE_KEY") or "").strip()
+    if not site:
+        return
+    for key in ("TURNSTILE_ENABLED", "TURNSTILE_SITE_KEY", "TURNSTILE_SECRET_KEY"):
+        raw = values.get(key)
+        if raw is None:
+            continue
+        cleaned = str(raw).strip().strip('"').strip("'")
+        if cleaned and not (os.getenv(key) or "").strip():
+            os.environ[key] = cleaned
+
+
+_ensure_turnstile_env()
 
 
 def _first(*names: str, default: str = "") -> str:

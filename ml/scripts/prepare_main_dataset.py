@@ -1,7 +1,7 @@
 """Stage B: prepare main 3-class dataset without modifying originals.
 
-Rules (user decisions 2026-10-24):
-- pia_silk: MIXED / NOT VERIFIED → review_required only; never train variant from these.
+Rules (user decisions 2026-10-24, updated 2026-11-04):
+- pia_silk / pina_silk: folded into main Piña class (Piña Silk variant feature removed).
 - pia_2 + pia_2.1: accepted as ordinary Piña for main classifier (provisional user acceptance).
 - cocoon-2 → cocoon; jusi_2 → jusi.
 - Exact duplicates (sha256) excluded from prepared training copies (recorded in manifest).
@@ -109,29 +109,40 @@ def collect_sources() -> list[dict]:
     return rows
 
 
-def collect_silk_review() -> list[dict]:
+def collect_silk_as_pina() -> list[dict]:
+    """Former Piña Silk images — included in main Piña training (variant removed)."""
+    roots = [
+        ("staging/pia_silk", STAGING / "pia_silk"),
+        (
+            "variant_classifier/pina_silk",
+            ROOT / "ml" / "data" / "variant_classifier" / "pina_silk",
+        ),
+    ]
     rows = []
-    root = STAGING / "pia_silk"
-    for path in iter_images(root):
-        info = probe(path)
-        digest = sha256_file(path) if info["readable"] else ""
-        # Flag all silk candidates for manual verification (user: MIXED / NOT FULLY VERIFIED).
-        rows.append(
-            {
-                "source_folder": "staging/pia_silk",
-                "source_path": str(path),
-                "main_class": "pina",
-                "variant_label": "pina_silk_candidate",
-                "label_verification_status": "needs_manual_verification",
-                "sha256": digest,
-                "width": info["width"],
-                "height": info["height"],
-                "readable": info["readable"],
-                "notes": "User: MIXED/NOT FULLY VERIFIED. Excluded from variant training.",
-                "include_in_main_train": False,
-                "include_in_variant_train": False,
-            }
-        )
+    seen: set[str] = set()
+    for source_folder, root in roots:
+        for path in iter_images(root):
+            info = probe(path)
+            digest = sha256_file(path) if info["readable"] else ""
+            if digest and digest in seen:
+                continue
+            if digest:
+                seen.add(digest)
+            rows.append(
+                {
+                    "source_folder": source_folder,
+                    "source_path": str(path),
+                    "main_class": "pina",
+                    "variant_label": "",
+                    "label_verification_status": "merged_into_pina",
+                    "sha256": digest,
+                    "width": info["width"],
+                    "height": info["height"],
+                    "readable": info["readable"],
+                    "notes": "Former Piña Silk; folded into main Piña class (variant removed).",
+                    "include_in_main_train": info["readable"],
+                }
+            )
     return rows
 
 
@@ -228,10 +239,8 @@ def main() -> int:
     REPORTS.mkdir(parents=True, exist_ok=True)
     MAIN.mkdir(parents=True, exist_ok=True)
 
-    main_rows = collect_sources()
-    silk_rows = collect_silk_review()
+    main_rows = collect_sources() + collect_silk_as_pina()
     mark_duplicates(main_rows)
-    mark_duplicates(silk_rows)
     prepare_copies(main_rows)
     assign_splits(main_rows)
 
@@ -253,8 +262,7 @@ def main() -> int:
         "include_in_main_train",
         "notes",
     ]
-    write_csv(REPORTS / "source_manifest.csv", main_rows + silk_rows, fields)
-    write_csv(REPORTS / "review_required.csv", silk_rows, fields)
+    write_csv(REPORTS / "source_manifest.csv", main_rows, fields)
 
     counts = Counter()
     groups = Counter()
@@ -271,7 +279,12 @@ def main() -> int:
         "main_excluded_duplicates_or_unreadable": sum(
             1 for r in main_rows if not r.get("include_in_main_train")
         ),
-        "silk_review_only": len(silk_rows),
+        "silk_merged_into_pina": sum(
+            1
+            for r in main_rows
+            if r.get("label_verification_status") == "merged_into_pina"
+            and r.get("include_in_main_train")
+        ),
         "prepared_class_counts": {
             c: sum(
                 1
@@ -295,7 +308,7 @@ def main() -> int:
         "limitations": [
             "physical_sample_id is unknown for most images; grouping uses IMG_* stem or filename stem.",
             "pia_2 / pia_2.1 accepted as Piña by user decision (provisional), not lab-verified.",
-            "All pia_silk images flagged needs_manual_verification; excluded from variant training.",
+            "Former Piña Silk images are trained as Piña; variant classifier is retired.",
             "Exact sha256 duplicates excluded from prepared training copies.",
         ],
     }

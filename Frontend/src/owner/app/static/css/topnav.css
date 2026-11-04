@@ -287,45 +287,41 @@ body {
 
 .nav {
   position: fixed;
-  left: 14px;
-  right: 14px;
-  bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  left: 12px;
+  right: 12px;
+  bottom: calc(10px + env(safe-area-inset-bottom, 0px));
   display: flex;
-  align-items: center;
-  gap: 4px;
-  height: 64px;
-  padding: 8px;
+  align-items: stretch;
+  gap: 2px;
+  min-height: 68px;
+  height: auto;
+  padding: 6px 4px;
   box-sizing: border-box;
   background: #fff;
   border: 1px solid rgba(38, 53, 74, 0.08);
-  border-radius: 999px;
+  border-radius: 22px;
   box-shadow: 0 12px 30px rgba(38, 53, 74, 0.14);
   z-index: 30;
 }
 
 .nb {
-  flex: 0 0 48px;
-  height: 48px;
-  min-width: 48px;
-  padding: 0;
+  flex: 1 1 0;
+  min-width: 0;
+  height: auto;
+  padding: 6px 4px;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0;
-  border-radius: 999px;
+  gap: 3px;
+  border-radius: 16px;
   background: transparent;
   border: 0;
   color: #8b8791;
   text-decoration: none;
   overflow: hidden;
   font-family: var(--sans);
-  transition:
-    flex 0.35s cubic-bezier(0.22, 1, 0.36, 1),
-    min-width 0.35s cubic-bezier(0.22, 1, 0.36, 1),
-    padding 0.35s ease,
-    background 0.25s ease,
-    color 0.25s ease,
-    gap 0.25s ease;
+  transition: background 0.25s ease, color 0.25s ease;
 }
 
 .nb-icon {
@@ -343,36 +339,35 @@ body {
 }
 
 .nb-label {
-  max-width: 0;
-  opacity: 0;
+  max-width: 100%;
+  opacity: 1;
   overflow: hidden;
   white-space: nowrap;
-  font-size: 13px;
-  font-weight: 700;
+  text-overflow: ellipsis;
+  font-size: 11px;
+  font-weight: 600;
   letter-spacing: 0.01em;
-  transition:
-    max-width 0.35s cubic-bezier(0.22, 1, 0.36, 1),
-    opacity 0.22s ease;
+  line-height: 1.1;
+  text-align: center;
 }
 
 .nb.on,
 .nb[aria-current="page"] {
-  flex: 1 1 auto;
-  min-width: 118px;
-  padding: 0 16px;
-  gap: 8px;
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 6px 4px;
+  gap: 3px;
   justify-content: center;
-}
-
-.nb.on .nb-label,
-.nb[aria-current="page"] .nb-label {
-  max-width: 88px;
-  opacity: 1;
 }
 
 .nb[data-tone="home"].on {
   background: #e8efe9;
   color: #1e3a2f;
+}
+
+.nb[data-tone="analytics"].on {
+  background: #efe8f3;
+  color: #5a3d6b;
 }
 
 .nb[data-tone="types"].on {

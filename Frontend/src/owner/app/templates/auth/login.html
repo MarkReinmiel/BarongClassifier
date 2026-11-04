@@ -1,12 +1,9 @@
-﻿{% extends "base.html" %}
+{% extends "base.html" %}
 {% block title %}Owner sign in | {{ app_name }}{% endblock %}
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/shared.css') }}">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}?v=7">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}?v=8">
 <style>body{padding-top:0 !important}</style>
-{% if turnstile_enabled and turnstile_site_key %}
-<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
-{% endif %}
 {% endblock %}
 {% block body %}
 <a href="{{ url_for('auth.home') }}" class="back-home">← Back to Home</a>
@@ -27,7 +24,7 @@
     <section class="auth-card">
       <p class="form-label">Owner access</p>
       <h2>Sign in to your account</h2>
-      <p class="form-description">Use your authorized Owner email and password, then complete the human check.</p>
+      <p class="form-description">Use your authorized Owner email and password. Human verification comes next.</p>
 
       {% with messages = get_flashed_messages(with_categories=true) %}
         {% for category, message in messages %}
@@ -36,7 +33,7 @@
       {% endwith %}
       {% if error %}<div class="flash error">{{ error }}</div>{% endif %}
 
-      <form method="post" id="loginForm" data-loading {% if turnstile_enabled and turnstile_site_key %}data-require-turnstile{% endif %}>
+      <form method="post" id="loginForm" data-loading>
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         {% if next_url %}<input type="hidden" name="next" value="{{ next_url }}">{% endif %}
 
@@ -51,32 +48,25 @@
           <button type="button" class="password-toggle pw-toggle" data-target="loginPassword">Show</button>
         </div>
 
-        <label class="check-row">
-          <input type="checkbox" name="remember" value="1">
-          <span>Remember me on this device</span>
-        </label>
-
-        {% if turnstile_enabled and turnstile_site_key %}
-        <div class="turnstile-wrap">
-          <div class="cf-turnstile"
-               data-sitekey="{{ turnstile_site_key }}"
-               data-theme="light"
-               data-size="flexible"></div>
+        <div class="auth-row">
+          <label class="check-row" style="margin:0">
+            <input type="checkbox" name="remember" value="1">
+            <span>Remember me</span>
+          </label>
+          <a class="auth-forgot" href="{{ url_for('password.forgot_password') }}">Forgot password?</a>
         </div>
-        {% endif %}
 
         <p class="sm" id="loginStatus" style="color:var(--err);min-height:18px;font-size:13px"></p>
         <button class="auth-button" type="submit" id="loginBtn">Sign in</button>
       </form>
 
-      <p class="auth-foot"><a href="{{ url_for('password.forgot_password') }}">Forgot password?</a></p>
+      <p class="auth-foot">
+        <a class="auth-forgot" href="{{ url_for('password.forgot_password') }}">Forgot password?</a>
+      </p>
     </section>
   </div>
 </main>
 {% endblock %}
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/login.js') }}?v=2"></script>
-{% if turnstile_enabled and turnstile_site_key %}
-<script src="{{ url_for('static', filename='js/turnstile.js') }}?v=1"></script>
-{% endif %}
 {% endblock %}

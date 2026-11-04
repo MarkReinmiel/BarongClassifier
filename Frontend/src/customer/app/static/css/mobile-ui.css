@@ -53,20 +53,22 @@
   }
 
   .shell {
-    padding: 18px 16px calc(100px + env(safe-area-inset-bottom));
+    padding: 18px 16px calc(108px + env(safe-area-inset-bottom));
     gap: 16px;
   }
 
-  /* Keep bottom navbar on mobile */
+  /* Keep bottom navbar on mobile — icon + label on every tab */
   .nav.hide-desktop,
   .nav {
     display: flex !important;
+    align-items: stretch;
     left: 12px;
     right: 12px;
     bottom: calc(10px + env(safe-area-inset-bottom));
-    height: 62px;
-    padding: 6px;
-    border-radius: 999px;
+    min-height: 68px;
+    height: auto;
+    padding: 6px 4px;
+    border-radius: 22px;
     background: #fff;
     border: 1px solid rgba(38, 53, 74, 0.08);
     box-shadow: 0 14px 32px rgba(38, 53, 74, 0.14);
@@ -74,6 +76,19 @@
 
   .nb {
     color: #9AA0AB;
+    flex: 1 1 0;
+    min-width: 0;
+    flex-direction: column;
+    gap: 3px;
+    padding: 6px 4px;
+    border-radius: 16px;
+  }
+
+  .nb-label {
+    max-width: 100%;
+    opacity: 1;
+    font-size: 11px;
+    font-weight: 600;
   }
 
   .nb[data-tone="home"].on {

@@ -1,8 +1,8 @@
-﻿{% extends "base.html" %}
+{% extends "base.html" %}
 {% block title %}Classify Textile | {{ app_name }}{% endblock %}
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/shared.css') }}">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/topnav.css') }}?v=13">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/topnav.css') }}?v=14">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/classify.css') }}?v=16">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/camera.css') }}?v=2">
 {% endblock %}
@@ -89,7 +89,7 @@
           <li data-check="lighting"><span aria-hidden="true">…</span> Lighting</li>
           <li data-check="focus"><span aria-hidden="true">…</span> Focus</li>
           <li data-check="stability"><span aria-hidden="true">…</span> Stability</li>
-          <li data-check="glare" hidden><span aria-hidden="true">△</span> Glare</li>
+          <li data-check="glare" hidden><span aria-hidden="true">?</span> Glare</li>
         </ul>
 
         <div id="cameraZoomControls" class="camera-zoom" hidden>

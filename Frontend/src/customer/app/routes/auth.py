@@ -18,7 +18,7 @@ from app.extensions import csrf, db
 from app.models import CustomerUser, utcnow
 from app.services import auth_service
 from app.services.auth_service import AuthError
-from app.services.turnstile_service import TurnstileError, verify_turnstile
+from app.services.turnstile_service import TurnstileError, turnstile_active, verify_turnstile
 from app.utils.security import client_label, current_user, login_required, mask_email, no_store
 
 bp = Blueprint("auth", __name__, url_prefix="/auth")
@@ -55,11 +55,8 @@ def register():
             email = payload.get("email", "")
             password = payload.get("password", "")
             confirm = payload.get("confirm_password", password)
-            verify_turnstile(payload.get("cf-turnstile-response"))
-        else:
-            verify_turnstile(request.form.get("cf-turnstile-response"))
         user = auth_service.register_user(email, password, confirm)
-    except (AuthError, TurnstileError) as error:
+    except AuthError as error:
         # Never return 5xx for expected auth/email failures — Cloudflare/Render
         # often replace those with a bare "Internal Server Error" HTML page.
         status = min(int(getattr(error, "status_code", 400) or 400), 400)
@@ -121,19 +118,15 @@ def login():
 
     email = request.form.get("email", "")
     password = request.form.get("password", "")
-    turnstile_token = request.form.get("cf-turnstile-response")
+    remember = bool(request.form.get("remember"))
     if request.is_json:
         payload = request.get_json(silent=True) or {}
         email = payload.get("email", email)
         password = payload.get("password", password)
-        turnstile_token = payload.get("cf-turnstile-response", turnstile_token)
+        remember = bool(payload.get("remember", remember))
 
     try:
-        verify_turnstile(turnstile_token)
         user = auth_service.authenticate(email, password)
-    except TurnstileError as error:
-        flash(str(error), "error")
-        return render_template("auth/login.html"), 400
     except AuthError as error:
         if error.status_code == 403 and "Verify your email" in str(error):
             found = CustomerUser.query.filter_by(email=email.strip().lower()).first()
@@ -159,14 +152,30 @@ def login():
         flash("Sign in could not be completed. Please try again.", "error")
         return render_template("auth/login.html"), 400
 
+    return _begin_post_password(user, remember=remember)
+
+
+def _begin_post_password(user: CustomerUser, remember: bool = True):
+    """After password OK: human check (if enabled), then device / complete login."""
+    if turnstile_active():
+        session.clear()
+        session["pending_user_id"] = str(user.id)
+        session["pending_purpose"] = "human"
+        session["pending_remember"] = bool(remember)
+        session.modified = True
+        return redirect(url_for("auth.verify_human"))
+    return _continue_after_human(user, remember=remember)
+
+
+def _continue_after_human(user: CustomerUser, remember: bool = True):
     cookie_name = current_app.config["DEVICE_COOKIE_NAME"]
     raw_device = request.cookies.get(cookie_name)
     if auth_service.device_is_trusted(user, raw_device):
-        return _complete_login(user)
+        return _complete_login(user, remember=remember)
 
     # Optional extra check — never block a valid password on email/DB issues.
     if not current_app.config.get("EMAIL_VERIFICATION_ENABLED", True):
-        return _complete_login(user, set_device=True)
+        return _complete_login(user, set_device=True, remember=remember)
 
     try:
         auth_service.issue_and_send_code(user, "device")
@@ -175,7 +184,7 @@ def login():
             "Device verification email failed; completing login anyway. %s",
             error,
         )
-        return _complete_login(user, set_device=True)
+        return _complete_login(user, set_device=True, remember=remember)
     except Exception:
         current_app.logger.exception(
             "Device verification failed unexpectedly; completing login anyway."
@@ -184,17 +193,18 @@ def login():
             db.session.rollback()
         except Exception:
             pass
-        return _complete_login(user, set_device=True)
+        return _complete_login(user, set_device=True, remember=remember)
 
     session.clear()
     session["pending_user_id"] = str(user.id)
     session["pending_purpose"] = "device"
     session["pending_login"] = True
+    session["pending_remember"] = bool(remember)
     session.modified = True
     return redirect(url_for("auth.verify_device"))
 
 
-def _complete_login(user: CustomerUser, set_device: bool = False):
+def _complete_login(user: CustomerUser, set_device: bool = False, remember: bool | None = None):
     from app.utils.security import is_owner_role
 
     if is_owner_role(user.role):
@@ -205,13 +215,15 @@ def _complete_login(user: CustomerUser, set_device: bool = False):
         )
         return redirect(url_for("auth.login"))
 
+    if remember is None:
+        if request.form and "remember" in request.form:
+            remember = bool(request.form.get("remember"))
+        else:
+            remember = True
+
     session.clear()
     session["user_id"] = str(user.id)
-    # Login form checkbox; other flows (device verify) keep a lasting session.
-    if request.form and "remember" in request.form:
-        session.permanent = bool(request.form.get("remember"))
-    else:
-        session.permanent = True
+    session.permanent = bool(remember)
     session.modified = True
     try:
         user.last_login_at = utcnow()
@@ -274,6 +286,37 @@ def verify_device():
         resend_after_seconds=wait,
         purpose="device",
     )
+
+
+@bp.route("/verify-human", methods=["GET", "POST"])
+def verify_human():
+    """Cloudflare Turnstile step — shown after password, before session login."""
+    user = _pending_user("human")
+    if not user:
+        flash("Sign in again to complete human verification.", "error")
+        return redirect(url_for("auth.login"))
+
+    if not turnstile_active():
+        remember = bool(session.get("pending_remember", True))
+        return _continue_after_human(user, remember=remember)
+
+    if request.method == "GET":
+        return render_template(
+            "auth/verify_human.html",
+            email_hint=mask_email(user.email),
+        )
+
+    remember = bool(session.get("pending_remember", True))
+    try:
+        verify_turnstile(request.form.get("cf-turnstile-response"))
+    except TurnstileError as error:
+        flash(str(error), "error")
+        return render_template(
+            "auth/verify_human.html",
+            email_hint=mask_email(user.email),
+        ), 400
+
+    return _continue_after_human(user, remember=remember)
 
 
 @bp.route("/verification-status", methods=["GET"])

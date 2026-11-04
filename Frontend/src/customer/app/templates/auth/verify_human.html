@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Human verification | {{ app_name }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}?v=32">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}?v=33">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-ui.css') }}?v=11">
+  {% if turnstile_enabled and turnstile_site_key %}
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+  {% endif %}
+</head>
+<body class="auth-body auth-body--home">
+  <a class="auth-back" href="{{ url_for('auth.login') }}"><span class="auth-back-arrow" aria-hidden="true">←</span> Back to sign in</a>
+
+  <div class="auth-split">
+    <section class="auth-split-brand" aria-label="Barongcognition">
+      <div class="auth-logo auth-logo--hero">
+        <img src="{{ url_for('static', filename='images/barongcognition_logo.png') }}" alt="Barongcognition logo">
+        <span>Barongcognition</span>
+      </div>
+      <p class="auth-kicker">Security check</p>
+      <h1 class="auth-title">Confirm you are human.</h1>
+      <div class="auth-accent-rule" aria-hidden="true"><span></span></div>
+      <p class="auth-subtitle">
+        One quick check protects accounts and keeps Barong textile classification available for real users.
+      </p>
+      <figure class="auth-hero-media">
+        <img src="{{ url_for('static', filename='images/barong.jpg') }}" alt="Barong Tagalog textile" loading="eager">
+      </figure>
+    </section>
+
+    <div class="auth-split-form">
+      <section class="auth-card auth-card--panel" aria-label="Human verification">
+        <h2 class="auth-card-heading">Human verification</h2>
+        <p class="lead sm">Signed in as <strong>{{ email_hint }}</strong>. Complete the check to continue.</p>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% for category, message in messages %}
+            <div class="flash {{ category }}" style="margin-bottom:12px">{{ message }}</div>
+          {% endfor %}
+        {% endwith %}
+        <form method="post" class="stack" id="humanForm" {% if turnstile_enabled and turnstile_site_key %}data-require-turnstile{% endif %}>
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          {% if turnstile_enabled and turnstile_site_key %}
+          <div class="turnstile-wrap">
+            <div class="cf-turnstile"
+                 data-sitekey="{{ turnstile_site_key }}"
+                 data-theme="light"
+                 data-size="flexible"></div>
+          </div>
+          <p class="sm" data-turnstile-status style="color:var(--err,#8b2e3b);min-height:18px;font-size:13px;margin:0"></p>
+          {% else %}
+          <p class="lead sm">Human verification is not configured. Continue to finish sign in.</p>
+          {% endif %}
+          <button class="btn p auth-submit" type="submit">Continue</button>
+        </form>
+        <p class="auth-foot"><a href="{{ url_for('auth.login') }}">Use a different account</a></p>
+      </section>
+    </div>
+  </div>
+
+  {% if turnstile_enabled and turnstile_site_key %}
+  <script src="{{ url_for('static', filename='js/turnstile.js') }}?v=1"></script>
+  {% endif %}
+</body>
+</html>

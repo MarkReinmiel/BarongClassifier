@@ -1,76 +1,185 @@
 {% extends "base.html" %}
 {% block title %}Home | {{ app_name }}{% endblock %}
 {% block content %}
-<div class="dash-welcome">
-  <p class="eyebrow">Barong Tagalog Textile Classifier</p>
-  <h2>Welcome, <em>{{ user.nickname }}</em></h2>
-  <p class="dash-lead">Identify and preserve Barong Tagalog textiles with AI-assisted classification.</p>
-</div>
-<a class="btn p dash-cta" href="{{ url_for('classifier.classify_page') }}">Classify Textile →</a>
-<div class="g3">
-  <div class="card"><span class="num" data-count data-motion="up">{{ stats.textile_types }}</span><span class="lbl">Textile Types</span></div>
-  <div class="card"><span class="num" data-count data-motion="up">{{ stats.model_accuracy }}</span><span class="lbl">Model Accuracy</span></div>
-  <div class="card"><span class="num" data-count data-motion="up">{{ stats.images_classified }}</span><span class="lbl">Images Classified</span></div>
-</div>
-<p class="how-heading">How it works</p>
-<div class="g2 grid-steps">
-  <div class="card step">
-    <span class="num" data-count data-motion="down" data-from="10">01</span>
-    <div class="step-copy">
-      <b>Upload Image</b>
-      <p class="step-desc">Capture or select a clear photo of the textile.</p>
-    </div>
-  </div>
-  <div class="card step">
-    <span class="num" data-count data-motion="down" data-from="11">02</span>
-    <div class="step-copy">
-      <b>Image Processing</b>
-      <p class="step-desc">Prepare the image for analysis.</p>
-    </div>
-  </div>
-  <div class="card step">
-    <span class="num" data-count data-motion="down" data-from="12">03</span>
-    <div class="step-copy">
-      <b>AI Classification</b>
-      <p class="step-desc">Identify the Barong textile type.</p>
-    </div>
-  </div>
-  <div class="card step">
-    <span class="num" data-count data-motion="down" data-from="13">04</span>
-    <div class="step-copy">
-      <b>View Result</b>
-      <p class="step-desc">See the prediction and confidence score.</p>
-    </div>
-  </div>
-</div>
-<section class="float-panel recent-panel">
-  <div class="float-panel-head">
-    <div>
-      <h3 class="float-panel-title">Recent</h3>
-      <p class="float-panel-sub">Latest textile classifications</p>
-    </div>
-    <a class="float-panel-link" href="{{ url_for('history.history_page') }}" aria-label="Open full history">↗</a>
-  </div>
-  {% if stats.recent %}
-  <div class="float-list">
-    {% for row in stats.recent %}
-    <div class="float-row">
-      <div class="grow">
-        <span class="val">{{ row.label }}</span>
-        <span class="sep">/</span>
-        <span class="file">{{ row.image_name }}</span>
+<div class="dashboard">
+
+  <section class="dashboard-hero reveal">
+    <div class="dashboard-content">
+      <p class="dashboard-label">CUSTOMER DASHBOARD</p>
+      <h1>Welcome back, <span>{{ user.nickname or 'Friend' }}</span></h1>
+      <p class="dashboard-description">
+        Identify and preserve Barong Tagalog textiles.
+      </p>
+      <div class="hero-actions">
+        <a href="{{ url_for('classifier.classify_page') }}" class="classify-button">
+          Classify Textile
+          <span aria-hidden="true">&rarr;</span>
+        </a>
+        <a href="{{ url_for('main.textile_types') }}" class="ghost-button">Textile Types</a>
       </div>
-        <div class="float-meta">
-          <b class="num" data-count data-motion="up">{{ '%.0f'|format(row.confidence * 100) }}%</b>
-        </div>
     </div>
-    {% endfor %}
-  </div>
-  {% else %}
-  <div class="float-empty">
-    <p>No classifications yet. Classify a textile to see it here.</p>
-  </div>
-  {% endif %}
-</section>
+    <div class="dashboard-image">
+      <div class="image-frame">
+        <img src="{{ url_for('static', filename='images/barong.jpg') }}" alt="Barong Tagalog textile" loading="lazy">
+      </div>
+    </div>
+  </section>
+
+  <section class="overview-section reveal reveal-delay-1">
+    <div class="section-heading">
+      <p>YOUR OVERVIEW</p>
+      <h2>At a Glance</h2>
+    </div>
+    <div class="overview-cards">
+      <article class="overview-card" onclick="window.location.href='{{ url_for('main.textile_types') }}'" tabindex="0" role="button">
+        <div class="overview-icon" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <circle cx="7" cy="7" r="2.2"/><circle cx="17" cy="7" r="2.2"/>
+            <circle cx="7" cy="17" r="2.2"/><circle cx="17" cy="17" r="2.2"/>
+          </svg>
+        </div>
+        <div class="overview-info">
+          <span class="overview-number num" data-count data-motion="up">{{ stats.textile_types }}</span>
+          <h3>Textile Types</h3>
+          <p>Cocoon, Jusi, and Piña</p>
+        </div>
+      </article>
+
+      <div class="overview-card">
+        <div class="overview-icon" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="9"/><path d="M8.5 12.5l2.5 2.5 4.5-5"/>
+          </svg>
+        </div>
+        <div class="overview-info">
+          <span class="overview-number num" data-count data-motion="up">{{ stats.model_accuracy }}</span>
+          <h3>Model Accuracy</h3>
+          <p>Held-out test accuracy</p>
+        </div>
+      </div>
+
+      <div class="overview-card" onclick="window.location.href='{{ url_for('history.history_page') }}'" tabindex="0" role="button">
+        <div class="overview-icon" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10.5" r="1.5"/>
+            <path d="M21 16l-4.5-4.5L8 20"/>
+          </svg>
+        </div>
+        <div class="overview-info">
+          <span class="overview-number num" data-count data-motion="up">{{ stats.images_classified }}</span>
+          <h3>Images Classified</h3>
+          <p>Saved in your history</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="tools-section">
+    <div class="section-heading">
+      <p>QUICK LINKS</p>
+      <h2>Explore Barongcognition</h2>
+    </div>
+    <div class="tools-grid">
+      <a class="tool-card tool-card-featured" href="{{ url_for('classifier.classify_page') }}">
+        <div class="tool-card-top">
+          <div class="tool-icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 8h3l2-2h6l2 2h3v11H4V8z"/><circle cx="12" cy="13" r="3.5"/>
+            </svg>
+          </div>
+        </div>
+        <h3>Classify</h3>
+        <p>Capture or upload a textile photo and get an AI prediction.</p>
+        <span class="tool-link">Start classifying &rarr;</span>
+      </a>
+
+      <a class="tool-card" href="{{ url_for('history.history_page') }}">
+        <div class="tool-card-top">
+          <div class="tool-icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>
+            </svg>
+          </div>
+        </div>
+        <h3>History</h3>
+        <p>Review your saved textile classification results.</p>
+        <span class="tool-link">Open history &rarr;</span>
+      </a>
+
+      <a class="tool-card" href="{{ url_for('main.textile_types') }}">
+        <div class="tool-card-top">
+          <div class="tool-icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
+            </svg>
+          </div>
+        </div>
+        <h3>Textile Types</h3>
+        <p>Explore Piña, Jusi, Cocoon, and related Barong materials.</p>
+        <span class="tool-link">View types &rarr;</span>
+      </a>
+
+      <section class="float-panel recent-panel" aria-label="Recent classifications">
+        <div class="float-panel-head">
+          <div>
+            <h3 class="float-panel-title">Recent</h3>
+            <p class="float-panel-sub">Latest textile classifications</p>
+          </div>
+          <a class="float-panel-link" href="{{ url_for('history.history_page') }}" aria-label="Open full history">&nearr;</a>
+        </div>
+        {% if stats.recent %}
+        <div class="float-list">
+          {% for row in stats.recent %}
+          <div class="float-row">
+            <div class="grow">
+              <span class="val">{{ row.label }}</span>
+              <span class="sep">/</span>
+              <span class="file">{{ row.image_name }}</span>
+            </div>
+            <div class="float-meta">
+              <b class="num" data-count data-motion="up">{{ '%.0f'|format(row.confidence * 100) }}%</b>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="float-empty">
+          <p>No classifications yet. Classify a textile to see it here.</p>
+        </div>
+        {% endif %}
+      </section>
+    </div>
+  </section>
+
+  <section class="how-section" id="how-it-works">
+    <div class="section-heading">
+      <p>HOW IT WORKS</p>
+      <h2>From Image to Classification</h2>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <span class="step-number num" data-count data-motion="down" data-from="10">01</span>
+        <h3>Open Classify</h3>
+        <p>Open the classification page.</p>
+      </div>
+      <div class="step">
+        <span class="step-number num" data-count data-motion="down" data-from="11">02</span>
+        <h3>Capture or Upload</h3>
+        <p>Capture a textile image using the camera or upload an image.</p>
+      </div>
+      <div class="step">
+        <span class="step-number num" data-count data-motion="down" data-from="12">03</span>
+        <h3>CNN Analysis</h3>
+        <p>The CNN model analyzes the textile image.</p>
+      </div>
+      <div class="step">
+        <span class="step-number num" data-count data-motion="down" data-from="13">04</span>
+        <h3>View Result</h3>
+        <p>See the predicted textile type and confidence score.</p>
+      </div>
+    </div>
+  </section>
+
+</div>
 {% endblock %}
-{% block scripts %}<script src="{{ url_for('static', filename='js/dashboard.js') }}?v=14"></script>{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/dashboard.js') }}?v=15"></script>{% endblock %}
