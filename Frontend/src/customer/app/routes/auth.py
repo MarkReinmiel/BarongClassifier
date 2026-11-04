@@ -207,7 +207,11 @@ def _complete_login(user: CustomerUser, set_device: bool = False):
 
     session.clear()
     session["user_id"] = str(user.id)
-    session.permanent = True
+    # Login form checkbox; other flows (device verify) keep a lasting session.
+    if request.form and "remember" in request.form:
+        session.permanent = bool(request.form.get("remember"))
+    else:
+        session.permanent = True
     session.modified = True
     try:
         user.last_login_at = utcnow()

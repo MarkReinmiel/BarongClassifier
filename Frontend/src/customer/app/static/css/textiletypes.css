@@ -2,22 +2,10 @@
    GENERAL RESET
 ================================= */
 
-* {
-    margin: 0;
-    padding: 0;
+.textile-page *,
+.textile-page *::before,
+.textile-page *::after {
     box-sizing: border-box;
-}
-
-html,
-body {
-    width: 100%;
-    min-height: 100%;
-    margin: 0;
-    padding: 0;
-
-    background: var(--bg);
-
-    border: none;
 }
 
 /* =================================
@@ -1199,30 +1187,66 @@ body {
     display: none;
 }
 
-.textile-page--customer {
+.textile-page.textile-page--customer {
     min-height: auto;
-    padding: 8px 0 24px;
-    margin: 0 -4px;
+    padding: 0;
+    margin: 0;
     background: transparent;
 }
 
-.textile-page--customer .textile-header {
-    margin-bottom: 28px;
-    text-align: center;
+/* Same title stack as History: BARONG TAGALOG + Textile Types */
+.textile-page.textile-page--customer .textile-page-header,
+.textile-page.textile-page--customer .history-page-header {
+    display: block !important;
+    margin: 0 0 8px !important;
+    padding: 0 !important;
+    text-align: center !important;
+    max-width: none !important;
+    animation: none !important;
 }
 
-.textile-page--customer .textile-header h1 {
-    font-size: clamp(28px, 5vw, 40px);
+.textile-page.textile-page--customer .textile-page-header .eyebrow,
+.textile-page.textile-page--customer .history-page-header .eyebrow {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    margin: 0 auto 4px !important;
+    padding: 0 !important;
+    font-family: "DM Sans", Arial, sans-serif !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.18em !important;
+    line-height: 1.4 !important;
+    text-transform: uppercase !important;
+    color: #795780 !important;
 }
 
-.textile-page--customer .page-description {
+.textile-page.textile-page--customer .textile-page-header h2,
+.textile-page.textile-page--customer .history-page-header h2 {
+    display: block !important;
+    margin: 0 !important;
+    font-family: "Playfair Display", Georgia, serif !important;
+    font-size: clamp(28px, 5vw, 40px) !important;
+    font-weight: 600 !important;
+    line-height: 1.15 !important;
+    color: #26354A !important;
+}
+
+.textile-page.textile-page--customer > .page-description {
+    display: block;
     text-align: center;
-    margin-left: auto;
-    margin-right: auto;
+    margin: 0 auto 20px;
+    max-width: 42ch;
+    font-size: 15px;
+    line-height: 1.5;
+    color: #5A6575;
 }
 
 @media (max-width: 900px) {
-    .textile-page--customer {
-        padding: 4px 0 88px;
+    .textile-page.textile-page--customer {
+        padding: 0 0 8px;
     }
 }

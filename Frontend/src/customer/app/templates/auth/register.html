@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -7,16 +7,18 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}?v=21">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}?v=21">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-ui.css') }}?v=2">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}?v=22">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}?v=25">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-ui.css') }}?v=3">
 </head>
-<body>
-  <div class="auth-shell auth-shell--hero">
-    <div class="auth-hero">
+<body class="auth-body">
+  <a class="auth-back" href="{{ url_for('main.index') }}"><span class="auth-back-arrow" aria-hidden="true">←</span> Back to home</a>
+
+  <div class="auth-split">
+    <section class="auth-split-brand" aria-label="Barongcognition">
       <div class="auth-logo auth-logo--hero">
-        <img src="{{ url_for('static', filename='images/Barongclassi_logo.jpeg') }}" alt="">
-        <span>BARONG CLASSIFIER</span>
+        <img src="{{ url_for('static', filename='images/barongcognition_logo.png') }}" alt="Barongcognition logo">
+        <span>Barongcognition</span>
       </div>
 
       <p class="auth-kicker">Barong Tagalog</p>
@@ -25,39 +27,47 @@
         Create an account to classify Barong fabrics and keep a history of your results.
       </p>
 
-      <section class="auth-card auth-card--hero">
-        <h2 class="auth-card-heading">Create account</h2>
-        <p class="lead sm">We will email a 6-digit code. It expires in 24 hours.</p>
-        {% with messages = get_flashed_messages(with_categories=true) %}
-          {% for category, message in messages %}
-            <div class="flash {{ category }}" style="margin-bottom:12px">{{ message }}</div>
-          {% endfor %}
-        {% endwith %}
-        <form method="post" class="stack" id="registerForm">
-          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-          <label>
-            <span class="lbl">Email</span>
-            <input class="field" type="email" name="email" value="{{ email or request.form.email or '' }}" required autocomplete="email" placeholder="you@email.com">
-          </label>
-          <label>
-            <span class="lbl">Password</span>
-            <span class="pw-wrap">
-              <input class="field" type="password" name="password" id="regPassword" required minlength="12" autocomplete="new-password">
-              <button type="button" class="pw-toggle" data-target="regPassword">Show</button>
-            </span>
-          </label>
-          <label>
-            <span class="lbl">Confirm password</span>
-            <span class="pw-wrap">
-              <input class="field" type="password" name="confirm_password" id="regConfirm" required minlength="12" autocomplete="new-password">
-              <button type="button" class="pw-toggle" data-target="regConfirm">Show</button>
-            </span>
-          </label>
-          <button class="btn p" type="submit" id="registerBtn">Create account</button>
-        </form>
-        <p class="auth-foot">Already have an account? <a href="{{ url_for('auth.login') }}">Sign in</a></p>
-      </section>
-    </div>
+      <figure class="auth-hero-media">
+        <img
+          src="{{ url_for('static', filename='images/barong.jpg') }}"
+          alt="Close-up of embroidered Barong Tagalog textile"
+          loading="eager"
+        >
+      </figure>
+    </section>
+
+    <section class="auth-card auth-card--panel" aria-label="Create account">
+      <h2 class="auth-card-heading">Create account</h2>
+      <p class="lead sm">We will email a 6-digit code. It expires in 24 hours.</p>
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+          <div class="flash {{ category }}" style="margin-bottom:12px">{{ message }}</div>
+        {% endfor %}
+      {% endwith %}
+      <form method="post" class="stack" id="registerForm">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <label>
+          <span class="lbl">Email</span>
+          <input class="field" type="email" name="email" value="{{ email or request.form.email or '' }}" required autocomplete="email" placeholder="you@email.com">
+        </label>
+        <label>
+          <span class="lbl">Password</span>
+          <span class="pw-wrap">
+            <input class="field" type="password" name="password" id="regPassword" required minlength="12" autocomplete="new-password" placeholder="Enter your password">
+            <button type="button" class="pw-toggle" data-target="regPassword">Show</button>
+          </span>
+        </label>
+        <label>
+          <span class="lbl">Confirm password</span>
+          <span class="pw-wrap">
+            <input class="field" type="password" name="confirm_password" id="regConfirm" required minlength="12" autocomplete="new-password" placeholder="Confirm your password">
+            <button type="button" class="pw-toggle" data-target="regConfirm">Show</button>
+          </span>
+        </label>
+        <button class="btn p auth-submit" type="submit" id="registerBtn">Create account</button>
+      </form>
+      <p class="auth-foot">Already have an account? <a href="{{ url_for('auth.login') }}">Sign in</a></p>
+    </section>
   </div>
   <script src="{{ url_for('static', filename='js/auth.js') }}?v=12"></script>
 </body>

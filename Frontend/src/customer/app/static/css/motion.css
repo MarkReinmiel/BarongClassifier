@@ -16,7 +16,7 @@
   text-align:center;padding:24px;
 }
 .splash-logo{
-  width:72px;height:72px;border-radius:50%;object-fit:cover;
+  width:72px;height:72px;border-radius:50%;object-fit:contain;background:#0a0a0a;
   border:1px solid rgba(255,255,255,.25);
   box-shadow:0 12px 28px rgba(0,0,0,.28);
   animation:splash-pulse 1.4s ease-in-out infinite;
