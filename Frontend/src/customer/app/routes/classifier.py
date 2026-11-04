@@ -1,4 +1,4 @@
-from flask import Blueprint, flash, jsonify, redirect, render_template, request, url_for
+from flask import Blueprint, current_app, flash, jsonify, redirect, render_template, request, url_for
 
 from app.services.classification_service import ClassificationError, classify_image
 from app.utils.security import current_user, nickname_required, no_store
@@ -39,6 +39,13 @@ def classify_submit():
         if wants_json:
             return jsonify({"error": str(error)}), status
         flash(str(error), "error")
+        return redirect(url_for("classifier.classify_page"))
+    except Exception:
+        current_app.logger.exception("Unexpected classify failure")
+        message = "Classification failed on the server. Please try again in a moment."
+        if wants_json:
+            return jsonify({"error": message}), 500
+        flash(message, "error")
         return redirect(url_for("classifier.classify_page"))
     if wants_json:
         return jsonify(result)
