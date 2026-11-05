@@ -65,6 +65,7 @@ def contribution_counts() -> dict[str, int]:
         "rejected": 0,
         "uncertain": 0,
         "added_to_dataset": 0,
+        "approved_panel": 0,
         "total_classifications": 0,
     }
     if current_app.config.get("TESTING"):
@@ -93,6 +94,10 @@ def contribution_counts() -> dict[str, int]:
             counts[s] for s in ("approved", "rejected", "uncertain", "added_to_dataset")
         )
         counts["pending_review"] = max(0, int(total) - decided)
+        # Approved panel includes suitability-approved + dataset-pool items.
+        counts["approved_panel"] = int(counts["approved"]) + int(
+            counts["added_to_dataset"]
+        )
         return counts
     except SQLAlchemyError:
         db.session.rollback()
@@ -106,6 +111,7 @@ def list_customer_classifications(
     q: str | None = None,
     fabric: str | None = None,
     review_status: str | None = None,
+    panel: str | None = None,
     date_preset: str | None = None,
     date_from: str | None = None,
     date_to: str | None = None,
@@ -174,11 +180,22 @@ def list_customer_classifications(
         )
         params["q"] = f"%{q.strip().lower()}%"
 
-    status_key = (review_status or "").strip().lower()
+    panel_key = (panel or "").strip().lower()
+    if panel_key in {"pending", "pending_review"}:
+        status_key = "pending_review"
+    elif panel_key in {"approved", "approved_panel"}:
+        status_key = "approved_panel"
+    elif panel_key == "rejected":
+        status_key = "rejected"
+    else:
+        status_key = (review_status or "").strip().lower()
+
     if status_key and status_key != "all":
-        if status_key not in ALLOWED_STATUSES:
+        if status_key == "approved_panel":
+            clauses.append("r.review_status in ('approved', 'added_to_dataset')")
+        elif status_key not in ALLOWED_STATUSES:
             raise ReviewError("Invalid review status filter.")
-        if status_key == "pending_review":
+        elif status_key == "pending_review":
             clauses.append(
                 "(r.id is null or r.review_status = 'pending_review')"
             )
@@ -254,6 +271,11 @@ def list_customer_classifications(
                 else None
             )
             item["confidence_pct"] = round(float(item.get("confidence") or 0) * 100, 1)
+            item["in_dataset_pool"] = item.get("review_status") == "added_to_dataset"
+            item["selectable_for_review"] = (
+                item.get("review_status") or "pending_review"
+            ) == "pending_review"
+            item["selectable_for_dataset"] = item.get("review_status") == "approved"
             items.append(item)
 
         return {
@@ -609,3 +631,163 @@ def list_approved_contributions(
     except SQLAlchemyError as error:
         db.session.rollback()
         raise ReviewError("Could not load approved contributions.", 503) from error
+
+
+def _normalize_id_list(classification_ids: list[str] | None) -> list[str]:
+    seen: set[str] = set()
+    ordered: list[str] = []
+    for raw in classification_ids or []:
+        cid = str(raw or "").strip()
+        if not cid or cid in seen:
+            continue
+        seen.add(cid)
+        ordered.append(cid)
+    if not ordered:
+        raise ReviewError("Select at least one photo.")
+    if len(ordered) > 100:
+        raise ReviewError("Too many selected photos (maximum 100 per batch).")
+    return ordered
+
+
+def submit_batch_review(
+    actor: OwnerUser,
+    classification_ids: list[str] | None,
+    *,
+    action: str,
+) -> dict[str, Any]:
+    """Approve or reject many pending classifications. Returns per-id results."""
+    action_key = (action or "").strip().lower()
+    if action_key not in {"approve", "approved", "reject", "rejected"}:
+        raise ReviewError("Batch action must be approve or reject.")
+    normalized_action = "approve" if action_key.startswith("approve") else "reject"
+    ids = _normalize_id_list(classification_ids)
+
+    results: list[dict[str, Any]] = []
+    succeeded: list[str] = []
+    failed: list[dict[str, str]] = []
+
+    for classification_id in ids:
+        try:
+            detail = get_classification_detail(classification_id)
+            previous = detail.get("review_status") or "pending_review"
+            if previous != "pending_review":
+                raise ReviewError(
+                    f"Record is {previous.replace('_', ' ')}, not pending review."
+                )
+            item = submit_review(
+                actor,
+                classification_id,
+                action=normalized_action,
+                confirm_change=False,
+            )
+            results.append(
+                {
+                    "id": classification_id,
+                    "ok": True,
+                    "review_status": item.get("review_status"),
+                    "item": item,
+                }
+            )
+            succeeded.append(classification_id)
+        except ReviewError as exc:
+            entry = {"id": classification_id, "ok": False, "error": str(exc)}
+            results.append(entry)
+            failed.append({"id": classification_id, "error": str(exc)})
+            current_app.logger.warning(
+                "batch_review item failed action=%s id=%s error=%s",
+                normalized_action,
+                classification_id,
+                exc,
+            )
+
+    return {
+        "ok": len(failed) == 0,
+        "action": normalized_action,
+        "requested": len(ids),
+        "succeeded_count": len(succeeded),
+        "failed_count": len(failed),
+        "succeeded": succeeded,
+        "failed": failed,
+        "results": results,
+        "counts": contribution_counts(),
+    }
+
+
+def add_to_dataset_pool(
+    actor: OwnerUser,
+    classification_ids: list[str] | None,
+) -> dict[str, Any]:
+    """Move approved photos into the unlabeled dataset pool (added_to_dataset).
+
+    Does not assign Piña/Jusi/Cocoon labels and does not retrain the model.
+    """
+    ids = _normalize_id_list(classification_ids)
+    results: list[dict[str, Any]] = []
+    succeeded: list[str] = []
+    skipped: list[dict[str, str]] = []
+    failed: list[dict[str, str]] = []
+
+    for classification_id in ids:
+        try:
+            detail = get_classification_detail(classification_id)
+            previous = detail.get("review_status") or "pending_review"
+            if previous == "added_to_dataset":
+                skipped.append(
+                    {
+                        "id": classification_id,
+                        "error": "Already in the dataset pool.",
+                    }
+                )
+                results.append(
+                    {
+                        "id": classification_id,
+                        "ok": True,
+                        "already": True,
+                        "review_status": "added_to_dataset",
+                        "item": detail,
+                    }
+                )
+                continue
+            if previous != "approved":
+                raise ReviewError(
+                    "Only approved photos can be added to the dataset pool."
+                )
+            item = submit_review(
+                actor,
+                classification_id,
+                action="added_to_dataset",
+                confirm_change=True,
+                notes="Added to unlabeled dataset pool (no class label assigned).",
+            )
+            results.append(
+                {
+                    "id": classification_id,
+                    "ok": True,
+                    "already": False,
+                    "review_status": item.get("review_status"),
+                    "item": item,
+                }
+            )
+            succeeded.append(classification_id)
+        except ReviewError as exc:
+            entry = {"id": classification_id, "ok": False, "error": str(exc)}
+            results.append(entry)
+            failed.append({"id": classification_id, "error": str(exc)})
+            current_app.logger.warning(
+                "add_to_dataset_pool failed id=%s error=%s",
+                classification_id,
+                exc,
+            )
+
+    return {
+        "ok": len(failed) == 0,
+        "requested": len(ids),
+        "succeeded_count": len(succeeded),
+        "skipped_count": len(skipped),
+        "failed_count": len(failed),
+        "succeeded": succeeded,
+        "skipped": skipped,
+        "failed": failed,
+        "results": results,
+        "counts": contribution_counts(),
+    }

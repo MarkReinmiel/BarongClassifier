@@ -4,41 +4,59 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/shared.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/topnav.css') }}?v=14">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/history.css') }}?v=6">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/customer-history.css') }}?v=5">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/customer-history.css') }}?v=6">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-app.css') }}?v=9">
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <meta name="review-api-base" content="{{ request.script_root }}/api/classifications">
+<meta name="history-panel" content="{{ panel }}">
 {% endblock %}
 {% block body %}
 {% include "_nav.html" %}
-<main class="history-page ch-page">
+<main class="history-page ch-page" data-panel="{{ panel }}">
   <section class="history-page-header reveal">
     <p class="eyebrow">OWNER REVIEW</p>
     <h1>Customer Classification History</h1>
     <hr class="stitch-divider" aria-hidden="true">
-    <p class="page-description">Inspect each customer photo and Approve or Reject it for future dataset use. This does not retrain the live model or assign a textile class.</p>
+    <p class="page-description">Batch-review customer photos into Pending, Approved, or Rejected. Approval marks suitability only — it does not assign Piña / Jusi / Cocoon or retrain the live model.</p>
   </section>
 
-  <section class="ch-stats" aria-label="Review counts">
-    <article class="ch-stat">
-      <span class="ch-stat-label">Pending Review</span>
+  <nav class="ch-tabs" aria-label="Review panels">
+    <a
+      class="ch-tab {% if panel == 'pending' %}is-active{% endif %}"
+      href="{{ url_for('reviews.customer_history', panel='pending', q=q, fabric=selected_type, date=date_preset, date_from=date_from, date_to=date_to, sort=sort, per_page=per_page) }}"
+    >
+      <span class="ch-tab-label">Pending</span>
       <strong>{{ counts.pending_review or 0 }}</strong>
-    </article>
-    <article class="ch-stat ch-stat--ok">
-      <span class="ch-stat-label">Approved</span>
-      <strong>{{ counts.approved or 0 }}</strong>
-    </article>
-    <article class="ch-stat ch-stat--bad">
-      <span class="ch-stat-label">Rejected</span>
+    </a>
+    <a
+      class="ch-tab ch-tab--ok {% if panel == 'approved' %}is-active{% endif %}"
+      href="{{ url_for('reviews.customer_history', panel='approved', q=q, fabric=selected_type, date=date_preset, date_from=date_from, date_to=date_to, sort=sort, per_page=per_page) }}"
+    >
+      <span class="ch-tab-label">Approved</span>
+      <strong>{{ counts.approved_panel or ((counts.approved or 0) + (counts.added_to_dataset or 0)) }}</strong>
+    </a>
+    <a
+      class="ch-tab ch-tab--bad {% if panel == 'rejected' %}is-active{% endif %}"
+      href="{{ url_for('reviews.customer_history', panel='rejected', q=q, fabric=selected_type, date=date_preset, date_from=date_from, date_to=date_to, sort=sort, per_page=per_page) }}"
+    >
+      <span class="ch-tab-label">Rejected</span>
       <strong>{{ counts.rejected or 0 }}</strong>
-    </article>
-  </section>
+    </a>
+  </nav>
 
   <section class="history-panel">
     <div class="history-panel-head">
       <div>
-        <h3 class="history-panel-title">All customer classifications</h3>
-        <p class="history-panel-sub">Live records from the shared classifications table</p>
+        <h3 class="history-panel-title">
+          {% if panel == 'approved' %}Approved photos
+          {% elif panel == 'rejected' %}Rejected photos
+          {% else %}Pending review{% endif %}
+        </h3>
+        <p class="history-panel-sub">
+          {% if panel == 'approved' %}Suitable images for the unlabeled dataset pool. Class labeling is a separate step.
+          {% elif panel == 'rejected' %}Excluded from approval and dataset operations. View only.
+          {% else %}New customer classifications awaiting Owner decision.{% endif %}
+        </p>
       </div>
       <a class="ch-link" href="{{ url_for('reviews.dataset_contributions') }}">Open Customer Contributions →</a>
     </div>
@@ -48,6 +66,7 @@
     {% endif %}
 
     <form class="ch-toolbar" method="get" action="{{ url_for('reviews.customer_history') }}">
+      <input type="hidden" name="panel" value="{{ panel }}">
       <label class="ch-search">
         <span class="sr-only">Search customer</span>
         <input type="search" name="q" value="{{ q }}" placeholder="Search name or email">
@@ -57,14 +76,6 @@
         <select class="history-select" name="fabric">
           {% for value, label in fabric_options %}
           <option value="{{ value }}" {% if selected_type == value %}selected{% endif %}>{{ label }}</option>
-          {% endfor %}
-        </select>
-      </label>
-      <label class="history-select-wrap">
-        <span class="sr-only">Review status</span>
-        <select class="history-select" name="status">
-          {% for value, label in status_options %}
-          <option value="{{ value }}" {% if selected_status == value %}selected{% endif %}>{{ label }}</option>
           {% endfor %}
         </select>
       </label>
@@ -103,35 +114,93 @@
       <button class="ch-btn ch-btn--navy" type="submit">Apply filters</button>
     </form>
 
+    {% if panel != 'rejected' %}
+    <div class="ch-batch-bar" id="batchBar" hidden>
+      <label class="ch-select-all">
+        <input type="checkbox" id="selectAllPage">
+        <span>Select all on page</span>
+      </label>
+      <p class="ch-selected-count"><span id="selectedCount">0</span> selected</p>
+      <div class="ch-batch-actions">
+        {% if panel == 'pending' %}
+        <button type="button" class="ch-btn ch-btn--ok" id="batchApproveBtn">Approve Selected</button>
+        <button type="button" class="ch-btn ch-btn--bad" id="batchRejectBtn">Reject Selected</button>
+        {% elif panel == 'approved' %}
+        <button type="button" class="ch-btn ch-btn--navy" id="batchDatasetBtn">Add Selected to Dataset</button>
+        {% endif %}
+        <button type="button" class="ch-btn ch-btn--ghost ch-btn--inline" id="clearSelectionBtn">Deselect All</button>
+      </div>
+    </div>
+    {% endif %}
+
     {% if not rows %}
     <div class="history-empty">
-      <h3>No matching classifications</h3>
-      <p>Try clearing filters, or wait for customers to classify new textile images.</p>
+      <h3>No {% if panel == 'approved' %}approved{% elif panel == 'rejected' %}rejected{% else %}pending{% endif %} photos</h3>
+      <p>
+        {% if panel == 'pending' %}New customer classifications will appear here automatically.
+        {% elif panel == 'approved' %}Approve pending photos to populate this panel.
+        {% else %}Rejected photos will appear here after batch or single rejection.{% endif %}
+      </p>
     </div>
     {% else %}
-    <div class="ch-grid">
+    <div class="ch-grid" id="historyGrid">
       {% for row in rows %}
-      <article class="ch-card" data-id="{{ row.id }}">
+      {% set status = row.review_status or 'pending_review' %}
+      <article
+        class="ch-card ch-card--{{ status }}"
+        data-id="{{ row.id }}"
+        data-status="{{ status }}"
+        data-selectable-review="{{ '1' if row.selectable_for_review else '0' }}"
+        data-selectable-dataset="{{ '1' if row.selectable_for_dataset else '0' }}"
+      >
         <div class="ch-thumb">
+          {% if panel != 'rejected' %}
+          <label class="ch-check">
+            <input
+              type="checkbox"
+              class="ch-card-check"
+              value="{{ row.id }}"
+              {% if panel == 'pending' and not row.selectable_for_review %}disabled{% endif %}
+              {% if panel == 'approved' and not row.selectable_for_dataset %}disabled{% endif %}
+              aria-label="Select photo"
+            >
+          </label>
+          {% endif %}
           {% if row.image_url %}
           <img src="{{ row.image_url }}" alt="Classification by {{ row.customer_name }}" loading="lazy">
           {% else %}
           <div class="ch-thumb-empty" aria-hidden="true">No image</div>
           {% endif %}
-          <span class="ch-badge ch-badge--{{ row.review_status }}">{% if row.review_status == 'pending_review' %}Pending Review{% elif row.review_status == 'approved' %}Approved{% elif row.review_status == 'rejected' %}Rejected{% else %}{{ row.review_status.replace('_', ' ')|title }}{% endif %}</span>
+          <span class="ch-corner ch-corner--{{ status }}" aria-hidden="true">
+            {% if status in ['approved', 'added_to_dataset'] %}
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>
+            {% elif status == 'rejected' %}
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6 6 18"/></svg>
+            {% else %}
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/></svg>
+            {% endif %}
+          </span>
+          <span class="ch-badge ch-badge--{{ status }}">
+            {% if status == 'pending_review' %}Pending Review
+            {% elif status == 'approved' %}Approved
+            {% elif status == 'added_to_dataset' %}In Dataset Pool
+            {% elif status == 'rejected' %}Rejected
+            {% else %}{{ status.replace('_', ' ')|title }}{% endif %}
+          </span>
         </div>
         <div class="ch-card-body">
           <h3>{{ row.predicted_display }}</h3>
-          <p class="ch-meta"><strong>{{ '%.1f'|format(row.confidence_pct) }}%</strong> confidence</p>
+          <p class="ch-meta"><strong>{{ '%.1f'|format(row.confidence_pct) }}%</strong> confidence · CNN predicted</p>
           <p class="ch-customer">{{ row.customer_name }}</p>
           <p class="ch-email">{{ row.customer_email or '—' }}</p>
           <p class="ch-date-line">{{ row.created_at_display or row.created_at }}</p>
           <div class="ch-card-actions">
+            {% if panel == 'pending' %}
             <button
               type="button"
               class="ch-btn ch-btn--ok ch-approve"
               data-id="{{ row.id }}"
-              data-status="{{ row.review_status }}"
+              data-status="{{ status }}"
               data-image="{{ row.image_url or '' }}"
               data-customer="{{ row.customer_name }}"
               data-predicted="{{ row.predicted_display }}"
@@ -140,11 +209,12 @@
               type="button"
               class="ch-btn ch-btn--bad ch-reject"
               data-id="{{ row.id }}"
-              data-status="{{ row.review_status }}"
+              data-status="{{ status }}"
               data-image="{{ row.image_url or '' }}"
               data-customer="{{ row.customer_name }}"
               data-predicted="{{ row.predicted_display }}"
             >Reject</button>
+            {% endif %}
             <button type="button" class="ch-btn ch-btn--ghost ch-open" data-id="{{ row.id }}">View photo</button>
           </div>
         </div>
@@ -158,13 +228,13 @@
       </p>
       <nav class="history-pager" aria-label="History pages">
         {% if page > 1 %}
-        <a class="history-page-btn" href="{{ url_for('reviews.customer_history', page=page-1, q=q, fabric=selected_type, status=selected_status, date=date_preset, date_from=date_from, date_to=date_to, sort=sort, per_page=per_page) }}">Previous</a>
+        <a class="history-page-btn" href="{{ url_for('reviews.customer_history', page=page-1, panel=panel, q=q, fabric=selected_type, date=date_preset, date_from=date_from, date_to=date_to, sort=sort, per_page=per_page) }}">Previous</a>
         {% else %}
         <span class="history-page-btn is-disabled">Previous</span>
         {% endif %}
         <span class="history-page-num is-active">{{ page }} / {{ pages }}</span>
         {% if page < pages %}
-        <a class="history-page-btn" href="{{ url_for('reviews.customer_history', page=page+1, q=q, fabric=selected_type, status=selected_status, date=date_preset, date_from=date_from, date_to=date_to, sort=sort, per_page=per_page) }}">Next</a>
+        <a class="history-page-btn" href="{{ url_for('reviews.customer_history', page=page+1, panel=panel, q=q, fabric=selected_type, date=date_preset, date_from=date_from, date_to=date_to, sort=sort, per_page=per_page) }}">Next</a>
         {% else %}
         <span class="history-page-btn is-disabled">Next</span>
         {% endif %}
@@ -173,6 +243,66 @@
     {% endif %}
   </section>
 </main>
+
+<dialog class="ch-confirm" id="batchApproveDialog" aria-labelledby="batchApproveTitle">
+  <form method="dialog" class="ch-confirm-inner">
+    <header class="ch-confirm-head">
+      <h2 id="batchApproveTitle">Approve Selected Photos?</h2>
+      <button type="submit" class="ch-modal-close" value="cancel" aria-label="Close">×</button>
+    </header>
+    <div class="ch-confirm-body ch-confirm-body--simple">
+      <div class="ch-confirm-copy" style="grid-column: 1 / -1">
+        <p class="ch-confirm-line" id="batchApproveCountLine"></p>
+        <p class="ch-form-hint">These images will move to the Approved panel. This does not assign a textile class or retrain the model.</p>
+        <p class="ch-form-error" id="batchApproveError" hidden></p>
+        <div class="ch-confirm-actions">
+          <button type="submit" class="ch-btn ch-btn--ghost" value="cancel">Cancel</button>
+          <button type="button" class="ch-btn ch-btn--ok" id="batchApproveConfirmBtn">Confirm Approval</button>
+        </div>
+      </div>
+    </div>
+  </form>
+</dialog>
+
+<dialog class="ch-confirm" id="batchRejectDialog" aria-labelledby="batchRejectTitle">
+  <form method="dialog" class="ch-confirm-inner">
+    <header class="ch-confirm-head">
+      <h2 id="batchRejectTitle">Reject Selected Photos?</h2>
+      <button type="submit" class="ch-modal-close" value="cancel" aria-label="Close">×</button>
+    </header>
+    <div class="ch-confirm-body ch-confirm-body--simple">
+      <div class="ch-confirm-copy" style="grid-column: 1 / -1">
+        <p class="ch-confirm-line" id="batchRejectCountLine"></p>
+        <p class="ch-form-hint">Rejected photos move to the Rejected panel and stay out of the dataset pool.</p>
+        <p class="ch-form-error" id="batchRejectError" hidden></p>
+        <div class="ch-confirm-actions">
+          <button type="submit" class="ch-btn ch-btn--ghost" value="cancel">Cancel</button>
+          <button type="button" class="ch-btn ch-btn--bad" id="batchRejectConfirmBtn">Confirm Rejection</button>
+        </div>
+      </div>
+    </div>
+  </form>
+</dialog>
+
+<dialog class="ch-confirm" id="datasetDialog" aria-labelledby="datasetDialogTitle">
+  <form method="dialog" class="ch-confirm-inner">
+    <header class="ch-confirm-head">
+      <h2 id="datasetDialogTitle">Add Approved Photos to Dataset?</h2>
+      <button type="submit" class="ch-modal-close" value="cancel" aria-label="Close">×</button>
+    </header>
+    <div class="ch-confirm-body ch-confirm-body--simple">
+      <div class="ch-confirm-copy" style="grid-column: 1 / -1">
+        <p class="ch-confirm-line" id="datasetCountLine"></p>
+        <p class="ch-form-hint">Adds images to the unlabeled dataset pool for future training. CNN predictions are not treated as ground-truth class labels. The live model is not changed.</p>
+        <p class="ch-form-error" id="datasetError" hidden></p>
+        <div class="ch-confirm-actions">
+          <button type="submit" class="ch-btn ch-btn--ghost" value="cancel" id="datasetNotNowBtn">Not Now</button>
+          <button type="button" class="ch-btn ch-btn--navy" id="datasetConfirmBtn">Add to Dataset</button>
+        </div>
+      </div>
+    </div>
+  </form>
+</dialog>
 
 <dialog class="ch-confirm" id="approveDialog" aria-labelledby="approveDialogTitle">
   <form method="dialog" class="ch-confirm-inner">
@@ -215,7 +345,7 @@
         <p id="rejectCustomerLine" class="ch-confirm-line"></p>
         <p id="rejectPredictedLine" class="ch-confirm-line"></p>
         <p id="rejectChangeWarn" class="ch-confirm-warn" hidden>This record was already reviewed. Confirming will change the previous decision and keep an audit entry.</p>
-        <p class="ch-form-hint">Rejected photos stay in history but are excluded from the approved dataset queue.</p>
+        <p class="ch-form-hint">Rejected photos stay in history but are excluded from the approved dataset pool.</p>
         <p class="ch-form-error" id="rejectError" hidden></p>
         <div class="ch-confirm-actions">
           <button type="submit" class="ch-btn ch-btn--ghost" value="cancel">Cancel</button>
@@ -239,7 +369,7 @@
       <div class="ch-modal-media">
         <img id="reviewImage" src="" alt="Classification preview">
         <p id="reviewNoImage" class="ch-thumb-empty" hidden>No Cloudinary image is stored for this record.</p>
-        <div class="ch-preview-actions">
+        <div class="ch-preview-actions" id="previewActions">
           <button type="button" class="ch-btn ch-btn--ok" id="approveBtn">Approve</button>
           <button type="button" class="ch-btn ch-btn--bad" id="rejectBtn">Reject</button>
         </div>
@@ -265,5 +395,5 @@
 {% endblock %}
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/navbar.js') }}"></script>
-<script src="{{ url_for('static', filename='js/customer-history.js') }}?v=5"></script>
+<script src="{{ url_for('static', filename='js/customer-history.js') }}?v=6"></script>
 {% endblock %}
