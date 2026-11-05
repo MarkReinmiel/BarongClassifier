@@ -136,6 +136,85 @@ def list_directory_users() -> list[dict]:
         ]
 
 
+def _enable_trusted_user_write() -> None:
+    """Allow role/is_active changes past public.protect_user_privileges()."""
+    db.session.execute(text("select set_config('app.trusted_profile_write', '1', true)"))
+
+
+def _directory_role(user_id: str) -> str | None:
+    row = db.session.execute(
+        text("select role::text as role from public.users where id::text = :id limit 1"),
+        {"id": str(user_id)},
+    ).mappings().first()
+    return (row["role"] if row else None)
+
+
+def _find_customer_user(user_id: str) -> OwnerUser | None:
+    target = OwnerUser.query.filter_by(id=str(user_id)).first()
+    if target:
+        return target
+    email = db.session.execute(
+        text("select lower(trim(email)) from public.users where id::text = :id limit 1"),
+        {"id": str(user_id)},
+    ).scalar()
+    if email:
+        return OwnerUser.query.filter_by(email=normalize_email(email)).first()
+    return None
+
+
+def _apply_public_role(user_id: str, role: str) -> None:
+    result = db.session.execute(
+        text(
+            """
+            update public.users
+            set role = cast(:role as public.app_role),
+                updated_at = now()
+            where id::text = :id
+              and role::text <> 'admin'
+            """
+        ),
+        {"role": role, "id": str(user_id)},
+    )
+    if result.rowcount == 0:
+        raise UsersError("User role could not be updated.", 404)
+    verify = db.session.execute(
+        text("select role::text as role from public.users where id::text = :id"),
+        {"id": str(user_id)},
+    ).mappings().first()
+    if not verify or (verify["role"] or "").lower() != role:
+        raise UsersError("User role was blocked by database privileges.", 503)
+
+
+def _apply_public_status(user_id: str, active: bool, status_value: str) -> None:
+    result = db.session.execute(
+        text(
+            """
+            update public.users
+            set is_active = cast(:active as boolean),
+                status = :status,
+                updated_at = now()
+            where id::text = :id
+              and role::text <> 'admin'
+            """
+        ),
+        {"active": active, "status": status_value, "id": str(user_id)},
+    )
+    if result.rowcount == 0:
+        raise UsersError("User status could not be updated.", 404)
+    verify = db.session.execute(
+        text(
+            """
+            select coalesce(is_active, true) as is_active
+            from public.users
+            where id::text = :id
+            """
+        ),
+        {"id": str(user_id)},
+    ).mappings().first()
+    if not verify or bool(verify["is_active"]) != active:
+        raise UsersError("User status was blocked by database privileges.", 503)
+
+
 def update_user_role(actor: OwnerUser, user_id: str, role: str) -> None:
     role = (role or "").strip().lower()
     if role not in ASSIGNABLE:
@@ -143,82 +222,91 @@ def update_user_role(actor: OwnerUser, user_id: str, role: str) -> None:
     if str(actor.id) == str(user_id):
         raise UsersError("You cannot change your own role here.", 403)
 
-    target = OwnerUser.query.filter_by(id=user_id).first()
-    if target and (target.role or "").lower() == "admin":
-        raise UsersError("Admin accounts cannot be changed here.", 403)
-
-    if target:
+    if current_app.config.get("TESTING"):
+        target = OwnerUser.query.filter_by(id=user_id).first()
+        if not target:
+            raise UsersError("User was not found.", 404)
+        if (target.role or "").lower() == "admin":
+            raise UsersError("Admin accounts cannot be changed here.", 403)
         target.role = role
         target.updated_at = utcnow()
         db.session.commit()
-
-    if current_app.config.get("TESTING"):
         return
 
     try:
-        result = db.session.execute(
-            text(
-                """
-                update public.users
-                set role = cast(:role as public.app_role),
-                    updated_at = now()
-                where id::text = :id
-                  and role::text <> 'admin'
-                """
-            ),
-            {"role": role, "id": str(user_id)},
-        )
-        if result.rowcount == 0 and not target:
+        _enable_trusted_user_write()
+        directory_role = _directory_role(user_id)
+        target = _find_customer_user(user_id)
+
+        if directory_role is None and target is None:
             raise UsersError("User was not found.", 404)
+        if (directory_role or (target.role if target else "") or "").lower() == "admin":
+            raise UsersError("Admin accounts cannot be changed here.", 403)
+
+        # Mirror portal row first (sync trigger also needs the trusted flag).
+        if target is not None:
+            target.role = role
+            target.updated_at = utcnow()
+            db.session.flush()
+
+        # Directory page reads public.users — write/verify it last.
+        if directory_role is not None:
+            _apply_public_role(user_id, role)
+
         db.session.commit()
     except UsersError:
+        db.session.rollback()
         raise
     except SQLAlchemyError as error:
         db.session.rollback()
-        if not target:
-            raise UsersError("User role could not be updated.", 503) from error
+        raise UsersError("User role could not be updated.", 503) from error
 
 
 def update_user_status(actor: OwnerUser, user_id: str, is_active: bool) -> None:
     if str(actor.id) == str(user_id):
         raise UsersError("You cannot deactivate your own Owner session here.", 403)
 
-    target = OwnerUser.query.filter_by(id=user_id).first()
-    if target and (target.role or "").lower() == "admin":
-        raise UsersError("Admin accounts cannot be changed here.", 403)
-
-    if target:
-        target.is_active = bool(is_active)
-        target.status = "active" if is_active else "disabled"
-        target.updated_at = utcnow()
-        db.session.commit()
+    active = bool(is_active)
+    status_value = "active" if active else "disabled"
 
     if current_app.config.get("TESTING"):
+        target = OwnerUser.query.filter_by(id=user_id).first()
+        if not target:
+            raise UsersError("User was not found.", 404)
+        if (target.role or "").lower() == "admin":
+            raise UsersError("Admin accounts cannot be changed here.", 403)
+        target.is_active = active
+        target.status = status_value
+        target.updated_at = utcnow()
+        db.session.commit()
         return
 
     try:
-        result = db.session.execute(
-            text(
-                """
-                update public.users
-                set is_active = :active,
-                    status = case when :active then 'active' else 'disabled' end,
-                    updated_at = now()
-                where id::text = :id
-                  and role::text <> 'admin'
-                """
-            ),
-            {"active": bool(is_active), "id": str(user_id)},
-        )
-        if result.rowcount == 0 and not target:
+        _enable_trusted_user_write()
+        directory_role = _directory_role(user_id)
+        target = _find_customer_user(user_id)
+
+        if directory_role is None and target is None:
             raise UsersError("User was not found.", 404)
+        if (directory_role or (target.role if target else "") or "").lower() == "admin":
+            raise UsersError("Admin accounts cannot be changed here.", 403)
+
+        if target is not None:
+            target.is_active = active
+            target.status = status_value
+            target.updated_at = utcnow()
+            db.session.flush()
+
+        if directory_role is not None:
+            _apply_public_status(user_id, active, status_value)
+
         db.session.commit()
     except UsersError:
+        db.session.rollback()
         raise
     except SQLAlchemyError as error:
         db.session.rollback()
-        if not target:
-            raise UsersError("User status could not be updated.", 503) from error
+        raise UsersError("User status could not be updated.", 503) from error
 
 
 def find_user_email(user_id: str) -> str | None:
