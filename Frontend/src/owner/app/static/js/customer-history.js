@@ -1,25 +1,28 @@
 (function () {
+  const page = document.querySelector(".ch-page");
   const modal = document.getElementById("reviewModal");
   const approveDialog = document.getElementById("approveDialog");
   const rejectDialog = document.getElementById("rejectDialog");
-  if (!modal && !approveDialog && !rejectDialog) return;
+  const batchApproveDialog = document.getElementById("batchApproveDialog");
+  const batchRejectDialog = document.getElementById("batchRejectDialog");
+  const datasetDialog = document.getElementById("datasetDialog");
+  if (!page) return;
 
   const csrf =
     document.querySelector('meta[name="csrf-token"]')?.getAttribute("content") || "";
   const apiBase =
     document.querySelector('meta[name="review-api-base"]')?.getAttribute("content") ||
     "/api/classifications";
+  const panel =
+    document.querySelector('meta[name="history-panel"]')?.getAttribute("content") ||
+    page.getAttribute("data-panel") ||
+    "pending";
+
   let currentId = null;
   let currentStatus = "pending_review";
   let pendingConfirmChange = false;
   let submitting = false;
-
-  function detailUrl(id) {
-    return `${apiBase}/${encodeURIComponent(id)}`;
-  }
-  function actionUrl(id) {
-    return `${apiBase}/${encodeURIComponent(id)}/review`;
-  }
+  let pendingDatasetIds = [];
 
   const els = {
     image: document.getElementById("reviewImage"),
@@ -34,7 +37,24 @@
     events: document.getElementById("reviewEvents"),
     approveBtn: document.getElementById("approveBtn"),
     rejectBtn: document.getElementById("rejectBtn"),
+    previewActions: document.getElementById("previewActions"),
+    batchBar: document.getElementById("batchBar"),
+    selectedCount: document.getElementById("selectedCount"),
+    selectAll: document.getElementById("selectAllPage"),
   };
+
+  function detailUrl(id) {
+    return `${apiBase}/${encodeURIComponent(id)}`;
+  }
+  function actionUrl(id) {
+    return `${apiBase}/${encodeURIComponent(id)}/review`;
+  }
+  function batchReviewUrl() {
+    return `${apiBase}/review/batch`;
+  }
+  function batchDatasetUrl() {
+    return `${apiBase}/dataset/batch`;
+  }
 
   function showError(target, message) {
     if (!target) return;
@@ -62,7 +82,7 @@
     window.clearTimeout(showToast._timer);
     showToast._timer = window.setTimeout(() => {
       toast.hidden = true;
-    }, 3200);
+    }, 3600);
   }
 
   function needsChangeConfirm(status) {
@@ -76,7 +96,7 @@
       approved: "Approved",
       rejected: "Rejected",
       uncertain: "Uncertain",
-      added_to_dataset: "Added to Dataset",
+      added_to_dataset: "In Dataset Pool",
     };
     return labels[key] || key.replace(/_/g, " ");
   }
@@ -90,50 +110,104 @@
     if (emptyEl) emptyEl.hidden = hasImage;
   }
 
-  function setBusy(isBusy, activeAction) {
+  function eligibleChecks() {
+    return Array.from(document.querySelectorAll(".ch-card-check")).filter(
+      (input) => !input.disabled
+    );
+  }
+
+  function selectedIds() {
+    return eligibleChecks()
+      .filter((input) => input.checked)
+      .map((input) => input.value)
+      .filter(Boolean);
+  }
+
+  function syncSelectionUi() {
+    const ids = selectedIds();
+    const checks = eligibleChecks();
+    if (els.batchBar) {
+      els.batchBar.hidden = ids.length === 0;
+    }
+    if (els.selectedCount) {
+      els.selectedCount.textContent = String(ids.length);
+    }
+    if (els.selectAll) {
+      els.selectAll.checked = checks.length > 0 && checks.every((c) => c.checked);
+      els.selectAll.indeterminate =
+        ids.length > 0 && ids.length < checks.length;
+    }
+    document.querySelectorAll(".ch-card").forEach((card) => {
+      const check = card.querySelector(".ch-card-check");
+      card.classList.toggle("is-selected", Boolean(check && check.checked));
+    });
+  }
+
+  function clearSelection() {
+    eligibleChecks().forEach((input) => {
+      input.checked = false;
+    });
+    syncSelectionUi();
+  }
+
+  function removeCards(ids) {
+    const idSet = new Set(ids);
+    document.querySelectorAll(".ch-card").forEach((card) => {
+      if (idSet.has(card.getAttribute("data-id"))) {
+        card.remove();
+      }
+    });
+    syncSelectionUi();
+  }
+
+  function setBusy(isBusy, label) {
     submitting = Boolean(isBusy);
-    const buttons = [
-      els.approveBtn,
-      els.rejectBtn,
-      document.getElementById("approveConfirmBtn"),
-      document.getElementById("rejectConfirmBtn"),
-      ...document.querySelectorAll(".ch-approve, .ch-reject"),
-    ];
+    const buttons = document.querySelectorAll(
+      ".ch-approve, .ch-reject, #approveBtn, #rejectBtn, #approveConfirmBtn, #rejectConfirmBtn, #batchApproveBtn, #batchRejectBtn, #batchDatasetBtn, #batchApproveConfirmBtn, #batchRejectConfirmBtn, #datasetConfirmBtn"
+    );
     buttons.forEach((button) => {
-      if (!button) return;
       button.disabled = submitting;
     });
-    if (els.approveBtn) {
-      els.approveBtn.textContent =
-        submitting && activeAction === "approve" ? "Approving…" : "Approve";
-    }
-    if (els.rejectBtn) {
-      els.rejectBtn.textContent =
-        submitting && activeAction === "reject" ? "Rejecting…" : "Reject";
-    }
-    const approveConfirm = document.getElementById("approveConfirmBtn");
-    const rejectConfirm = document.getElementById("rejectConfirmBtn");
-    if (approveConfirm) {
-      approveConfirm.textContent =
-        submitting && activeAction === "approve" ? "Approving…" : "Approve";
-    }
-    if (rejectConfirm) {
-      rejectConfirm.textContent =
-        submitting && activeAction === "reject" ? "Rejecting…" : "Reject";
+    if (label && els.rejectBtn && submitting) {
+      // keep default labels unless confirm buttons need text swap elsewhere
     }
   }
 
-  function updateCard(item) {
-    const card = document.querySelector(`.ch-card[data-id="${item.id}"]`);
-    if (!card) return;
-    const badge = card.querySelector(".ch-badge");
-    if (badge) {
-      badge.className = `ch-badge ch-badge--${item.review_status}`;
-      badge.textContent = statusLabel(item.review_status);
-    }
-    card.querySelectorAll(".ch-approve, .ch-reject").forEach((btn) => {
-      btn.setAttribute("data-status", item.review_status || "pending_review");
+  async function postJson(url, payload) {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        "X-CSRFToken": csrf,
+      },
+      credentials: "same-origin",
+      body: JSON.stringify(payload),
     });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok && data.ok === false && !data.results) {
+      const error = new Error(data.error || "Request failed.");
+      error.status = response.status;
+      error.payload = data;
+      throw error;
+    }
+    if (!response.ok && !data.succeeded_count && !data.skipped_count) {
+      const error = new Error(data.error || "Request failed.");
+      error.status = response.status;
+      error.payload = data;
+      throw error;
+    }
+    return data;
+  }
+
+  async function submitReview(id, payload) {
+    const data = await postJson(actionUrl(id), payload);
+    if (!data.ok || !data.item) {
+      const error = new Error(data.error || "Review could not be saved.");
+      error.payload = data;
+      throw error;
+    }
+    return data.item;
   }
 
   function fill(item) {
@@ -155,6 +229,10 @@
     }
     if (els.when) els.when.textContent = item.created_at_display || "—";
     if (els.status) els.status.textContent = statusLabel(item.review_status);
+    if (els.previewActions) {
+      const canReview = (item.review_status || "pending_review") === "pending_review";
+      els.previewActions.hidden = panel !== "pending" && !canReview;
+    }
     if (els.events) {
       const events = item.events || [];
       if (!events.length) {
@@ -188,34 +266,8 @@
     if (modal && typeof modal.showModal === "function") modal.showModal();
   }
 
-  async function submitReview(id, payload) {
-    const response = await fetch(actionUrl(id), {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-        "X-CSRFToken": csrf,
-      },
-      credentials: "same-origin",
-      body: JSON.stringify(payload),
-    });
-    const data = await response.json().catch(() => ({}));
-    if (!response.ok || !data.ok) {
-      const error = new Error(data.error || "Review could not be saved.");
-      error.status = response.status;
-      error.payload = data;
-      throw error;
-    }
-    return data.item;
-  }
-
   async function runReview(action, { confirmChange, errorEl, closeDialog } = {}) {
-    if (!currentId) {
-      console.error("[customer-history] Missing classification id for", action);
-      return;
-    }
-    if (submitting) return;
-
+    if (!currentId || submitting) return;
     setBusy(true, action);
     showError(errorEl, "");
     try {
@@ -223,7 +275,6 @@
         action,
         confirm_change: Boolean(confirmChange),
       });
-      updateCard(item);
       fill(item);
       pendingConfirmChange = needsChangeConfirm(item.review_status);
       showToast(
@@ -231,15 +282,15 @@
         action === "approve" ? "ok" : "bad"
       );
       if (typeof closeDialog === "function") closeDialog();
+      if (panel === "pending") {
+        removeCards([item.id]);
+        if (action === "approve") {
+          openDatasetPrompt([item.id], 1);
+        }
+      }
       return item;
     } catch (error) {
-      console.error("[customer-history] Review failed", {
-        action,
-        classificationId: currentId,
-        status: error.status,
-        message: error.message,
-        payload: error.payload,
-      });
+      console.error("[customer-history] Review failed", error);
       showError(errorEl, error.message || `${action} failed.`);
       throw error;
     } finally {
@@ -247,11 +298,6 @@
     }
   }
 
-  /**
-   * HTML allows only one modal <dialog> at a time. Opening approve/reject
-   * confirm while the preview is open throws InvalidStateError and blocks
-   * the request. Preview actions therefore confirm + submit in-place.
-   */
   async function submitFromPreview(action) {
     if (!currentId || submitting) return;
     const mustConfirmChange = needsChangeConfirm(currentStatus);
@@ -270,13 +316,12 @@
         errorEl: els.error,
       });
     } catch (_error) {
-      // Error already shown in the preview panel and logged.
+      /* shown in panel */
     }
   }
 
   function openApproveConfirm({ id, status, imageUrl, customer, predicted }) {
     if (modal?.open) {
-      // Avoid nested modal dialogs — handle from the open preview instead.
       currentId = id;
       currentStatus = status || currentStatus;
       submitFromPreview("approve");
@@ -300,9 +345,7 @@
     }
     if (warn) warn.hidden = !pendingConfirmChange;
     showError(document.getElementById("approveError"), "");
-    if (approveDialog && typeof approveDialog.showModal === "function") {
-      approveDialog.showModal();
-    }
+    if (approveDialog?.showModal) approveDialog.showModal();
   }
 
   function openRejectConfirm({ id, status, imageUrl, customer, predicted }) {
@@ -330,34 +373,103 @@
     }
     if (warn) warn.hidden = !pendingConfirmChange;
     showError(document.getElementById("rejectError"), "");
+    if (rejectDialog?.showModal) rejectDialog.showModal();
+  }
+
+  function openDatasetPrompt(ids, count) {
+    pendingDatasetIds = Array.from(new Set(ids || []));
+    if (!pendingDatasetIds.length || !datasetDialog?.showModal) return;
+    const line = document.getElementById("datasetCountLine");
+    if (line) {
+      line.textContent = `You have approved ${count} photo${
+        count === 1 ? "" : "s"
+      }. Do you want to add these approved images to the dataset pool for future model training?`;
+    }
+    showError(document.getElementById("datasetError"), "");
+    datasetDialog.showModal();
+  }
+
+  async function runBatch(action) {
+    const ids = selectedIds();
+    if (!ids.length) {
+      showToast("Select at least one photo.", "bad");
+      return;
+    }
+    setBusy(true, action);
+    const errorEl =
+      action === "approve"
+        ? document.getElementById("batchApproveError")
+        : document.getElementById("batchRejectError");
+    showError(errorEl, "");
     try {
-      if (rejectDialog && typeof rejectDialog.showModal === "function") {
-        rejectDialog.showModal();
+      const data = await postJson(batchReviewUrl(), { action, ids });
+      const succeeded = data.succeeded || [];
+      const failed = data.failed || [];
+      if (!succeeded.length && failed.length) {
+        const first = failed[0]?.error || "Batch update failed.";
+        throw new Error(first);
+      }
+      removeCards(succeeded);
+      clearSelection();
+      if (batchApproveDialog?.open) batchApproveDialog.close();
+      if (batchRejectDialog?.open) batchRejectDialog.close();
+      showToast(
+        action === "approve"
+          ? `Approved ${succeeded.length} photo${succeeded.length === 1 ? "" : "s"}.`
+          : `Rejected ${succeeded.length} photo${succeeded.length === 1 ? "" : "s"}.`,
+        action === "approve" ? "ok" : "bad"
+      );
+      if (failed.length) {
+        console.error("[customer-history] Partial batch failures", failed);
+        showToast(`${failed.length} photo(s) could not be updated.`, "bad");
+      }
+      if (action === "approve" && succeeded.length) {
+        openDatasetPrompt(succeeded, succeeded.length);
+      } else if (!document.querySelector(".ch-card")) {
+        window.location.reload();
       }
     } catch (error) {
-      console.error("[customer-history] Could not open reject dialog", error);
-      showToast("Could not open reject dialog. Try again.", "bad");
+      console.error("[customer-history] Batch failed", error);
+      showError(errorEl, error.message || "Batch update failed.");
+    } finally {
+      setBusy(false);
     }
   }
 
-  function openApproveFromButton(button) {
-    openApproveConfirm({
-      id: button.getAttribute("data-id"),
-      status: button.getAttribute("data-status"),
-      imageUrl: button.getAttribute("data-image") || "",
-      customer: button.getAttribute("data-customer"),
-      predicted: button.getAttribute("data-predicted"),
-    });
-  }
-
-  function openRejectFromButton(button) {
-    openRejectConfirm({
-      id: button.getAttribute("data-id"),
-      status: button.getAttribute("data-status"),
-      imageUrl: button.getAttribute("data-image") || "",
-      customer: button.getAttribute("data-customer"),
-      predicted: button.getAttribute("data-predicted"),
-    });
+  async function runDatasetBatch(ids) {
+    const list = Array.from(new Set(ids || []));
+    if (!list.length) return;
+    setBusy(true, "dataset");
+    const errorEl = document.getElementById("datasetError");
+    showError(errorEl, "");
+    try {
+      const data = await postJson(batchDatasetUrl(), { ids: list });
+      const added = data.succeeded_count || 0;
+      const skipped = data.skipped_count || 0;
+      const failed = data.failed || [];
+      if (datasetDialog?.open) datasetDialog.close();
+      if (panel === "approved") {
+        removeCards(data.succeeded || []);
+        clearSelection();
+      }
+      showToast(
+        `Added ${added} to dataset pool${skipped ? ` (${skipped} already there)` : ""}.`,
+        "ok"
+      );
+      if (failed.length) {
+        console.error("[customer-history] Dataset partial failures", failed);
+        showToast(`${failed.length} photo(s) could not be added.`, "bad");
+      }
+      pendingDatasetIds = [];
+      if (panel === "approved" && !document.querySelector(".ch-card")) {
+        window.location.reload();
+      }
+    } catch (error) {
+      console.error("[customer-history] Dataset batch failed", error);
+      showError(errorEl, error.message || "Could not add to dataset.");
+    } finally {
+      setBusy(false);
+    }
   }
 
   document.querySelectorAll(".ch-open").forEach((button) => {
@@ -372,11 +484,27 @@
   });
 
   document.querySelectorAll(".ch-approve").forEach((button) => {
-    button.addEventListener("click", () => openApproveFromButton(button));
+    button.addEventListener("click", () => {
+      openApproveConfirm({
+        id: button.getAttribute("data-id"),
+        status: button.getAttribute("data-status"),
+        imageUrl: button.getAttribute("data-image") || "",
+        customer: button.getAttribute("data-customer"),
+        predicted: button.getAttribute("data-predicted"),
+      });
+    });
   });
 
   document.querySelectorAll(".ch-reject").forEach((button) => {
-    button.addEventListener("click", () => openRejectFromButton(button));
+    button.addEventListener("click", () => {
+      openRejectConfirm({
+        id: button.getAttribute("data-id"),
+        status: button.getAttribute("data-status"),
+        imageUrl: button.getAttribute("data-image") || "",
+        customer: button.getAttribute("data-customer"),
+        predicted: button.getAttribute("data-predicted"),
+      });
+    });
   });
 
   document.getElementById("approveConfirmBtn")?.addEventListener("click", async () => {
@@ -389,7 +517,7 @@
         },
       });
     } catch (_error) {
-      // Kept open with error message.
+      /* keep open */
     }
   });
 
@@ -403,7 +531,7 @@
         },
       });
     } catch (_error) {
-      // Kept open with error message.
+      /* keep open */
     }
   });
 
@@ -413,4 +541,64 @@
   document.getElementById("rejectBtn")?.addEventListener("click", () => {
     submitFromPreview("reject");
   });
+
+  document.querySelectorAll(".ch-card-check").forEach((input) => {
+    input.addEventListener("change", syncSelectionUi);
+  });
+
+  els.selectAll?.addEventListener("change", () => {
+    const checked = Boolean(els.selectAll.checked);
+    eligibleChecks().forEach((input) => {
+      input.checked = checked;
+    });
+    syncSelectionUi();
+  });
+
+  document.getElementById("clearSelectionBtn")?.addEventListener("click", clearSelection);
+
+  document.getElementById("batchApproveBtn")?.addEventListener("click", () => {
+    const ids = selectedIds();
+    if (!ids.length) return;
+    const line = document.getElementById("batchApproveCountLine");
+    if (line) {
+      line.textContent = `${ids.length} photo${ids.length === 1 ? "" : "s"} will move to the Approved panel.`;
+    }
+    showError(document.getElementById("batchApproveError"), "");
+    if (batchApproveDialog?.showModal) batchApproveDialog.showModal();
+  });
+
+  document.getElementById("batchRejectBtn")?.addEventListener("click", () => {
+    const ids = selectedIds();
+    if (!ids.length) return;
+    const line = document.getElementById("batchRejectCountLine");
+    if (line) {
+      line.textContent = `${ids.length} photo${ids.length === 1 ? "" : "s"} will move to the Rejected panel.`;
+    }
+    showError(document.getElementById("batchRejectError"), "");
+    if (batchRejectDialog?.showModal) batchRejectDialog.showModal();
+  });
+
+  document.getElementById("batchApproveConfirmBtn")?.addEventListener("click", () => {
+    runBatch("approve");
+  });
+  document.getElementById("batchRejectConfirmBtn")?.addEventListener("click", () => {
+    runBatch("reject");
+  });
+
+  document.getElementById("batchDatasetBtn")?.addEventListener("click", () => {
+    const ids = selectedIds();
+    if (!ids.length) return;
+    openDatasetPrompt(ids, ids.length);
+  });
+
+  document.getElementById("datasetConfirmBtn")?.addEventListener("click", () => {
+    const ids = pendingDatasetIds.length ? pendingDatasetIds : selectedIds();
+    runDatasetBatch(ids);
+  });
+
+  document.getElementById("datasetNotNowBtn")?.addEventListener("click", () => {
+    pendingDatasetIds = [];
+  });
+
+  syncSelectionUi();
 })();
