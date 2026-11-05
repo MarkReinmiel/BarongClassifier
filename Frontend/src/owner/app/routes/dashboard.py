@@ -134,7 +134,7 @@ def account():
     return no_store(response)
 
 
-@bp.post("/account/change-password")
+@bp.post("/account/change-password", endpoint="change_password")
 @login_required
 def change_password_view():
     user = current_user()
