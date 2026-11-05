@@ -42,11 +42,13 @@ def create_app(config_object: type[Config] = Config) -> Flask:
     from app.routes.classify import bp as classify_bp
     from app.routes.dashboard import bp as dashboard_bp
     from app.routes.password import bp as password_bp
+    from app.routes.reviews import bp as reviews_bp
 
     flask_app.register_blueprint(auth_bp)
     flask_app.register_blueprint(password_bp)
     flask_app.register_blueprint(dashboard_bp)
     flask_app.register_blueprint(classify_bp)
+    flask_app.register_blueprint(reviews_bp)
 
     @flask_app.errorhandler(403)
     def forbidden(_error):

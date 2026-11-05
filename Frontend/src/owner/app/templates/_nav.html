@@ -32,11 +32,17 @@
       </span>
       <span>Textile Types</span>
     </a>
-    <a href="{{ url_for('dashboard.history') }}" class="{{ 'on' if active == 'history' else '' }}">
+    <a href="{{ url_for('reviews.customer_history') }}" class="{{ 'on' if active == 'customer_history' else '' }}">
       <span class="nav-ico" aria-hidden="true">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
       </span>
-      <span>History</span>
+      <span>Customer History</span>
+    </a>
+    <a href="{{ url_for('reviews.dataset_contributions') }}" class="{{ 'on' if active == 'contributions' else '' }}">
+      <span class="nav-ico" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16"/><path d="M7 20V10"/><path d="M12 20V4"/><path d="M17 20v-6"/></svg>
+      </span>
+      <span>Contributions</span>
     </a>
     <a href="{{ url_for('dashboard.about') }}" class="{{ 'on' if active == 'about' else '' }}">
       <span class="nav-ico" aria-hidden="true">
@@ -70,6 +76,8 @@
       </div>
       <a class="profile-link" href="{{ url_for('dashboard.model_analytics') }}">Model Analytics</a>
       <a class="profile-link" href="{{ url_for('dashboard.textile_types') }}">Textile Types</a>
+      <a class="profile-link" href="{{ url_for('reviews.customer_history') }}">Customer History</a>
+      <a class="profile-link" href="{{ url_for('reviews.dataset_contributions') }}">Contributions</a>
       <a class="profile-link" href="{{ url_for('dashboard.about') }}">About</a>
       <a class="profile-link" href="{{ url_for('dashboard.account') }}">Account settings</a>
       <a class="profile-link" href="{{ url_for('dashboard.users') }}">User management</a>

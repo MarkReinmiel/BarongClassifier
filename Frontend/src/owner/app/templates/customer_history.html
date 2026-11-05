@@ -1,0 +1,269 @@
+{% extends "base.html" %}
+{% block title %}Customer Classification History | {{ app_name }}{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/shared.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/topnav.css') }}?v=14">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/history.css') }}?v=6">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/customer-history.css') }}?v=5">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-app.css') }}?v=9">
+<meta name="csrf-token" content="{{ csrf_token() }}">
+<meta name="review-api-base" content="{{ request.script_root }}/api/classifications">
+{% endblock %}
+{% block body %}
+{% include "_nav.html" %}
+<main class="history-page ch-page">
+  <section class="history-page-header reveal">
+    <p class="eyebrow">OWNER REVIEW</p>
+    <h1>Customer Classification History</h1>
+    <hr class="stitch-divider" aria-hidden="true">
+    <p class="page-description">Inspect each customer photo and Approve or Reject it for future dataset use. This does not retrain the live model or assign a textile class.</p>
+  </section>
+
+  <section class="ch-stats" aria-label="Review counts">
+    <article class="ch-stat">
+      <span class="ch-stat-label">Pending Review</span>
+      <strong>{{ counts.pending_review or 0 }}</strong>
+    </article>
+    <article class="ch-stat ch-stat--ok">
+      <span class="ch-stat-label">Approved</span>
+      <strong>{{ counts.approved or 0 }}</strong>
+    </article>
+    <article class="ch-stat ch-stat--bad">
+      <span class="ch-stat-label">Rejected</span>
+      <strong>{{ counts.rejected or 0 }}</strong>
+    </article>
+  </section>
+
+  <section class="history-panel">
+    <div class="history-panel-head">
+      <div>
+        <h3 class="history-panel-title">All customer classifications</h3>
+        <p class="history-panel-sub">Live records from the shared classifications table</p>
+      </div>
+      <a class="ch-link" href="{{ url_for('reviews.dataset_contributions') }}">Open Customer Contributions →</a>
+    </div>
+
+    {% if error %}
+    <div class="ch-flash ch-flash--error">{{ error }}</div>
+    {% endif %}
+
+    <form class="ch-toolbar" method="get" action="{{ url_for('reviews.customer_history') }}">
+      <label class="ch-search">
+        <span class="sr-only">Search customer</span>
+        <input type="search" name="q" value="{{ q }}" placeholder="Search name or email">
+      </label>
+      <label class="history-select-wrap">
+        <span class="sr-only">Textile type</span>
+        <select class="history-select" name="fabric">
+          {% for value, label in fabric_options %}
+          <option value="{{ value }}" {% if selected_type == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label class="history-select-wrap">
+        <span class="sr-only">Review status</span>
+        <select class="history-select" name="status">
+          {% for value, label in status_options %}
+          <option value="{{ value }}" {% if selected_status == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label class="history-select-wrap">
+        <span class="sr-only">Date preset</span>
+        <select class="history-select" name="date">
+          {% for value, label in date_options %}
+          <option value="{{ value }}" {% if date_preset == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label class="ch-date">
+        <span>From</span>
+        <input type="date" name="date_from" value="{{ date_from }}">
+      </label>
+      <label class="ch-date">
+        <span>To</span>
+        <input type="date" name="date_to" value="{{ date_to }}">
+      </label>
+      <label class="history-select-wrap">
+        <span class="sr-only">Sort</span>
+        <select class="history-select" name="sort">
+          {% for value, label in sort_options %}
+          <option value="{{ value }}" {% if sort == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label class="history-select-wrap">
+        <span class="sr-only">Per page</span>
+        <select class="history-select history-select--sm" name="per_page">
+          {% for n in per_page_options %}
+          <option value="{{ n }}" {% if per_page == n %}selected{% endif %}>{{ n }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <button class="ch-btn ch-btn--navy" type="submit">Apply filters</button>
+    </form>
+
+    {% if not rows %}
+    <div class="history-empty">
+      <h3>No matching classifications</h3>
+      <p>Try clearing filters, or wait for customers to classify new textile images.</p>
+    </div>
+    {% else %}
+    <div class="ch-grid">
+      {% for row in rows %}
+      <article class="ch-card" data-id="{{ row.id }}">
+        <div class="ch-thumb">
+          {% if row.image_url %}
+          <img src="{{ row.image_url }}" alt="Classification by {{ row.customer_name }}" loading="lazy">
+          {% else %}
+          <div class="ch-thumb-empty" aria-hidden="true">No image</div>
+          {% endif %}
+          <span class="ch-badge ch-badge--{{ row.review_status }}">{% if row.review_status == 'pending_review' %}Pending Review{% elif row.review_status == 'approved' %}Approved{% elif row.review_status == 'rejected' %}Rejected{% else %}{{ row.review_status.replace('_', ' ')|title }}{% endif %}</span>
+        </div>
+        <div class="ch-card-body">
+          <h3>{{ row.predicted_display }}</h3>
+          <p class="ch-meta"><strong>{{ '%.1f'|format(row.confidence_pct) }}%</strong> confidence</p>
+          <p class="ch-customer">{{ row.customer_name }}</p>
+          <p class="ch-email">{{ row.customer_email or '—' }}</p>
+          <p class="ch-date-line">{{ row.created_at_display or row.created_at }}</p>
+          <div class="ch-card-actions">
+            <button
+              type="button"
+              class="ch-btn ch-btn--ok ch-approve"
+              data-id="{{ row.id }}"
+              data-status="{{ row.review_status }}"
+              data-image="{{ row.image_url or '' }}"
+              data-customer="{{ row.customer_name }}"
+              data-predicted="{{ row.predicted_display }}"
+            >Approve</button>
+            <button
+              type="button"
+              class="ch-btn ch-btn--bad ch-reject"
+              data-id="{{ row.id }}"
+              data-status="{{ row.review_status }}"
+              data-image="{{ row.image_url or '' }}"
+              data-customer="{{ row.customer_name }}"
+              data-predicted="{{ row.predicted_display }}"
+            >Reject</button>
+            <button type="button" class="ch-btn ch-btn--ghost ch-open" data-id="{{ row.id }}">View photo</button>
+          </div>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+
+    <div class="history-footer">
+      <p class="history-count">
+        Showing <span class="num">{{ ((page - 1) * per_page) + 1 }}</span>–<span class="num">{{ ((page - 1) * per_page) + rows|length }}</span> of <span class="num">{{ total }}</span>
+      </p>
+      <nav class="history-pager" aria-label="History pages">
+        {% if page > 1 %}
+        <a class="history-page-btn" href="{{ url_for('reviews.customer_history', page=page-1, q=q, fabric=selected_type, status=selected_status, date=date_preset, date_from=date_from, date_to=date_to, sort=sort, per_page=per_page) }}">Previous</a>
+        {% else %}
+        <span class="history-page-btn is-disabled">Previous</span>
+        {% endif %}
+        <span class="history-page-num is-active">{{ page }} / {{ pages }}</span>
+        {% if page < pages %}
+        <a class="history-page-btn" href="{{ url_for('reviews.customer_history', page=page+1, q=q, fabric=selected_type, status=selected_status, date=date_preset, date_from=date_from, date_to=date_to, sort=sort, per_page=per_page) }}">Next</a>
+        {% else %}
+        <span class="history-page-btn is-disabled">Next</span>
+        {% endif %}
+      </nav>
+    </div>
+    {% endif %}
+  </section>
+</main>
+
+<dialog class="ch-confirm" id="approveDialog" aria-labelledby="approveDialogTitle">
+  <form method="dialog" class="ch-confirm-inner">
+    <header class="ch-confirm-head">
+      <h2 id="approveDialogTitle">Approve photo</h2>
+      <button type="submit" class="ch-modal-close" value="cancel" aria-label="Close">×</button>
+    </header>
+    <div class="ch-confirm-body ch-confirm-body--simple">
+      <div class="ch-confirm-media">
+        <img id="approvePreview" src="" alt="Image to approve">
+        <p id="approveNoImage" class="ch-thumb-empty" hidden>No image available</p>
+      </div>
+      <div class="ch-confirm-copy">
+        <p id="approveCustomerLine" class="ch-confirm-line"></p>
+        <p id="approvePredictedLine" class="ch-confirm-line"></p>
+        <p id="approveChangeWarn" class="ch-confirm-warn" hidden>This record was already reviewed. Confirming will change the previous decision and keep an audit entry.</p>
+        <p class="ch-form-hint">Marks this photo as suitable for a future dataset. Does not assign Piña / Jusi / Cocoon or retrain the model.</p>
+        <p class="ch-form-error" id="approveError" hidden></p>
+        <div class="ch-confirm-actions">
+          <button type="submit" class="ch-btn ch-btn--ghost" value="cancel">Cancel</button>
+          <button type="button" class="ch-btn ch-btn--ok" id="approveConfirmBtn">Approve</button>
+        </div>
+      </div>
+    </div>
+  </form>
+</dialog>
+
+<dialog class="ch-confirm" id="rejectDialog" aria-labelledby="rejectDialogTitle">
+  <form method="dialog" class="ch-confirm-inner">
+    <header class="ch-confirm-head">
+      <h2 id="rejectDialogTitle">Reject photo</h2>
+      <button type="submit" class="ch-modal-close" value="cancel" aria-label="Close">×</button>
+    </header>
+    <div class="ch-confirm-body ch-confirm-body--simple">
+      <div class="ch-confirm-media">
+        <img id="rejectPreview" src="" alt="Image to reject">
+        <p id="rejectNoImage" class="ch-thumb-empty" hidden>No image available</p>
+      </div>
+      <div class="ch-confirm-copy">
+        <p id="rejectCustomerLine" class="ch-confirm-line"></p>
+        <p id="rejectPredictedLine" class="ch-confirm-line"></p>
+        <p id="rejectChangeWarn" class="ch-confirm-warn" hidden>This record was already reviewed. Confirming will change the previous decision and keep an audit entry.</p>
+        <p class="ch-form-hint">Rejected photos stay in history but are excluded from the approved dataset queue.</p>
+        <p class="ch-form-error" id="rejectError" hidden></p>
+        <div class="ch-confirm-actions">
+          <button type="submit" class="ch-btn ch-btn--ghost" value="cancel">Cancel</button>
+          <button type="button" class="ch-btn ch-btn--bad" id="rejectConfirmBtn">Reject</button>
+        </div>
+      </div>
+    </div>
+  </form>
+</dialog>
+
+<dialog class="ch-modal" id="reviewModal" aria-labelledby="reviewModalTitle">
+  <form method="dialog" class="ch-modal-inner">
+    <header class="ch-modal-head">
+      <div>
+        <p class="eyebrow">PHOTO PREVIEW</p>
+        <h2 id="reviewModalTitle">Classification review</h2>
+      </div>
+      <button type="submit" class="ch-modal-close" aria-label="Close">×</button>
+    </header>
+    <div class="ch-modal-grid ch-modal-grid--preview">
+      <div class="ch-modal-media">
+        <img id="reviewImage" src="" alt="Classification preview">
+        <p id="reviewNoImage" class="ch-thumb-empty" hidden>No Cloudinary image is stored for this record.</p>
+        <div class="ch-preview-actions">
+          <button type="button" class="ch-btn ch-btn--ok" id="approveBtn">Approve</button>
+          <button type="button" class="ch-btn ch-btn--bad" id="rejectBtn">Reject</button>
+        </div>
+        <p class="ch-form-error" id="reviewError" hidden></p>
+      </div>
+      <div class="ch-modal-side">
+        <dl class="ch-dl">
+          <div><dt>Customer</dt><dd id="reviewCustomer">—</dd></div>
+          <div><dt>Email</dt><dd id="reviewEmail">—</dd></div>
+          <div><dt>Predicted</dt><dd id="reviewPredicted">—</dd></div>
+          <div><dt>Confidence</dt><dd id="reviewConfidence">—</dd></div>
+          <div><dt>Classified</dt><dd id="reviewWhen">—</dd></div>
+          <div><dt>Status</dt><dd id="reviewStatus">—</dd></div>
+        </dl>
+        <div class="ch-events">
+          <h3>Review history</h3>
+          <ul id="reviewEvents"></ul>
+        </div>
+      </div>
+    </div>
+  </form>
+</dialog>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/navbar.js') }}"></script>
+<script src="{{ url_for('static', filename='js/customer-history.js') }}?v=5"></script>
+{% endblock %}

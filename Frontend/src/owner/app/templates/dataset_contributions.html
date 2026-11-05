@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}Customer Contributions | {{ app_name }}{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/shared.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/topnav.css') }}?v=14">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/history.css') }}?v=6">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/customer-history.css') }}?v=5">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-app.css') }}?v=9">
+{% endblock %}
+{% block body %}
+{% include "_nav.html" %}
+<main class="history-page ch-page">
+  <section class="history-page-header reveal">
+    <p class="eyebrow">DATASET MANAGEMENT</p>
+    <h1>Customer Contributions</h1>
+    <hr class="stitch-divider" aria-hidden="true">
+    <p class="page-description">Owner-approved photos that are suitable for future dataset work. They are not auto-assigned to Piña / Jusi / Cocoon training folders, and the live model is unchanged.</p>
+  </section>
+
+  <section class="ch-stats" aria-label="Contribution counts">
+    <article class="ch-stat">
+      <span class="ch-stat-label">Pending Review</span>
+      <strong>{{ counts.pending_review or 0 }}</strong>
+    </article>
+    <article class="ch-stat ch-stat--ok">
+      <span class="ch-stat-label">Approved</span>
+      <strong>{{ counts.approved or 0 }}</strong>
+    </article>
+    <article class="ch-stat ch-stat--bad">
+      <span class="ch-stat-label">Rejected</span>
+      <strong>{{ counts.rejected or 0 }}</strong>
+    </article>
+  </section>
+
+  <section class="history-panel">
+    <div class="history-panel-head">
+      <div>
+        <h3 class="history-panel-title">Approved contributions</h3>
+        <p class="history-panel-sub">Suitable photos only — class labeling is a separate step</p>
+      </div>
+      <a class="ch-link" href="{{ url_for('reviews.customer_history') }}">← Back to Customer History</a>
+    </div>
+
+    {% if error %}
+    <div class="ch-flash ch-flash--error">{{ error }}</div>
+    {% endif %}
+
+
+    {% if not rows %}
+    <div class="history-empty">
+      <h3>No approved contributions yet</h3>
+      <p>Approve customer images from Customer Classification History to populate this queue.</p>
+      <a href="{{ url_for('reviews.customer_history') }}" class="history-empty-link">Review classifications →</a>
+    </div>
+    {% else %}
+    <div class="ch-grid">
+      {% for row in rows %}
+      <article class="ch-card">
+        <div class="ch-thumb">
+          {% if row.image_url %}
+          <img src="{{ row.image_url }}" alt="Approved contribution" loading="lazy">
+          {% else %}
+          <div class="ch-thumb-empty" aria-hidden="true">No image</div>
+          {% endif %}
+          <span class="ch-badge ch-badge--{{ row.review_status }}">{% if row.review_status == 'pending_review' %}Pending Review{% elif row.review_status == 'approved' %}Approved{% elif row.review_status == 'rejected' %}Rejected{% else %}{{ row.review_status.replace('_', ' ')|title }}{% endif %}</span>
+        </div>
+        <div class="ch-card-body">
+          <h3>{{ row.predicted_display or 'Approved photo' }}</h3>
+          <p class="ch-meta">CNN predicted · {{ '%.1f'|format(row.confidence_pct) }}% · not class-labeled yet</p>
+          <p class="ch-customer">{{ row.customer_name }}</p>
+          <p class="ch-email">{{ row.customer_email or '—' }}</p>
+          <p class="ch-date-line">Reviewed {{ row.reviewed_at or '—' }}</p>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+    <div class="history-footer">
+      <p class="history-count">{{ total }} approved contribution{{ '' if total == 1 else 's' }}</p>
+      <nav class="history-pager" aria-label="Contribution pages">
+        {% if page > 1 %}
+        <a class="history-page-btn" href="{{ url_for('reviews.dataset_contributions', page=page-1) }}">Previous</a>
+        {% endif %}
+        <span class="history-page-num is-active">{{ page }} / {{ pages }}</span>
+        {% if page < pages %}
+        <a class="history-page-btn" href="{{ url_for('reviews.dataset_contributions', page=page+1) }}">Next</a>
+        {% endif %}
+      </nav>
+    </div>
+    {% endif %}
+  </section>
+</main>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/navbar.js') }}"></script>
+{% endblock %}
