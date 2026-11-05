@@ -1,3 +1,5 @@
+const TEXTILE_ORDER = ["pina", "jusi", "cocoon", "others"];
+
 const TEXTILES = {
   pina: {
     title: "Piña",
@@ -6,7 +8,7 @@ const TEXTILES = {
     material: "Pineapple leaf fibers",
     origin: "Philippines",
     uses: "Formal Barong Tagalog, ceremonial wear",
-    characteristics: "Fine, sheer, lustrous",
+    characteristics: "Fine, Sheer, Lustrous",
     images: ["images/textiles/pina.png"],
   },
   jusi: {
@@ -16,7 +18,7 @@ const TEXTILES = {
     material: "Silk / pineapple blend",
     origin: "Philippines",
     uses: "Everyday formal Barong, celebrations",
-    characteristics: "Lightweight, slightly sheer",
+    characteristics: "Lightweight, Slightly sheer",
     images: ["images/textiles/jusi.png"],
   },
   cocoon: {
@@ -26,7 +28,7 @@ const TEXTILES = {
     material: "Silk cocoon fibers",
     origin: "Philippines",
     uses: "Elegant Barong Tagalog",
-    characteristics: "Smooth, soft sheen",
+    characteristics: "Smooth, Soft sheen",
     images: ["images/textiles/cocoon.jpg"],
   },
   others: {
@@ -37,41 +39,70 @@ const TEXTILES = {
     origin: "Various",
     uses: "Traditional and contemporary garments",
     characteristics: "Varies by fabric",
-    images: ["images/textiles/others.png", "images/textiles/others.jpg", "images/barong.jpg"],
+    images: ["images/textiles/others.png"],
   },
 };
+
+let activeIndex = 0;
 
 function staticUrl(path) {
   const base = document.body?.dataset?.staticRoot || "/static/";
   return base.replace(/\/?$/, "/") + path.replace(/^\//, "");
 }
 
-function openTextileModal(key) {
+function renderDots() {
+  const dots = document.getElementById("textileDots");
+  if (!dots) return;
+  dots.innerHTML = TEXTILE_ORDER.map((_, i) => {
+    const on = i === activeIndex ? " is-on" : "";
+    return `<button type="button" class="textile-dot${on}" data-index="${i}" aria-label="Textile ${i + 1}"></button>`;
+  }).join("");
+  dots.querySelectorAll(".textile-dot").forEach((btn) => {
+    btn.addEventListener("click", () => openTextileAt(Number(btn.dataset.index)));
+  });
+}
+
+function fillModal(key) {
   const data = TEXTILES[key];
   if (!data) return;
-  const modal = document.getElementById("textileModal");
+  const idx = TEXTILE_ORDER.indexOf(key);
+  activeIndex = idx < 0 ? 0 : idx;
+
   document.getElementById("modalTitle").textContent = data.title;
   document.getElementById("modalDescription").textContent = data.description;
   document.getElementById("modalMaterial").textContent = data.material;
   document.getElementById("modalOrigin").textContent = data.origin;
   document.getElementById("modalUses").textContent = data.uses;
   document.getElementById("modalCharacteristics").textContent = data.characteristics;
-  const images = document.getElementById("modalImages");
-  images.innerHTML = "";
-  data.images.forEach((src) => {
-    const img = document.createElement("img");
-    img.src = staticUrl(src);
-    img.alt = data.title;
-    images.appendChild(img);
-  });
+  document.getElementById("modalIndex").textContent = `${activeIndex + 1} OF ${TEXTILE_ORDER.length}`;
+
+  const img = document.getElementById("modalImage");
+  img.src = staticUrl(data.images[0]);
+  img.alt = data.title;
+
+  renderDots();
+}
+
+function openTextileAt(index) {
+  const safe = ((index % TEXTILE_ORDER.length) + TEXTILE_ORDER.length) % TEXTILE_ORDER.length;
+  openTextileModal(TEXTILE_ORDER[safe]);
+}
+
+function openTextileModal(key) {
+  const data = TEXTILES[key];
+  if (!data) return;
+  fillModal(key);
+  const modal = document.getElementById("textileModal");
   modal.hidden = false;
   modal.classList.add("open");
+  document.body.style.overflow = "hidden";
 }
 
 function closeTextileModal() {
   const modal = document.getElementById("textileModal");
   modal.hidden = true;
   modal.classList.remove("open");
+  document.body.style.overflow = "";
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -84,8 +115,18 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   });
+
   document.getElementById("closeTextileModal")?.addEventListener("click", closeTextileModal);
+  document.getElementById("textilePrev")?.addEventListener("click", () => openTextileAt(activeIndex - 1));
+  document.getElementById("textileNext")?.addEventListener("click", () => openTextileAt(activeIndex + 1));
   document.getElementById("textileModal")?.addEventListener("click", (event) => {
     if (event.target.id === "textileModal") closeTextileModal();
+  });
+  document.addEventListener("keydown", (event) => {
+    const modal = document.getElementById("textileModal");
+    if (!modal || modal.hidden) return;
+    if (event.key === "Escape") closeTextileModal();
+    if (event.key === "ArrowLeft") openTextileAt(activeIndex - 1);
+    if (event.key === "ArrowRight") openTextileAt(activeIndex + 1);
   });
 });

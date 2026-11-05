@@ -3,73 +3,93 @@
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/shared.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/topnav.css') }}?v=14">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/textiletypes.css') }}?v=3">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-app.css') }}?v=9">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/textiletypes.css') }}?v=34">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-app.css') }}?v=10">
 {% endblock %}
 {% block body %}
 {% include "_nav.html" %}
-<main class="textile-page">
-  <section class="textile-header reveal">
-    <p class="eyebrow">BARONG TAGALOG</p>
-    <h1>Textile Types</h1>
-    <hr class="stitch-divider" aria-hidden="true">
-    <p class="page-description">
-      Explore the textile types supported by the BarongClassifier system.
-    </p>
-  </section>
+<main class="textile-page textile-page--owner">
+  <header class="textile-page-header">
+    <p class="eyebrow">Barong Tagalog Textile Classifier</p>
+    <h2>Textile Types</h2>
+  </header>
+  <p class="page-description">
+    Explore the textile types supported by the BarongClassifier system.
+  </p>
 
   <section class="textile-grid">
-    <article class="textile-card reveal" data-textile="pina" tabindex="0" role="button">
-      <div class="textile-icon" aria-hidden="true">
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/><path d="M8 4v16M12 4v16M16 4v16"/></svg>
+    <article class="textile-card" data-textile="pina" tabindex="0" role="button">
+      <div class="textile-card-media">
+        <img class="textile-thumb" src="{{ url_for('static', filename='images/textiles/pina.png') }}" alt="Piña textile">
       </div>
-      <h2>Piña</h2>
+      <h2>Pi&ntilde;a</h2>
       <p>A traditional textile associated with Barong Tagalog and known for its delicate appearance and fine texture.</p>
-      <span class="textile-status">Supported Textile</span>
+      <div class="textile-tags" aria-hidden="true">
+        <span>Fine</span><span>Sheer</span><span>Lustrous</span>
+      </div>
+      <span class="textile-card-cta">View details &rarr;</span>
     </article>
-    <article class="textile-card reveal reveal-delay-1" data-textile="jusi" tabindex="0" role="button">
-      <div class="textile-icon" aria-hidden="true">
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/><path d="M8 4v16M12 4v16M16 4v16"/></svg>
+
+    <article class="textile-card" data-textile="jusi" tabindex="0" role="button">
+      <div class="textile-card-media">
+        <img class="textile-thumb" src="{{ url_for('static', filename='images/textiles/jusi.png') }}" alt="Jusi textile">
       </div>
       <h2>Jusi</h2>
       <p>A lightweight textile commonly associated with Barong Tagalog garments and formal wear.</p>
-      <span class="textile-status">Supported Textile</span>
+      <div class="textile-tags" aria-hidden="true">
+        <span>Lightweight</span><span>Slightly sheer</span>
+      </div>
+      <span class="textile-card-cta">View details &rarr;</span>
     </article>
-    <article class="textile-card reveal reveal-delay-2" data-textile="cocoon" tabindex="0" role="button">
-      <div class="textile-icon" aria-hidden="true">
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/><path d="M8 4v16M12 4v16M16 4v16"/></svg>
+
+    <article class="textile-card" data-textile="cocoon" tabindex="0" role="button">
+      <div class="textile-card-media">
+        <img class="textile-thumb" src="{{ url_for('static', filename='images/textiles/cocoon.jpg') }}" alt="Cocoon textile">
       </div>
       <h2>Cocoon</h2>
       <p>A lightweight silk fabric with a smooth texture and subtle sheen, giving the Barong Tagalog an elegant and refined appearance.</p>
-      <span class="textile-status">Supported Textile</span>
+      <div class="textile-tags" aria-hidden="true">
+        <span>Smooth</span><span>Soft sheen</span>
+      </div>
+      <span class="textile-card-cta">View details &rarr;</span>
     </article>
-    <article class="textile-card reveal reveal-delay-3" data-textile="others" tabindex="0" role="button">
-      <div class="textile-icon" aria-hidden="true">
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="8"/><path d="M8 12h8M12 8v8"/></svg>
+
+    <article class="textile-card" data-textile="others" tabindex="0" role="button">
+      <div class="textile-card-media">
+        <img class="textile-thumb" src="{{ url_for('static', filename='images/textiles/others.png') }}" alt="Other textiles">
       </div>
       <h2>Others</h2>
       <p>Other textile materials and fabric types that may be associated with traditional Filipino clothing.</p>
-      <span class="textile-status">Supported Textile</span>
+      <div class="textile-tags" aria-hidden="true">
+        <span>Mixed</span><span>Varies</span>
+      </div>
+      <span class="textile-card-cta">View details &rarr;</span>
     </article>
   </section>
 </main>
 
 <div id="textileModal" class="textile-modal" hidden>
-  <div class="textile-modal-content">
-    <button class="close-modal" type="button" id="closeTextileModal">&times;</button>
+  <div class="textile-modal-panel" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <button class="close-modal" type="button" id="closeTextileModal" aria-label="Close">&times;</button>
+    <p class="textile-modal-index" id="modalIndex">1 OF 4</p>
     <h2 id="modalTitle"></h2>
-    <div id="modalImages" class="modal-images"></div>
-    <p id="modalDescription"></p>
-    <div class="textile-details">
-      <p><strong>Material:</strong> <span id="modalMaterial"></span></p>
-      <p><strong>Origin:</strong> <span id="modalOrigin"></span></p>
-      <p><strong>Common Uses:</strong> <span id="modalUses"></span></p>
-      <p><strong>Characteristics:</strong> <span id="modalCharacteristics"></span></p>
+    <img class="textile-modal-image" id="modalImage" alt="">
+    <p id="modalDescription" class="textile-modal-desc"></p>
+    <dl class="textile-modal-facts">
+      <div><dt>Material</dt><dd id="modalMaterial"></dd></div>
+      <div><dt>Origin</dt><dd id="modalOrigin"></dd></div>
+      <div><dt>Common uses</dt><dd id="modalUses"></dd></div>
+      <div><dt>Characteristics</dt><dd id="modalCharacteristics"></dd></div>
+    </dl>
+    <div class="textile-modal-nav">
+      <button type="button" class="textile-nav-btn" id="textilePrev">&larr; Previous</button>
+      <div class="textile-dots" id="textileDots" aria-hidden="true"></div>
+      <button type="button" class="textile-nav-btn" id="textileNext">Next &rarr;</button>
     </div>
   </div>
 </div>
 {% endblock %}
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/navbar.js') }}"></script>
-<script src="{{ url_for('static', filename='js/textiletypes.js') }}"></script>
+<script src="{{ url_for('static', filename='js/textiletypes.js') }}?v=3"></script>
 {% endblock %}

@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request
 
-from app.services.history_service import list_for_user
+from app.services.history_service import list_for_user, stats_for_user
 from app.utils.security import current_user, nickname_required, no_store
 
 bp = Blueprint("history", __name__)
@@ -48,6 +48,7 @@ def history_page():
         page=page,
         per_page=per_page,
     )
+    stats = stats_for_user(user)
     return render_template(
         "history.html",
         user=user,
@@ -61,4 +62,6 @@ def history_page():
         fabric_options=FABRIC_OPTIONS,
         date_options=DATE_OPTIONS,
         per_page_options=PER_PAGE_OPTIONS,
+        stats=stats,
+        filters_active=bool(selected_type or date_preset or (per_page != 10)),
     )

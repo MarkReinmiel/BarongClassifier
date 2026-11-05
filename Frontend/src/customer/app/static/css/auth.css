@@ -6,12 +6,12 @@
   --auth-lavender:#B8A4D4;
   min-height:100vh;
   margin:0;
-  background:var(--nav, #141C28);
+  background:var(--nav, #1F2232);
   color:#fff;
 }
 /* Dark page + navy brand / cream form panel (login / signup / password) */
 .auth-body--home{
-  background:var(--nav, #141C28);
+  background:var(--nav, #1F2232);
   color:var(--auth-ivory);
 }
 
@@ -37,7 +37,7 @@
   align-items:center;
   justify-items:center;
   padding:56px 16px 72px;
-  background:var(--nav, #141C28);
+  background:var(--nav, #1F2232);
   color:#fff;
 }
 .auth-back{
@@ -365,8 +365,8 @@
 .auth-card--hero{
   width:min(100%,440px);
   margin-top:8px;
-  background:var(--bg, #E5DED4);
-  border-color:rgba(121,87,128,.18);
+  background:var(--bg, #C2BAA4);
+  border-color:rgba(200, 70, 48,.18);
   box-shadow:0 24px 48px rgba(0,0,0,.28);
   color:var(--ink);
 }

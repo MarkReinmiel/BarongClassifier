@@ -1,111 +1,171 @@
 {% extends "base.html" %}
 {% block title %}History | {{ app_name }}{% endblock %}
 {% block head %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/history.css') }}?v=5">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/history.css') }}?v=13">
 {% endblock %}
 {% block content %}
-<div class="history-page-header">
-  <p class="eyebrow">Barong Tagalog Textile Classifier</p>
-  <h2>History</h2>
-</div>
+<div class="history-page">
+  <header class="history-page-header">
+    <p class="eyebrow">Barong Tagalog Textile Classifier</p>
+    <h2>History</h2>
+  </header>
 
-<section class="history-panel">
-  <div class="history-panel-head">
-    <div>
-      <h3 class="history-panel-title">Classifications</h3>
-      <p class="history-panel-sub">Your textile classification history</p>
+  <section class="history-stats" aria-label="History summary">
+    <article class="history-stat-card">
+      <p class="history-stat-label">Total Classifications</p>
+      <p class="history-stat-value">{{ stats.total }}</p>
+    </article>
+    <article class="history-stat-card">
+      <p class="history-stat-label">Most Common</p>
+      <p class="history-stat-value history-stat-value--text">{{ stats.most_common }}</p>
+    </article>
+    <article class="history-stat-card">
+      <p class="history-stat-label">Average Confidence</p>
+      <p class="history-stat-value">{{ stats.avg_confidence_label }}</p>
+    </article>
+  </section>
+
+  <section class="history-panel">
+    <div class="history-panel-head">
+      <div>
+        <h3 class="history-panel-title">Classifications</h3>
+        <p class="history-panel-sub">Your textile classification history</p>
+      </div>
     </div>
-  </div>
 
-  <form class="history-toolbar" method="get" action="{{ url_for('history.history_page') }}">
-    <div class="history-toolbar-filters">
-      <label class="history-select-wrap">
-        <span class="sr-only">Date filter</span>
-        <select class="history-select" name="date" onchange="this.form.submit()">
-          {% for value, label in date_options %}
-          <option value="{{ value }}" {% if date_preset == value %}selected{% endif %}>{{ label }}</option>
+    <form class="history-toolbar" method="get" action="{{ url_for('history.history_page') }}">
+      <div class="history-toolbar-filters">
+        <label class="history-select-wrap">
+          <span class="sr-only">Date filter</span>
+          <select class="history-select" name="date" onchange="this.form.submit()">
+            {% for value, label in date_options %}
+            <option value="{{ value }}" {% if date_preset == value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </label>
+        <label class="history-select-wrap">
+          <span class="sr-only">Fabric type</span>
+          <select class="history-select" name="type" onchange="this.form.submit()">
+            {% for value, label in fabric_options %}
+            <option value="{{ value }}" {% if selected_type == value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </label>
+        <div class="history-toolbar-page">
+          <span>Show</span>
+          <select class="history-select history-select--sm" name="per_page" onchange="this.form.submit()">
+            {% for n in per_page_options %}
+            <option value="{{ n }}" {% if per_page == n %}selected{% endif %}>{{ n }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+      <a class="history-clear{% if not filters_active %} is-muted{% endif %}" href="{{ url_for('history.history_page') }}">Clear</a>
+    </form>
+
+    {% if not rows %}
+    <div class="history-empty">
+      <h3>No classifications yet</h3>
+      <p>Classified images appear here.</p>
+    </div>
+    {% else %}
+    <div class="history-table-wrap">
+      <table class="history-table">
+        <thead>
+          <tr>
+            <th>Textile</th>
+            <th>Date</th>
+            <th>Confidence</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in rows %}
+          {% set key = (row.predicted_label or row.display_name or '')|lower %}
+          {% if 'jusi' in key %}
+            {% set thumb = url_for('static', filename='images/textiles/jusi.png') %}
+          {% elif 'cocoon' in key %}
+            {% set thumb = url_for('static', filename='images/textiles/cocoon.jpg') %}
+          {% elif 'pina' in key or 'piña' in key or 'seda' in key %}
+            {% set thumb = url_for('static', filename='images/textiles/pina.png') %}
+          {% else %}
+            {% set thumb = url_for('static', filename='images/barong.jpg') %}
+          {% endif %}
+          {% set conf = row.confidence if row.confidence is not none else 0 %}
+          {% set conf_pct = (conf * 100) if conf <= 1.5 else conf %}
+          {% set bar_w = 100 if conf_pct > 100 else (0 if conf_pct < 0 else conf_pct) %}
+          <tr>
+            <td>
+              <div class="history-textile-cell">
+                <div class="history-thumb" aria-hidden="true">
+                  {% if row.image_path and row.image_path.startswith('https://') %}
+                  <img src="{{ row.image_path }}" alt="" loading="lazy">
+                  {% elif row.image_reference and row.image_reference.startswith('https://') %}
+                  <img src="{{ row.image_reference }}" alt="" loading="lazy">
+                  {% else %}
+                  <img src="{{ thumb }}" alt="" loading="lazy">
+                  {% endif %}
+                </div>
+                <div class="history-textile-copy">
+                  <span class="history-textile">{{ row.display_name or row.predicted_label }}</span>
+                  {% if row.image_name %}
+                  <span class="history-file">{{ row.image_name }}</span>
+                  {% endif %}
+                </div>
+              </div>
+            </td>
+            <td>
+              {% if row.created_at %}
+              <div class="history-date-stack">
+                <span class="history-date-day">{{ row.created_at.strftime('%b %d, %Y') }}</span>
+                <span class="history-date-time">{{ row.created_at.strftime('%I:%M %p').lstrip('0') }}</span>
+              </div>
+              {% else %}
+              —
+              {% endif %}
+            </td>
+            <td>
+              <div class="history-conf" title="{{ '%.0f'|format(conf_pct) }}%">
+                <div class="history-conf-track" aria-hidden="true">
+                  <span class="history-conf-fill" style="width: {{ '%.0f'|format(bar_w) }}%"></span>
+                </div>
+                <span class="history-conf-pct">{{ '%.0f'|format(conf_pct) }}%</span>
+              </div>
+            </td>
+          </tr>
           {% endfor %}
-        </select>
-      </label>
-      <label class="history-select-wrap">
-        <span class="sr-only">Fabric type</span>
-        <select class="history-select" name="type" onchange="this.form.submit()">
-          {% for value, label in fabric_options %}
-          <option value="{{ value }}" {% if selected_type == value %}selected{% endif %}>{{ label }}</option>
-          {% endfor %}
-        </select>
-      </label>
+        </tbody>
+      </table>
     </div>
-    <div class="history-toolbar-page">
-      <span>Show results</span>
-      <select class="history-select history-select--sm" name="per_page" onchange="this.form.submit()">
-        {% for n in per_page_options %}
-        <option value="{{ n }}" {% if per_page == n %}selected{% endif %}>{{ n }}</option>
-        {% endfor %}
-      </select>
-    </div>
-  </form>
 
-  {% if not rows %}
-  <div class="history-empty">
-    <h3>No classifications yet</h3>
-    <p>Classified images appear here.</p>
-  </div>
-  {% else %}
-  <div class="history-table-wrap">
-    <table class="history-table">
-      <thead>
-        <tr>
-          <th>Date</th>
-          <th>Textile name</th>
-          <th>Confidence</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for row in rows %}
-        <tr>
-          <td>{{ row.created_at.strftime('%b %d, %Y') if row.created_at else '—' }}</td>
-          <td>
-            <span class="history-textile">{{ row.display_name or row.predicted_label }}</span>
-            {% if row.image_name %}
-            <span class="history-file">{{ row.image_name }}</span>
-            {% endif %}
-          </td>
-          <td>{{ '%.0f'|format(row.confidence * 100) }}%</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-
-  <div class="history-footer">
-    <p class="history-count">
-      Showing {{ ((page - 1) * per_page) + 1 }}–{{ ((page - 1) * per_page) + rows|length }} of {{ total }}
-    </p>
-    <nav class="history-pager" aria-label="History pages">
-      {% if page > 1 %}
-      <a class="history-page-btn" href="{{ url_for('history.history_page', page=page-1, type=selected_type, date=date_preset, per_page=per_page) }}">Previous</a>
-      {% else %}
-      <span class="history-page-btn is-disabled">Previous</span>
-      {% endif %}
-
-      {% for p in range(1, pages + 1) %}
-        {% if p == page %}
-        <span class="history-page-num is-active">{{ p }}</span>
-        {% elif p == 1 or p == pages or (p >= page - 1 and p <= page + 1) %}
-        <a class="history-page-num" href="{{ url_for('history.history_page', page=p, type=selected_type, date=date_preset, per_page=per_page) }}">{{ p }}</a>
-        {% elif p == page - 2 or p == page + 2 %}
-        <span class="history-page-ellipsis">…</span>
+    <div class="history-footer">
+      <p class="history-count">
+        Showing {{ ((page - 1) * per_page) + 1 }}–{{ ((page - 1) * per_page) + rows|length }} of {{ total }}
+      </p>
+      <nav class="history-pager" aria-label="History pages">
+        {% if page > 1 %}
+        <a class="history-page-btn" href="{{ url_for('history.history_page', page=page-1, type=selected_type, date=date_preset, per_page=per_page) }}">Previous</a>
+        {% else %}
+        <span class="history-page-btn is-disabled">Previous</span>
         {% endif %}
-      {% endfor %}
 
-      {% if page < pages %}
-      <a class="history-page-btn" href="{{ url_for('history.history_page', page=page+1, type=selected_type, date=date_preset, per_page=per_page) }}">Next</a>
-      {% else %}
-      <span class="history-page-btn is-disabled">Next</span>
-      {% endif %}
-    </nav>
-  </div>
-  {% endif %}
-</section>
+        {% for p in range(1, pages + 1) %}
+          {% if p == page %}
+          <span class="history-page-num is-active">{{ p }}</span>
+          {% elif p == 1 or p == pages or (p >= page - 1 and p <= page + 1) %}
+          <a class="history-page-num" href="{{ url_for('history.history_page', page=p, type=selected_type, date=date_preset, per_page=per_page) }}">{{ p }}</a>
+          {% elif p == page - 2 or p == page + 2 %}
+          <span class="history-page-ellipsis">…</span>
+          {% endif %}
+        {% endfor %}
+
+        {% if page < pages %}
+        <a class="history-page-btn" href="{{ url_for('history.history_page', page=page+1, type=selected_type, date=date_preset, per_page=per_page) }}">Next</a>
+        {% else %}
+        <span class="history-page-btn is-disabled">Next</span>
+        {% endif %}
+      </nav>
+    </div>
+    {% endif %}
+  </section>
+</div>
 {% endblock %}
