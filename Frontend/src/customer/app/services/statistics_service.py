@@ -63,14 +63,39 @@ def model_accuracy_label() -> str:
     return f"{round(score * 100):.0f}%"
 
 
+def _format_recent_when(created_at) -> str:
+    if not created_at:
+        return ""
+    try:
+        from datetime import datetime, timezone
+
+        now = datetime.now(timezone.utc)
+        when = created_at
+        if when.tzinfo is None:
+            when = when.replace(tzinfo=timezone.utc)
+        local = when.astimezone()
+        today = now.astimezone().date()
+        day = local.date()
+        time_part = local.strftime("%I:%M %p").lstrip("0")
+        if day == today:
+            return f"Today, {time_part}"
+        if (today - day).days == 1:
+            return f"Yesterday, {time_part}"
+        return local.strftime("%b %d, %I:%M %p").lstrip("0").replace(" 0", " ")
+    except Exception:
+        return ""
+
+
 def dashboard_stats(user: CustomerUser) -> dict:
-    total = Classification.query.filter_by(user_id=user.id).count()
-    recent = (
-        Classification.query.filter_by(user_id=user.id)
-        .order_by(Classification.created_at.desc())
-        .limit(5)
-        .all()
-    )
+    from app.services.history_service import list_for_user
+
+    # Same query path as History page so counts/recent never diverge.
+    uid = str(user.id)
+    total = Classification.query.filter(
+        Classification.user_id.in_([uid, user.id])
+    ).count()
+    result = list_for_user(user, page=1, per_page=3)
+    recent_rows = result.get("items") or []
     return {
         "textile_types": _load_class_count(),
         "model_accuracy": model_accuracy_label(),
@@ -78,10 +103,17 @@ def dashboard_stats(user: CustomerUser) -> dict:
         "recent": [
             {
                 "label": row.display_name or row.predicted_label,
-                "confidence": row.confidence,
-                "image_name": row.image_name,
+                "confidence": float(row.confidence or row.confidence_score or 0),
+                "image_name": row.image_name or row.file_name or "image",
+                "image_path": (row.image_path or row.image_reference or "") or "",
+                "textile_key": (row.predicted_label or row.display_name or "")
+                .strip()
+                .lower()
+                .replace("ñ", "n")
+                .replace("piña", "pina"),
                 "created_at": row.created_at.isoformat() if row.created_at else "",
+                "created_label": _format_recent_when(row.created_at),
             }
-            for row in recent
+            for row in recent_rows
         ],
     }

@@ -2,18 +2,18 @@
 
 @media (max-width: 899px) {
   :root {
-    --bg: #E8E2D9;
-    --surface: #FFFdf9;
-    --soft: #F5F1EC;
-    --ink: #1E2A3A;
-    --ink2: #5A6575;
-    --accent: #795780;
-    --deep: #634768;
-    --deeper: #4A3552;
-    --hi: #B894C4;
-    --nav: #141C28;
-    --line: #E2E4EA;
-    --shadow: rgba(38, 53, 74, 0.1);
+    --bg: #C2BAA4;
+    --surface: #FBF9F4;
+    --soft: #E8E3D6;
+    --ink: #1F2232;
+    --ink2: #596475;
+    --accent: #C84630;
+    --deep: #A33826;
+    --deeper: #1F2232;
+    --hi: #E07A66;
+    --nav: #1F2232;
+    --line: #D4CDBB;
+    --shadow: rgba(31, 34, 50, 0.12);
   }
 
   body {
@@ -92,23 +92,23 @@
   }
 
   .nb[data-tone="home"].on {
-    background: #FCE8EC;
-    color: #E04560;
+    background: #F8E8E4;
+    color: #C84630;
   }
 
   .nb[data-tone="classify"].on {
-    background: #E0F7F4;
-    color: #1AA897;
+    background: #F8E8E4;
+    color: #A33826;
   }
 
   .nb[data-tone="types"].on {
-    background: #ECE8F8;
-    color: #6B5CAD;
+    background: #E8EBEE;
+    color: #596475;
   }
 
   .nb[data-tone="history"].on {
-    background: #FCEFE3;
-    color: #E08A3C;
+    background: #EFEBE3;
+    color: #1F2232;
   }
 
   /* —— Dashboard —— */
@@ -289,7 +289,7 @@
 
   .drop {
     min-height: 220px;
-    border: 1.5px dashed rgba(121, 87, 128, 0.35);
+    border: 1.5px dashed rgba(200, 70, 48, 0.35);
     border-radius: 16px;
     background: var(--soft);
   }
@@ -355,14 +355,24 @@
 
   /* —— Textile Types — list rows —— */
   main.shell:has(.textile-page) {
-    padding: 16px 16px calc(100px + env(safe-area-inset-bottom));
+    max-width: none;
+    width: 100%;
+    padding: 12px 12px calc(100px + env(safe-area-inset-bottom));
+    gap: 0;
   }
 
   .textile-page,
   .textile-page--customer {
     min-height: 0;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    width: 100%;
+    max-width: none;
+    margin: 0;
     padding: 0 0 8px;
     background: transparent;
+    display: block;
   }
 
   .textile-page.textile-page--customer .textile-page-header,
@@ -377,14 +387,14 @@
     visibility: visible !important;
     opacity: 1 !important;
     margin: 0 auto 4px !important;
-    color: #795780 !important;
+    color: #C84630 !important;
     text-transform: uppercase !important;
   }
 
   .textile-page.textile-page--customer .textile-page-header h2,
   .textile-page.textile-page--customer .history-page-header h2 {
     font-size: 28px !important;
-    color: #26354A !important;
+    color: #1F2232 !important;
   }
 
   .textile-page.textile-page--customer > .page-description {
@@ -392,7 +402,7 @@
     font-size: 13px;
     line-height: 1.45;
     text-align: center;
-    color: #5A6575;
+    color: #596475;
   }
 
   .history-page-header {
@@ -424,20 +434,31 @@
     box-shadow: 0 8px 20px rgba(38, 53, 74, 0.06);
     text-align: left;
     cursor: pointer;
+    transform: none;
+  }
+
+  .textile-page--customer .textile-card-media {
+    grid-row: 1 / span 2;
+    width: 64px;
+    height: 64px;
+    aspect-ratio: auto;
+    border-radius: 50%;
   }
 
   .textile-page--customer .textile-card .textile-thumb {
     display: block;
-    grid-row: 1 / span 2;
-    width: 64px;
-    height: 64px;
+    width: 100%;
+    height: 100%;
     border-radius: 50%;
     object-fit: cover;
     background: var(--soft);
     border: 1px solid var(--line);
   }
 
-  .textile-page--customer .textile-card .textile-icon {
+  .textile-page--customer .textile-tags,
+  .textile-page--customer .textile-card-cta,
+  .textile-page--customer .textile-status,
+  .textile-page--customer .textile-icon {
     display: none;
   }
 
@@ -448,7 +469,7 @@
     color: var(--ink);
   }
 
-  .textile-page--customer .textile-card p {
+  .textile-page--customer .textile-card > p {
     grid-column: 2;
     margin: 0;
     font-size: 12px;
@@ -458,10 +479,6 @@
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
-  }
-
-  .textile-page--customer .textile-status {
-    display: none;
   }
 
   .textile-page--customer .textile-card::after {

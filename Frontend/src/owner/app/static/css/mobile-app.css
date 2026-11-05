@@ -236,7 +236,7 @@
         width: 100%;
         max-width: none;
         margin: 0;
-        padding: 14px 16px calc(88px + env(safe-area-inset-bottom));
+        padding: 12px 12px calc(88px + env(safe-area-inset-bottom));
     }
 
     /* All pages share one fixed-size glow on phones, so the background is
@@ -584,28 +584,38 @@
         display: flex;
         flex-direction: column;
         gap: 10px;
+        width: 100%;
     }
 
     .textile-grid > article.textile-card:not(#historyLoading):not(#historyEmpty):not(#historyError) {
         display: grid;
-        grid-template-columns: 48px minmax(0, 1fr) auto;
-        grid-template-areas:
-            "icon title chev"
-            "icon status chev";
-        align-items: center;
+        grid-template-columns: 64px minmax(0, 1fr) 24px;
+        grid-template-rows: auto auto;
         column-gap: 14px;
+        row-gap: 4px;
+        align-items: center;
     }
 
-    .textile-grid > article.textile-card:not(#historyLoading):not(#historyEmpty):not(#historyError) .textile-icon {
-        grid-area: icon;
+    .textile-grid > article.textile-card:not(#historyLoading):not(#historyEmpty):not(#historyError) .textile-card-media {
+        grid-row: 1 / span 2;
+        width: 64px;
+        height: 64px;
+        aspect-ratio: auto;
+        border-radius: 50%;
     }
 
     .textile-grid > article.textile-card:not(#historyLoading):not(#historyEmpty):not(#historyError) h2 {
-        grid-area: title;
+        grid-column: 2;
     }
 
-    .textile-grid > article.textile-card:not(#historyLoading):not(#historyEmpty):not(#historyError) .textile-status {
-        grid-area: status;
+    .textile-grid > article.textile-card:not(#historyLoading):not(#historyEmpty):not(#historyError) > p {
+        grid-column: 2;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        font-size: 12px;
+        margin: 0;
     }
 
     .textile-card,
@@ -623,39 +633,26 @@
         text-align: left;
     }
 
-    .textile-icon {
-        width: 48px;
-        height: 48px;
-        flex: none;
-        border-radius: 10px;
-        background: var(--accent-deeper);
-        color: var(--accent-highlight);
-        font-size: 22px;
+    .textile-page .textile-tags,
+    .textile-page .textile-card-cta {
+        display: none;
     }
 
     .textile-card h2,
     .history-card h2 {
         margin: 0;
         color: var(--ink);
-        font-size: 22px;
+        font-size: 20px;
     }
 
-    .textile-grid > article.textile-card:not(#historyLoading):not(#historyEmpty):not(#historyError) > p,
     .history-label {
         display: none;
     }
 
-    .textile-status {
-        display: block;
-        margin: 0;
-        color: var(--ink-soft);
-        font-size: 12px;
-        background: transparent;
-    }
-
     .textile-grid > article.textile-card:not(#historyLoading):not(#historyEmpty):not(#historyError)::after {
         content: "›";
-        grid-area: chev;
+        grid-column: 3;
+        grid-row: 1 / span 2;
         color: var(--accent);
         font-size: 22px;
     }

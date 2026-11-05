@@ -1,19 +1,19 @@
 /* Customer landing — same floating-hero layout as Owner, cream/navy/plum */
 
 :root {
-  --bg: #E5DED4;
-  --surface: #fff;
-  --soft: #F5F1EC;
-  --ink: #26354A;
-  --ink2: #5A6575;
-  --accent: #795780;
-  --deep: #634768;
-  --deeper: #4A3552;
-  --hi: #B894C4;
-  --nav: #141C28;
-  --nav-muted: #9AA6B8;
-  --line: #E2E4EA;
-  --shadow: rgba(38, 53, 74, 0.1);
+  --bg: #C2BAA4;
+  --surface: #FBF9F4;
+  --soft: #E8E3D6;
+  --ink: #1F2232;
+  --ink2: #596475;
+  --accent: #C84630;
+  --deep: #A33826;
+  --deeper: #1F2232;
+  --hi: #E07A66;
+  --nav: #1F2232;
+  --nav-muted: #9AA3B5;
+  --line: #D4CDBB;
+  --shadow: rgba(31, 34, 50, 0.12);
   --serif: "Playfair Display", Georgia, serif;
   --sans: "DM Sans", Arial, sans-serif;
   --lp-gutter: clamp(16px, 3.5vw, 40px);
@@ -418,7 +418,7 @@ body {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: rgba(121, 87, 128, 0.12);
+  background: rgba(200, 70, 48, 0.12);
   color: var(--accent);
   font-size: 12px;
   font-weight: 700;

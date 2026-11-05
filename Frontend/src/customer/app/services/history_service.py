@@ -38,7 +38,9 @@ def list_for_user(
 ) -> dict:
     page = max(1, int(page or 1))
     per_page = min(100, max(1, int(per_page or 10)))
-    query = Classification.query.filter_by(user_id=user.id)
+    # Match both string and raw UUID forms stored in public.classifications.user_id
+    uid = str(user.id)
+    query = Classification.query.filter(Classification.user_id.in_([uid, user.id]))
 
     fabric = (fabric or "").strip()
     if fabric:
@@ -65,6 +67,48 @@ def list_for_user(
         "page": page,
         "per_page": per_page,
         "pages": pages,
+    }
+
+
+def stats_for_user(user: CustomerUser) -> dict:
+    """Summary cards for History: total, most common label, average confidence."""
+    uid = str(user.id)
+    rows = (
+        Classification.query.filter(Classification.user_id.in_([uid, user.id]))
+        .order_by(Classification.created_at.desc())
+        .all()
+    )
+    total = len(rows)
+    if not total:
+        return {
+            "total": 0,
+            "most_common": "—",
+            "avg_confidence": None,
+            "avg_confidence_label": "—",
+        }
+
+    counts: dict[str, int] = {}
+    conf_sum = 0.0
+    for row in rows:
+        label = (row.display_name or row.predicted_label or "").strip() or "—"
+        counts[label] = counts.get(label, 0) + 1
+        try:
+            conf_sum += float(row.confidence or 0.0)
+        except (TypeError, ValueError):
+            pass
+
+    most_common = max(counts.items(), key=lambda item: item[1])[0]
+    avg = conf_sum / total if total else 0.0
+    # confidence may already be 0–1 or 0–100
+    if avg > 1.5:
+        avg_pct = avg
+    else:
+        avg_pct = avg * 100.0
+    return {
+        "total": total,
+        "most_common": most_common,
+        "avg_confidence": avg_pct,
+        "avg_confidence_label": f"{round(avg_pct):.0f}%",
     }
 
 

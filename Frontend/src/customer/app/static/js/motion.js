@@ -119,7 +119,7 @@
   bootNumbers(document);
   window.bcMotion = { animateNum: animateNum, bootNumbers: bootNumbers };
 
-  /* ---- OTP success: reverse deal — row → middle pile one-by-one → next page ---- */
+  /* ---- OTP success: row → layered deck stack (peek bottom-left), keep card colors ---- */
   function otpLayout(otpEl, count) {
     var width = otpEl.clientWidth || 320;
     var gap = 8;
@@ -151,39 +151,41 @@
     }
 
     var layout = otpLayout(otpEl, inputs.length);
-    var stackGap = 8;
+    var peek = 5;
     otpEl.classList.add("is-stack-enter");
 
-    // Freeze boxes in their current row slots
+    // Freeze boxes in their current row slots (first digit stays on top of the deck)
     inputs.forEach(function (input, index) {
       input.style.width = layout.box + "px";
+      input.style.height = layout.box + "px";
       input.style.zIndex = String(inputs.length - index);
       setOtpTransform(input, layout.slots[index], 0, 0);
     });
 
-    function gatherToMiddle(index) {
+    function gatherToDeck(index) {
       if (index >= inputs.length) {
-        // Hold the pile, then go to next page / landing
         window.setTimeout(function () {
           if (done) done();
-        }, 520);
+        }, 560);
         return;
       }
 
       var input = inputs[index];
       input.classList.add("is-stacked");
-      input.style.zIndex = String(10 + index);
-      var pileY = index * stackGap;
-      var pileR = (index % 2 === 0 ? -1 : 1) * Math.min(index * 1.4, 6);
-      setOtpTransform(input, 0, pileY, pileR);
+      // Front card (digit 1) on top; later digits tuck straight upward behind it
+      input.style.zIndex = String(inputs.length - index);
+      var pileX = 0;
+      var pileY = -index * peek;
+      var pileR = (index % 2 === 0 ? -1 : 1) * Math.min(index * 0.7, 3);
+      setOtpTransform(input, pileX, pileY, pileR);
 
       window.setTimeout(function () {
-        gatherToMiddle(index + 1);
-      }, 160);
+        gatherToDeck(index + 1);
+      }, 150);
     }
 
     window.setTimeout(function () {
-      gatherToMiddle(0);
+      gatherToDeck(0);
     }, 60);
   };
 })();

@@ -295,7 +295,7 @@ main.shell:has(.classifier-page) {
   font-size: 13px;
   font-weight: 600;
   text-decoration: none;
-  box-shadow: 0 6px 14px rgba(121, 87, 128, 0.22);
+  box-shadow: 0 6px 14px rgba(200, 70, 48, 0.22);
   transition: background 0.2s ease, transform 0.2s ease;
 }
 
