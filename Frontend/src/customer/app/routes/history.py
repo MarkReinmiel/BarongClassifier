@@ -1,6 +1,10 @@
 from flask import Blueprint, render_template, request
 
-from app.services.history_service import list_for_user, stats_for_user
+from app.services.history_service import (
+    format_history_when_parts,
+    list_for_user,
+    stats_for_user,
+)
 from app.utils.security import current_user, nickname_required, no_store
 
 bp = Blueprint("history", __name__)
@@ -49,10 +53,15 @@ def history_page():
         per_page=per_page,
     )
     stats = stats_for_user(user)
+    rows = result["items"]
+    for row in rows:
+        day_label, time_label = format_history_when_parts(row.created_at)
+        row.day_label = day_label
+        row.time_label = time_label
     return render_template(
         "history.html",
         user=user,
-        rows=result["items"],
+        rows=rows,
         selected_type=selected_type,
         date_preset=date_preset,
         page=result["page"],

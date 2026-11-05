@@ -498,7 +498,7 @@
 
   .history-panel {
     border-radius: 20px;
-    background: #fff;
+    background: var(--surface);
     padding: 14px;
   }
 

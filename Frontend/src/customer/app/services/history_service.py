@@ -112,5 +112,27 @@ def stats_for_user(user: CustomerUser) -> dict:
     }
 
 
+def format_history_when_parts(created_at) -> tuple[str, str]:
+    """Return (day_label, time_label) like ('Today', '4:15 PM')."""
+    if not created_at:
+        return ("—", "")
+    try:
+        now = datetime.now(timezone.utc)
+        when = created_at
+        if when.tzinfo is None:
+            when = when.replace(tzinfo=timezone.utc)
+        local = when.astimezone()
+        today = now.astimezone().date()
+        day = local.date()
+        time_part = local.strftime("%I:%M %p").lstrip("0")
+        if day == today:
+            return ("Today", time_part)
+        if (today - day).days == 1:
+            return ("Yesterday", time_part)
+        return (local.strftime("%b %d, %Y"), time_part)
+    except Exception:
+        return ("—", "")
+
+
 def get_owned(user: CustomerUser, classification_id: str) -> Classification | None:
     return Classification.query.filter_by(id=classification_id, user_id=user.id).first()
