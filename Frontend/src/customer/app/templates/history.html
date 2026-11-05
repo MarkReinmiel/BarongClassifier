@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}History | {{ app_name }}{% endblock %}
 {% block head %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/history.css') }}?v=13">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/history.css') }}?v=15">
 {% endblock %}
 {% block content %}
 <div class="history-page">
@@ -116,8 +116,10 @@
             <td>
               {% if row.created_at %}
               <div class="history-date-stack">
-                <span class="history-date-day">{{ row.created_at.strftime('%b %d, %Y') }}</span>
-                <span class="history-date-time">{{ row.created_at.strftime('%I:%M %p').lstrip('0') }}</span>
+                <span class="history-date-day">{{ row.day_label }}</span>
+                {% if row.time_label %}
+                <span class="history-date-time">{{ row.time_label }}</span>
+                {% endif %}
               </div>
               {% else %}
               —

@@ -456,6 +456,30 @@ body:has(.dashboard){
   .tools-grid,
   .tools-grid--three{grid-template-columns:1fr}
   .dashboard-lower{grid-template-columns:1fr}
+  .dashboard-main-col,
+  .dashboard-side-col{
+    height:auto;
+    min-height:0;
+  }
+  .dashboard-side-col .recent-panel{
+    flex:none;
+    height:auto;
+    min-height:0;
+  }
+  .recent-panel .float-list{
+    flex:none;
+    min-height:0;
+    gap:10px;
+  }
+  .recent-panel .float-list .float-row{
+    flex:0 0 auto;
+    min-height:64px;
+    height:auto;
+    align-items:center;
+    overflow:visible;
+  }
+  .float-row .grow{overflow:visible}
+  .float-row .file{white-space:nowrap}
   .steps,
   .steps--grid{grid-template-columns:1fr 1fr}
 }
