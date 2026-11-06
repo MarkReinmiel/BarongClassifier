@@ -5,4 +5,8 @@
 .btn .spin{width:16px;height:16px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:inline-block}
 @keyframes spin{to{transform:rotate(360deg)}}
 .textile-modal.open,
-.textile-modal:not([hidden]){display:flex}
+.textile-modal:not([hidden]){
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
