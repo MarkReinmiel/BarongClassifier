@@ -126,7 +126,8 @@ body {
 }
 
 .links a.on,
-.links a[aria-current="page"] {
+.links a[aria-current="page"],
+.links .nav-dd-btn.on {
   color: #fff;
   font-weight: 700;
   position: relative;
@@ -134,7 +135,8 @@ body {
 }
 
 .links a.on::after,
-.links a[aria-current="page"]::after {
+.links a[aria-current="page"]::after,
+.links .nav-dd-btn.on::after {
   content: "";
   position: absolute;
   left: 12px;
@@ -143,6 +145,128 @@ body {
   height: 2px;
   background: var(--hi);
   border-radius: 2px;
+}
+
+.nav-dd {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.nav-dd-btn {
+  background: none;
+  border: 0;
+  color: var(--nav-muted);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 8px 10px;
+  cursor: pointer;
+  border-radius: 999px;
+  font-family: var(--sans);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: color 0.2s ease, background 0.2s ease;
+  white-space: nowrap;
+}
+
+.nav-dd-btn:hover,
+.nav-dd-btn[aria-expanded="true"] {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.nav-dd-btn .nav-ico {
+  width: 16px;
+  height: 16px;
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+
+.nav-dd-btn .nav-ico svg {
+  width: 16px;
+  height: 16px;
+  display: block;
+}
+
+.nav-dd-caret {
+  display: inline-flex;
+  flex: none;
+  opacity: 0.85;
+  transition: transform 0.2s ease;
+}
+
+.nav-dd-btn[aria-expanded="true"] .nav-dd-caret {
+  transform: rotate(180deg);
+}
+
+.nav-dd-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  min-width: 220px;
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: 0 12px 28px var(--shadow);
+  padding: 8px;
+  z-index: 50;
+}
+
+.nav-dd-menu[hidden] {
+  display: none !important;
+}
+
+.nav-dd-menu a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  color: var(--ink);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: var(--sans);
+  white-space: nowrap;
+  background: transparent;
+}
+
+.nav-dd-menu a .nav-ico {
+  width: 18px;
+  height: 18px;
+  display: grid;
+  place-items: center;
+  flex: none;
+  color: var(--ink2);
+}
+
+.nav-dd-menu a .nav-ico svg {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+
+.nav-dd-menu a:hover {
+  background: #f5f1ec;
+  color: var(--ink);
+}
+
+.nav-dd-menu a:hover .nav-ico,
+.nav-dd-menu a.on .nav-ico {
+  color: var(--ink);
+}
+
+.nav-dd-menu a.on {
+  background: rgba(166, 124, 61, 0.14);
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.nav-dd-menu a.on::after {
+  display: none;
 }
 
 .profile {
