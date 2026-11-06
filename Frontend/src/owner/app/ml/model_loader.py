@@ -120,3 +120,14 @@ def get_image_size() -> int:
 def display_name(class_key: str) -> str:
     key = (class_key or "").strip().lower()
     return DISPLAY.get(key, class_key)
+
+
+def invalidate_cache() -> None:
+    """Drop the in-memory production model so the next request reloads from disk."""
+    global _MODEL, _CLASSES, _IMAGE_SIZE, _MODEL_PATH
+    with _LOCK:
+        _MODEL = None
+        _CLASSES = None
+        _IMAGE_SIZE = None
+        _MODEL_PATH = None
+        logger.info("Invalidated in-memory Keras model cache")

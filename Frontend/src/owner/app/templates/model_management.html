@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+{% block title %}Model Management | {{ app_name }}{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/shared.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/topnav.css') }}?v=14">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/history.css') }}?v=6">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/customer-history.css') }}?v=9">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/model-management.css') }}?v=3">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-app.css') }}?v=9">
+<meta name="csrf-token" content="{{ csrf_token() }}">
+<meta name="model-api-base" content="{{ request.script_root }}/api/model-management">
+{% endblock %}
+{% block body %}
+{% include "_nav.html" %}
+{% set prod = data.production or {} %}
+{% set cand = data.candidate or {} %}
+{% set job = data.active_job or {} %}
+{% set pm = data.production_metrics or {} %}
+{% set cm = data.candidate_metrics or {} %}
+{% set ds = data.dataset or {} %}
+<main class="history-page ch-page mm-page">
+  <section class="history-page-header reveal">
+    <p class="eyebrow">CNN LIFECYCLE</p>
+    <h1>Model Management</h1>
+    <hr class="stitch-divider" aria-hidden="true">
+    <p class="page-description">Train candidate models in the background while customers keep using the live production model. Deploy only after evaluation passes. Dataset approval stays in Customer Classification History.</p>
+  </section>
+
+  {% if error %}
+  <div class="ch-flash ch-flash--error">{{ error }}</div>
+  {% endif %}
+  <div class="ch-flash ch-flash--error" id="mmError" hidden></div>
+  <div class="ch-flash ch-flash--ok" id="mmSuccess" hidden></div>
+
+  <section class="mm-grid">
+    <article class="mm-card">
+      <header class="mm-card-head">
+        <div>
+          <p class="mm-kicker">Production model</p>
+          <h2>{{ prod.display_revision or prod.version_label or 'Not registered' }}</h2>
+        </div>
+        <span class="mm-badge mm-badge--active">{{ (prod.status or 'unknown')|replace('_',' ')|title }}</span>
+      </header>
+      <dl class="mm-dl">
+        <div><dt>Major / revision</dt><dd>v{{ prod.major_version or 1 }}.{{ prod.revision_number or 1 }}</dd></div>
+        <div><dt>Deployed</dt><dd>{{ prod.deployed_at or '—' }}</dd></div>
+        <div><dt>Test accuracy</dt><dd>{% if pm.test_accuracy is defined %}{{ '%.1f'|format((pm.test_accuracy or 0) * 100) }}%{% else %}—{% endif %}</dd></div>
+        <div><dt>Train / val / test</dt><dd>{{ pm.train_images or '—' }} / {{ pm.val_images or '—' }} / {{ pm.test_images or '—' }}</dd></div>
+        <div><dt>Classifications handled</dt><dd>{{ data.classifications_handled or 0 }}</dd></div>
+        <div><dt>Health</dt><dd>Serving live Customer + Owner inference</dd></div>
+      </dl>
+    </article>
+
+    <article class="mm-card">
+      <header class="mm-card-head">
+        <div>
+          <p class="mm-kicker">Training candidate</p>
+          <h2>{{ cand.display_revision or cand.version_label or 'No candidate yet' }}</h2>
+        </div>
+        <span class="mm-badge mm-badge--{{ cand.status or 'idle' }}">{{ (cand.status or job.status or 'idle')|replace('_',' ')|title }}</span>
+      </header>
+      <dl class="mm-dl">
+        <div><dt>Revision</dt><dd>{% if cand.major_version %}v{{ cand.major_version }}.{{ cand.revision_number }}{% else %}—{% endif %}</dd></div>
+        <div><dt>Job status</dt><dd id="mmJobStatus">{{ job.status or cand.job_status or '—' }}</dd></div>
+        <div><dt>Progress</dt><dd><span id="mmProgressPct">{{ '%.0f'|format(job.progress_pct or cand.progress_pct or 0) }}</span>%</dd></div>
+        <div><dt>Message</dt><dd id="mmProgressMsg">{{ job.progress_message or cand.progress_message or '—' }}</dd></div>
+        <div><dt>Approved pool</dt><dd>{{ ds.approved or 0 }} approved · {{ ds.added_to_dataset or 0 }} in dataset pool</dd></div>
+        <div><dt>Trainable for next revision</dt><dd>{{ ds.trainable_contribution_count or 0 }} (rejected excluded · undefined excluded)</dd></div>
+        <div><dt>Attempt</dt><dd>{{ cand.attempt or job.attempt or '—' }}</dd></div>
+      </dl>
+      <div class="mm-progress" aria-hidden="true">
+        <span id="mmProgressBar" style="width: {{ '%.0f'|format(job.progress_pct or cand.progress_pct or 0) }}%"></span>
+      </div>
+      {% if cand.error_message or job.error_message %}
+      <p class="mm-error-line">{{ cand.error_message or job.error_message }}</p>
+      {% endif %}
+    </article>
+  </section>
+
+  <section class="mm-actions history-panel">
+    <div class="history-panel-head">
+      <div>
+        <h3 class="history-panel-title">Controls</h3>
+        <p class="history-panel-sub">Default training creates the next revision under the current major (e.g. {{ data.next_revision_preview or 'v2.2' }}), not a new major. Production weights stay untouched until you deploy.</p>
+      </div>
+    </div>
+    <div class="mm-btn-row">
+      <button type="button" class="ch-btn ch-btn--navy" id="mmStartTrain" {% if not data.can_start_training %}disabled{% endif %}>Train Next Revision ({{ data.next_revision_preview or 'v?.?' }})</button>
+      <button type="button" class="ch-btn ch-btn--ghost ch-btn--inline" id="mmStartMajor" {% if not data.can_start_training %}disabled{% endif %}>Start New Major Version</button>
+      <button type="button" class="ch-btn ch-btn--ghost ch-btn--inline" id="mmRetryTrain" {% if not data.can_retry %}disabled{% endif %}>Retry Training</button>
+      <button type="button" class="ch-btn ch-btn--ghost ch-btn--inline" id="mmEvaluate" {% if not data.can_evaluate %}disabled{% endif %} data-version-id="{{ cand.id or '' }}">Evaluate Model</button>
+      <button type="button" class="ch-btn ch-btn--ok" id="mmDeploy" {% if not data.can_deploy %}disabled{% endif %} data-version-id="{{ cand.id or '' }}">Approve and Deploy</button>
+      <button type="button" class="ch-btn ch-btn--bad" id="mmReject" {% if not cand.id or prod.id == cand.id %}disabled{% endif %} data-version-id="{{ cand.id or '' }}">Reject Candidate</button>
+      <button type="button" class="ch-btn ch-btn--ghost ch-btn--inline" id="mmRollback" {% if not data.can_rollback %}disabled{% endif %}>Rollback</button>
+      <button type="button" class="ch-btn ch-btn--ghost ch-btn--inline" id="mmViewLogs" data-version-id="{{ cand.id or '' }}">View Training Logs</button>
+    </div>
+  </section>
+
+  <section class="mm-grid mm-grid--eval">
+    <article class="mm-card">
+      <header class="mm-card-head">
+        <div>
+          <p class="mm-kicker">Evaluation</p>
+          <h2>Candidate vs production</h2>
+        </div>
+      </header>
+      <dl class="mm-dl">
+        <div><dt>Candidate accuracy</dt><dd>{% if cm.test_accuracy is defined %}{{ '%.1f'|format((cm.test_accuracy or 0) * 100) }}%{% else %}—{% endif %}</dd></div>
+        <div><dt>Production accuracy</dt><dd>{% if pm.test_accuracy is defined %}{{ '%.1f'|format((pm.test_accuracy or 0) * 100) }}%{% else %}—{% endif %}</dd></div>
+        <div><dt>Candidate train/val/test</dt><dd>{{ cm.train_images or '—' }} / {{ cm.val_images or '—' }} / {{ cm.test_images or '—' }}</dd></div>
+        <div><dt>Confusion matrix</dt><dd><code class="mm-code">{{ cm.confusion_matrix or '—' }}</code></dd></div>
+      </dl>
+      <p class="mm-hint">OOD / Undefined Textile rejection continues to use the deployed relevance gate; it is preserved on deploy and not retrained by this job.</p>
+    </article>
+
+    <article class="mm-card">
+      <header class="mm-card-head">
+        <div>
+          <p class="mm-kicker">Model history</p>
+          <h2>Majors and revisions</h2>
+        </div>
+      </header>
+      <div class="mm-history">
+        {% for group in data.version_groups or [] %}
+        <div class="mm-major-block">
+          <h3>{{ group.label }}</h3>
+          <div class="mm-table-wrap">
+            <table class="mm-table">
+              <thead>
+                <tr>
+                  <th>Revision</th>
+                  <th>Status</th>
+                  <th>Added images</th>
+                  <th>Test acc.</th>
+                  <th>Snapshot</th>
+                  <th>Trained</th>
+                  <th>Artifact</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for v in group.revisions %}
+                <tr>
+                  <td>
+                    {{ v.display_revision or ('v' ~ v.major_version ~ '.' ~ v.revision_number) }}
+                    {% if v.is_production %} <span class="mm-pill">Live</span>{% endif %}
+                  </td>
+                  <td>{{ v.status|replace('_',' ')|title }}</td>
+                  <td>{{ v.added_image_count if v.added_image_count is defined else '—' }}</td>
+                  <td>{% if v.test_accuracy is not none %}{{ '%.1f'|format((v.test_accuracy or 0) * 100) }}%{% else %}—{% endif %}</td>
+                  <td>{{ v.dataset_snapshot_id or '—' }}</td>
+                  <td>{{ v.created_at or '—' }}</td>
+                  <td><code class="mm-code" title="{{ v.artifact_location or v.artifact_dir or '' }}">{{ (v.artifact_location or v.artifact_dir or '—')|replace('\\', '/')|truncate(40, True, '…') }}</code></td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        {% else %}
+        <p class="mm-hint">No versions yet.</p>
+        {% endfor %}
+      </div>
+    </article>
+  </section>
+
+  <section class="mm-card mm-log-card" id="mmLogCard" hidden>
+    <header class="mm-card-head">
+      <div>
+        <p class="mm-kicker">Training logs</p>
+        <h2>Latest output</h2>
+      </div>
+      <button type="button" class="ch-btn ch-btn--ghost ch-btn--inline" id="mmHideLogs">Hide</button>
+    </header>
+    <pre class="mm-log" id="mmLogBody"></pre>
+  </section>
+</main>
+
+<dialog class="ch-confirm" id="mmConfirmDialog">
+  <form method="dialog" class="ch-confirm-inner">
+    <header class="ch-confirm-head">
+      <h2 id="mmConfirmTitle">Confirm</h2>
+      <button type="submit" class="ch-modal-close" value="cancel" aria-label="Close">×</button>
+    </header>
+    <div class="ch-confirm-body ch-confirm-body--simple">
+      <div class="ch-confirm-copy">
+        <p class="ch-confirm-line" id="mmConfirmBody"></p>
+      </div>
+    </div>
+    <div class="ch-confirm-foot">
+      <button type="submit" class="ch-btn ch-btn--ghost" value="cancel">Cancel</button>
+      <button type="button" class="ch-btn ch-btn--navy" id="mmConfirmOk">Confirm</button>
+    </div>
+  </form>
+</dialog>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/navbar.js') }}"></script>
+<script src="{{ url_for('static', filename='js/model-management.js') }}?v=3"></script>
+{% endblock %}

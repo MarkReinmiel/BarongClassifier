@@ -5,6 +5,7 @@
   const rejectDialog = document.getElementById("rejectDialog");
   const batchApproveDialog = document.getElementById("batchApproveDialog");
   const batchRejectDialog = document.getElementById("batchRejectDialog");
+  const restoreDialog = document.getElementById("restoreDialog");
   const datasetDialog = document.getElementById("datasetDialog");
   if (!page) return;
 
@@ -23,6 +24,15 @@
   let pendingConfirmChange = false;
   let submitting = false;
   let pendingDatasetIds = [];
+  let pendingBatchIds = [];
+  const confirmButtonDefaults = {
+    approveConfirmBtn: "Approve",
+    rejectConfirmBtn: "Reject",
+    batchApproveConfirmBtn: "Confirm Approval",
+    batchRejectConfirmBtn: "Confirm Rejection",
+    restoreConfirmBtn: "Move to Pending",
+    datasetConfirmBtn: "Add to Dataset",
+  };
 
   const els = {
     image: document.getElementById("reviewImage"),
@@ -123,6 +133,17 @@
       .filter(Boolean);
   }
 
+  function selectedDatasetIds() {
+    return eligibleChecks()
+      .filter(
+        (input) =>
+          input.checked &&
+          (input.getAttribute("data-status") || "") === "approved"
+      )
+      .map((input) => input.value)
+      .filter(Boolean);
+  }
+
   function syncSelectionUi() {
     const ids = selectedIds();
     const checks = eligibleChecks();
@@ -160,16 +181,45 @@
     syncSelectionUi();
   }
 
-  function setBusy(isBusy, label) {
+  function setBusy(isBusy, action) {
     submitting = Boolean(isBusy);
     const buttons = document.querySelectorAll(
-      ".ch-approve, .ch-reject, #approveBtn, #rejectBtn, #approveConfirmBtn, #rejectConfirmBtn, #batchApproveBtn, #batchRejectBtn, #batchDatasetBtn, #batchApproveConfirmBtn, #batchRejectConfirmBtn, #datasetConfirmBtn"
+      ".ch-approve, .ch-reject, .ch-restore, #approveBtn, #rejectBtn, #approveConfirmBtn, #rejectConfirmBtn, #batchApproveBtn, #batchRejectBtn, #batchDatasetBtn, #batchRestoreBtn, #batchApproveConfirmBtn, #batchRejectConfirmBtn, #restoreConfirmBtn, #datasetConfirmBtn"
     );
     buttons.forEach((button) => {
       button.disabled = submitting;
     });
-    if (label && els.rejectBtn && submitting) {
-      // keep default labels unless confirm buttons need text swap elsewhere
+    const loadingLabels = {
+      approve: {
+        approveConfirmBtn: "Approving…",
+        batchApproveConfirmBtn: "Approving…",
+        approveBtn: "Approving…",
+      },
+      reject: {
+        rejectConfirmBtn: "Rejecting…",
+        batchRejectConfirmBtn: "Rejecting…",
+        rejectBtn: "Rejecting…",
+      },
+      dataset: {
+        datasetConfirmBtn: "Adding…",
+      },
+      restore: {
+        restoreConfirmBtn: "Moving…",
+      },
+    };
+    Object.entries(confirmButtonDefaults).forEach(([id, defaultLabel]) => {
+      const button = document.getElementById(id);
+      if (!button) return;
+      const loading = submitting ? loadingLabels[action]?.[id] : null;
+      button.textContent = loading || defaultLabel;
+    });
+    if (els.approveBtn && !submitting) els.approveBtn.textContent = "Approve";
+    if (els.rejectBtn && !submitting) els.rejectBtn.textContent = "Reject";
+    if (els.approveBtn && submitting && action === "approve") {
+      els.approveBtn.textContent = "Approving…";
+    }
+    if (els.rejectBtn && submitting && action === "reject") {
+      els.rejectBtn.textContent = "Rejecting…";
     }
   }
 
@@ -390,7 +440,8 @@
   }
 
   async function runBatch(action) {
-    const ids = selectedIds();
+    if (submitting) return;
+    const ids = pendingBatchIds.length ? pendingBatchIds.slice() : selectedIds();
     if (!ids.length) {
       showToast("Select at least one photo.", "bad");
       return;
@@ -411,6 +462,7 @@
       }
       removeCards(succeeded);
       clearSelection();
+      pendingBatchIds = [];
       if (batchApproveDialog?.open) batchApproveDialog.close();
       if (batchRejectDialog?.open) batchRejectDialog.close();
       showToast(
@@ -559,6 +611,7 @@
   document.getElementById("batchApproveBtn")?.addEventListener("click", () => {
     const ids = selectedIds();
     if (!ids.length) return;
+    pendingBatchIds = ids.slice();
     const line = document.getElementById("batchApproveCountLine");
     if (line) {
       line.textContent = `${ids.length} photo${ids.length === 1 ? "" : "s"} will move to the Approved panel.`;
@@ -570,6 +623,7 @@
   document.getElementById("batchRejectBtn")?.addEventListener("click", () => {
     const ids = selectedIds();
     if (!ids.length) return;
+    pendingBatchIds = ids.slice();
     const line = document.getElementById("batchRejectCountLine");
     if (line) {
       line.textContent = `${ids.length} photo${ids.length === 1 ? "" : "s"} will move to the Rejected panel.`;
@@ -578,21 +632,112 @@
     if (batchRejectDialog?.showModal) batchRejectDialog.showModal();
   });
 
-  document.getElementById("batchApproveConfirmBtn")?.addEventListener("click", () => {
+  document.getElementById("batchApproveConfirmBtn")?.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
     runBatch("approve");
   });
-  document.getElementById("batchRejectConfirmBtn")?.addEventListener("click", () => {
+  document.getElementById("batchRejectConfirmBtn")?.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
     runBatch("reject");
   });
 
+  batchApproveDialog?.addEventListener("close", () => {
+    if (!submitting) pendingBatchIds = [];
+  });
+  batchRejectDialog?.addEventListener("close", () => {
+    if (!submitting) pendingBatchIds = [];
+  });
+
   document.getElementById("batchDatasetBtn")?.addEventListener("click", () => {
-    const ids = selectedIds();
-    if (!ids.length) return;
+    const ids = selectedDatasetIds();
+    if (!ids.length) {
+      showToast("Select approved photos that are not already in the dataset pool.", "bad");
+      return;
+    }
     openDatasetPrompt(ids, ids.length);
   });
 
+  function openRestorePrompt(ids) {
+    pendingBatchIds = Array.from(new Set(ids || []));
+    if (!pendingBatchIds.length) return;
+    const line = document.getElementById("restoreCountLine");
+    if (line) {
+      line.textContent = `${pendingBatchIds.length} photo${
+        pendingBatchIds.length === 1 ? "" : "s"
+      } will return to the Pending panel.`;
+    }
+    showError(document.getElementById("restoreError"), "");
+    if (restoreDialog?.showModal) restoreDialog.showModal();
+  }
+
+  async function runRestoreBatch() {
+    if (submitting) return;
+    const ids = pendingBatchIds.length ? pendingBatchIds.slice() : selectedIds();
+    if (!ids.length) {
+      showToast("Select at least one photo.", "bad");
+      return;
+    }
+    setBusy(true, "restore");
+    const errorEl = document.getElementById("restoreError");
+    showError(errorEl, "");
+    try {
+      const data = await postJson(batchReviewUrl(), { action: "restore", ids });
+      const succeeded = data.succeeded || [];
+      const failed = data.failed || [];
+      if (!succeeded.length && failed.length) {
+        throw new Error(failed[0]?.error || "Could not move photos to Pending.");
+      }
+      removeCards(succeeded);
+      clearSelection();
+      pendingBatchIds = [];
+      if (restoreDialog?.open) restoreDialog.close();
+      showToast(
+        `Moved ${succeeded.length} photo${succeeded.length === 1 ? "" : "s"} to Pending.`,
+        "ok"
+      );
+      if (failed.length) {
+        console.error("[customer-history] Restore partial failures", failed);
+        showToast(`${failed.length} photo(s) could not be moved.`, "bad");
+      }
+      if (!document.querySelector(".ch-card")) {
+        window.location.reload();
+      }
+    } catch (error) {
+      console.error("[customer-history] Restore failed", error);
+      showError(errorEl, error.message || "Could not move photos to Pending.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  document.getElementById("batchRestoreBtn")?.addEventListener("click", () => {
+    const ids = selectedIds();
+    if (!ids.length) return;
+    openRestorePrompt(ids);
+  });
+
+  document.querySelectorAll(".ch-restore").forEach((button) => {
+    button.addEventListener("click", () => {
+      const id = button.getAttribute("data-id");
+      if (!id) return;
+      openRestorePrompt([id]);
+    });
+  });
+
+  document.getElementById("restoreConfirmBtn")?.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    runRestoreBatch();
+  });
+
+  restoreDialog?.addEventListener("close", () => {
+    if (!submitting) pendingBatchIds = [];
+  });
+
   document.getElementById("datasetConfirmBtn")?.addEventListener("click", () => {
-    const ids = pendingDatasetIds.length ? pendingDatasetIds : selectedIds();
+    const ids = pendingDatasetIds.length ? pendingDatasetIds : selectedDatasetIds();
     runDatasetBatch(ids);
   });
 

@@ -1,0 +1,194 @@
+.mm-page {
+  --ch-navy: #243650;
+  --ch-ok: #3f6a32;
+  --ch-bad: #8b2e3b;
+}
+
+.mm-grid {
+  max-width: 1400px;
+  margin: 0 auto 18px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.mm-grid--eval { margin-top: 8px; }
+
+.mm-card {
+  background: #fffdf8;
+  border: 1px solid rgba(36, 54, 80, 0.12);
+  border-radius: 16px;
+  padding: 16px 18px;
+  box-shadow: 0 8px 18px rgba(36, 54, 80, 0.05);
+}
+
+.mm-card-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.mm-kicker {
+  margin: 0 0 4px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-soft, #6b7280);
+}
+
+.mm-card-head h2 {
+  margin: 0;
+  font-size: 22px;
+  color: #243650;
+}
+
+.mm-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  background: #243650;
+  color: #fff;
+  text-transform: capitalize;
+  white-space: nowrap;
+}
+
+.mm-badge--active,
+.mm-badge--evaluation_passed,
+.mm-badge--approved_for_deployment,
+.mm-badge--deployed { background: #3f6a32; }
+.mm-badge--failed,
+.mm-badge--evaluation_failed,
+.mm-badge--rejected { background: #8b2e3b; }
+.mm-badge--training,
+.mm-badge--pending_evaluation,
+.mm-badge--queued,
+.mm-badge--running { background: #8a6a2f; }
+
+.mm-dl {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+
+.mm-dl > div {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.mm-dl dt {
+  margin: 0;
+  color: var(--ink-soft, #6b7280);
+  font-weight: 600;
+}
+
+.mm-dl dd { margin: 0; color: #243650; }
+
+.mm-progress {
+  margin-top: 14px;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(36, 54, 80, 0.1);
+  overflow: hidden;
+}
+
+.mm-progress > span {
+  display: block;
+  height: 100%;
+  background: #243650;
+  transition: width 0.3s ease;
+}
+
+.mm-error-line {
+  margin: 10px 0 0;
+  color: #8b2e3b;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.mm-actions { margin-bottom: 18px; }
+
+.mm-btn-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.mm-hint {
+  margin: 12px 0 0;
+  font-size: 12px;
+  color: var(--ink-soft, #6b7280);
+  line-height: 1.45;
+}
+
+.mm-code {
+  font-size: 11px;
+  word-break: break-all;
+}
+
+.mm-table-wrap { overflow: auto; }
+
+.mm-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.mm-table th,
+.mm-table td {
+  text-align: left;
+  padding: 8px 6px;
+  border-bottom: 1px solid rgba(36, 54, 80, 0.08);
+}
+
+.mm-pill {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #3f6a32;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.mm-history { display: grid; gap: 16px; }
+.mm-major-block h3 {
+  margin: 0 0 8px;
+  font-size: 16px;
+  color: #243650;
+}
+
+.mm-log-card { max-width: 1400px; margin: 0 auto 24px; }
+
+.mm-log {
+  margin: 0;
+  max-height: 360px;
+  overflow: auto;
+  padding: 12px;
+  border-radius: 12px;
+  background: #1a2433;
+  color: #f4eee4;
+  font-size: 12px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+}
+
+.ch-flash--ok {
+  background: #e8f4ee;
+  border-color: #9fbfab;
+  color: #2f6b4f;
+}
+
+@media (max-width: 900px) {
+  .mm-grid,
+  .mm-grid--eval { grid-template-columns: 1fr; }
+  .mm-dl > div { grid-template-columns: 1fr; }
+}
