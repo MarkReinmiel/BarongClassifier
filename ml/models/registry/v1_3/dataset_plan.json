@@ -1,6 +1,6 @@
 {
-  "snapshot_id": "ds_1_3_20261106_141257",
-  "snapshot_dir": "C:\\Users\\louis\\OneDrive\\Documents\\GitHub\\BarongClassifier\\ml\\data\\snapshots\\ds_1_3_20261106_141257",
+  "snapshot_id": "ds_1_3_20261106_152105",
+  "snapshot_dir": "C:\\Users\\louis\\OneDrive\\Documents\\GitHub\\BarongClassifier\\ml\\data\\snapshots\\ds_1_3_20261106_152105",
   "master_dataset": "C:\\Users\\louis\\OneDrive\\Documents\\GitHub\\BarongClassifier\\ml\\data\\main_classifier",
   "major_version": 1,
   "revision_number": 3,
@@ -150,7 +150,47 @@
       "label_source": "predicted_label_on_approve",
       "review_status": "added_to_dataset",
       "reviewed_at": "2026-11-06T12:51:40Z"
+    },
+    {
+      "classification_id": "7892aaf8-5087-49ed-8846-095bcdc78e85",
+      "image_url": "https://res.cloudinary.com/pabodb0y/image/upload/v1793974472/barong/classifications/7892aaf8-5087-49ed-8846-095bcdc78e85_ps.jpg",
+      "label": "pina",
+      "label_source": "predicted_label_on_approve",
+      "review_status": "added_to_dataset",
+      "reviewed_at": "2026-11-06T15:20:42Z"
+    },
+    {
+      "classification_id": "f674bdf9-51b0-4781-af34-4e2abe24cbd2",
+      "image_url": "https://res.cloudinary.com/pabodb0y/image/upload/v1792949626/barong/classifications/f674bdf9-51b0-4781-af34-4e2abe24cbd2_IMG_20260916_125817.jpg",
+      "label": "cocoon",
+      "label_source": "predicted_label_on_approve",
+      "review_status": "added_to_dataset",
+      "reviewed_at": "2026-11-06T15:20:43Z"
+    },
+    {
+      "classification_id": "3ef6fd74-6071-4701-9bb6-09f9e227e0df",
+      "image_url": "https://res.cloudinary.com/pabodb0y/image/upload/v1792860627/barong/classifications/3ef6fd74-6071-4701-9bb6-09f9e227e0df_pn.jpg",
+      "label": "pina",
+      "label_source": "predicted_label_on_approve",
+      "review_status": "added_to_dataset",
+      "reviewed_at": "2026-11-06T15:20:44Z"
+    },
+    {
+      "classification_id": "433cb3e3-9f4d-44c3-a354-947cb11a96e7",
+      "image_url": "https://res.cloudinary.com/pabodb0y/image/upload/v1792860602/barong/classifications/433cb3e3-9f4d-44c3-a354-947cb11a96e7_camera-capture-1792390046302.jpg",
+      "label": "pina",
+      "label_source": "predicted_label_on_approve",
+      "review_status": "added_to_dataset",
+      "reviewed_at": "2026-11-06T15:20:44Z"
+    },
+    {
+      "classification_id": "f8f85f7f-392f-4392-abb4-5c5f22e0d6c2",
+      "image_url": "https://res.cloudinary.com/pabodb0y/image/upload/v1792859864/barong/classifications/a1b2c3d4-e5f6-7890-abcd-ef1234567890/2026-10-24/f8f85f7f-392f-4392-abb4-5c5f22e0d6c2_camera-capture-1792390046302.jpg",
+      "label": "pina",
+      "label_source": "predicted_label_on_approve",
+      "review_status": "added_to_dataset",
+      "reviewed_at": "2026-11-06T15:20:45Z"
     }
   ],
-  "newly_added_since_production": 5
+  "newly_added_since_production": 10
 }
