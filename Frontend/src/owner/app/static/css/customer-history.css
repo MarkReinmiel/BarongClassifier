@@ -1,6 +1,10 @@
-/* Customer Classification History + Contributions — Owner cream / navy / gold */
+/* Customer Classification History + Contributions — Owner cream / navy / gold
+   Variables on :root so <dialog> elements (often outside .ch-page) still resolve colors. */
 
-.ch-page {
+:root,
+.ch-page,
+.ch-confirm,
+.ch-modal {
   --ch-navy: #243650;
   --ch-cream: #f4eee4;
   --ch-gold: #c5a072;
@@ -103,25 +107,49 @@
 }
 
 .ch-btn--navy {
-  background: var(--ch-navy);
-  color: #fff;
+  background: #243650;
+  background: var(--ch-navy, #243650);
+  color: #fff !important;
+  border-color: #243650;
 }
 .ch-btn--navy:hover { background: #1a2940; }
 
 .ch-btn--ghost {
   background: transparent;
-  border-color: var(--ch-navy);
-  color: var(--ch-navy);
-  width: 100%;
+  border-color: #243650;
+  border-color: var(--ch-navy, #243650);
+  color: #243650;
+  color: var(--ch-navy, #243650);
 }
 .ch-btn--ghost:hover {
-  background: var(--ch-navy);
+  background: #243650;
+  background: var(--ch-navy, #243650);
   color: #fff;
 }
 
-.ch-btn--ok { background: var(--ch-ok); color: #fff; }
-.ch-btn--bad { background: var(--ch-bad); color: #fff; }
-.ch-btn--warn { background: var(--ch-warn); color: #fff; }
+/* Full-width ghost only inside card action grids — not confirm modals */
+.ch-card-actions .ch-btn--ghost {
+  width: 100%;
+}
+
+.ch-btn--ok {
+  background: #3f6a32;
+  background: var(--ch-ok, #3f6a32);
+  color: #fff !important;
+  border-color: #3f6a32;
+}
+.ch-btn--bad {
+  background: #8b2e3b;
+  background: var(--ch-bad, #8b2e3b);
+  color: #fff !important;
+  border-color: #8b2e3b;
+}
+.ch-btn--warn {
+  background: #8a6a2f;
+  background: var(--ch-warn, #8a6a2f);
+  color: #fff !important;
+  border-color: #8a6a2f;
+}
 
 .ch-grid {
   display: grid;
@@ -254,6 +282,9 @@
   gap: 16px;
   padding: 16px 18px;
 }
+.ch-confirm-body--simple {
+  grid-template-columns: 1fr;
+}
 .ch-confirm-media {
   background: #e7dfd3;
   border-radius: 12px;
@@ -300,17 +331,59 @@
 }
 .ch-confirm-foot {
   display: flex;
+  flex-wrap: wrap;
   justify-content: flex-end;
+  align-items: center;
   gap: 10px;
   padding: 14px 18px 18px;
   border-top: 1px solid rgba(36, 54, 80, 0.1);
+  background: #fffdf8;
+}
+
+.ch-confirm-foot .ch-btn--ok,
+.ch-confirm-foot .ch-btn--bad,
+.ch-confirm-foot .ch-btn--navy,
+.ch-confirm-actions .ch-btn--ok,
+.ch-confirm-actions .ch-btn--bad,
+.ch-confirm-actions .ch-btn--navy {
+  display: inline-flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  min-width: 148px;
+  background-color: #3f6a32;
+  color: #fff !important;
+}
+
+.ch-confirm-foot .ch-btn--bad,
+.ch-confirm-actions .ch-btn--bad {
+  background-color: #8b2e3b;
+}
+
+.ch-confirm-foot .ch-btn--navy,
+.ch-confirm-actions .ch-btn--navy {
+  background-color: #243650;
 }
 
 .ch-confirm-actions {
   display: flex;
   flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
   gap: 10px;
   margin-top: 8px;
+  width: 100%;
+}
+
+.ch-confirm-actions .ch-btn,
+.ch-confirm-foot .ch-btn {
+  width: auto;
+  min-width: 132px;
+  flex: 0 0 auto;
+}
+
+.ch-confirm-actions .ch-btn--ghost,
+.ch-confirm-foot .ch-btn--ghost {
+  width: auto;
 }
 
 .ch-preview-actions {

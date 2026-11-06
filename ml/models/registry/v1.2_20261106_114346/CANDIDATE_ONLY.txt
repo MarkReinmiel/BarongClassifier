@@ -1,0 +1,1 @@
+Independent candidate artifact. Production inference uses app model files until deploy.

@@ -4,7 +4,7 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/shared.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/topnav.css') }}?v=14">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/history.css') }}?v=6">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/customer-history.css') }}?v=6">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/customer-history.css') }}?v=9">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-app.css') }}?v=9">
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <meta name="review-api-base" content="{{ request.script_root }}/api/classifications">
@@ -114,7 +114,6 @@
       <button class="ch-btn ch-btn--navy" type="submit">Apply filters</button>
     </form>
 
-    {% if panel != 'rejected' %}
     <div class="ch-batch-bar" id="batchBar" hidden>
       <label class="ch-select-all">
         <input type="checkbox" id="selectAllPage">
@@ -127,11 +126,13 @@
         <button type="button" class="ch-btn ch-btn--bad" id="batchRejectBtn">Reject Selected</button>
         {% elif panel == 'approved' %}
         <button type="button" class="ch-btn ch-btn--navy" id="batchDatasetBtn">Add Selected to Dataset</button>
+        <button type="button" class="ch-btn ch-btn--ghost ch-btn--inline" id="batchRestoreBtn">Move to Pending</button>
+        {% elif panel == 'rejected' %}
+        <button type="button" class="ch-btn ch-btn--ghost ch-btn--inline" id="batchRestoreBtn">Move to Pending</button>
         {% endif %}
         <button type="button" class="ch-btn ch-btn--ghost ch-btn--inline" id="clearSelectionBtn">Deselect All</button>
       </div>
     </div>
-    {% endif %}
 
     {% if not rows %}
     <div class="history-empty">
@@ -154,18 +155,18 @@
         data-selectable-dataset="{{ '1' if row.selectable_for_dataset else '0' }}"
       >
         <div class="ch-thumb">
-          {% if panel != 'rejected' %}
           <label class="ch-check">
             <input
               type="checkbox"
               class="ch-card-check"
               value="{{ row.id }}"
+              data-status="{{ status }}"
               {% if panel == 'pending' and not row.selectable_for_review %}disabled{% endif %}
-              {% if panel == 'approved' and not row.selectable_for_dataset %}disabled{% endif %}
+              {% if panel == 'approved' and not row.selectable_for_restore %}disabled{% endif %}
+              {% if panel == 'rejected' and not row.selectable_for_restore %}disabled{% endif %}
               aria-label="Select photo"
             >
           </label>
-          {% endif %}
           {% if row.image_url %}
           <img src="{{ row.image_url }}" alt="Classification by {{ row.customer_name }}" loading="lazy">
           {% else %}
@@ -214,6 +215,13 @@
               data-customer="{{ row.customer_name }}"
               data-predicted="{{ row.predicted_display }}"
             >Reject</button>
+            {% elif panel in ['approved', 'rejected'] %}
+            <button
+              type="button"
+              class="ch-btn ch-btn--ghost ch-restore"
+              data-id="{{ row.id }}"
+              data-status="{{ status }}"
+            >Move to Pending</button>
             {% endif %}
             <button type="button" class="ch-btn ch-btn--ghost ch-open" data-id="{{ row.id }}">View photo</button>
           </div>
@@ -251,15 +259,15 @@
       <button type="submit" class="ch-modal-close" value="cancel" aria-label="Close">×</button>
     </header>
     <div class="ch-confirm-body ch-confirm-body--simple">
-      <div class="ch-confirm-copy" style="grid-column: 1 / -1">
+      <div class="ch-confirm-copy">
         <p class="ch-confirm-line" id="batchApproveCountLine"></p>
         <p class="ch-form-hint">These images will move to the Approved panel. This does not assign a textile class or retrain the model.</p>
         <p class="ch-form-error" id="batchApproveError" hidden></p>
-        <div class="ch-confirm-actions">
-          <button type="submit" class="ch-btn ch-btn--ghost" value="cancel">Cancel</button>
-          <button type="button" class="ch-btn ch-btn--ok" id="batchApproveConfirmBtn">Confirm Approval</button>
-        </div>
       </div>
+    </div>
+    <div class="ch-confirm-foot">
+      <button type="submit" class="ch-btn ch-btn--ghost" value="cancel">Cancel</button>
+      <button type="button" class="ch-btn ch-btn--ok" id="batchApproveConfirmBtn">Confirm Approval</button>
     </div>
   </form>
 </dialog>
@@ -271,15 +279,35 @@
       <button type="submit" class="ch-modal-close" value="cancel" aria-label="Close">×</button>
     </header>
     <div class="ch-confirm-body ch-confirm-body--simple">
-      <div class="ch-confirm-copy" style="grid-column: 1 / -1">
+      <div class="ch-confirm-copy">
         <p class="ch-confirm-line" id="batchRejectCountLine"></p>
-        <p class="ch-form-hint">Rejected photos move to the Rejected panel and stay out of the dataset pool.</p>
+        <p class="ch-form-hint">Rejected photos move to the Rejected panel and stay out of the dataset pool. No rejection reason is required.</p>
         <p class="ch-form-error" id="batchRejectError" hidden></p>
-        <div class="ch-confirm-actions">
-          <button type="submit" class="ch-btn ch-btn--ghost" value="cancel">Cancel</button>
-          <button type="button" class="ch-btn ch-btn--bad" id="batchRejectConfirmBtn">Confirm Rejection</button>
-        </div>
       </div>
+    </div>
+    <div class="ch-confirm-foot">
+      <button type="submit" class="ch-btn ch-btn--ghost" value="cancel">Cancel</button>
+      <button type="button" class="ch-btn ch-btn--bad" id="batchRejectConfirmBtn">Confirm Rejection</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog class="ch-confirm" id="restoreDialog" aria-labelledby="restoreDialogTitle">
+  <form method="dialog" class="ch-confirm-inner">
+    <header class="ch-confirm-head">
+      <h2 id="restoreDialogTitle">Move Photos to Pending?</h2>
+      <button type="submit" class="ch-modal-close" value="cancel" aria-label="Close">×</button>
+    </header>
+    <div class="ch-confirm-body ch-confirm-body--simple">
+      <div class="ch-confirm-copy">
+        <p class="ch-confirm-line" id="restoreCountLine"></p>
+        <p class="ch-form-hint">Removes these photos from the current panel and returns them to Pending so you can review them again. Audit history is kept.</p>
+        <p class="ch-form-error" id="restoreError" hidden></p>
+      </div>
+    </div>
+    <div class="ch-confirm-foot">
+      <button type="submit" class="ch-btn ch-btn--ghost" value="cancel">Cancel</button>
+      <button type="button" class="ch-btn ch-btn--navy" id="restoreConfirmBtn">Move to Pending</button>
     </div>
   </form>
 </dialog>
@@ -291,15 +319,15 @@
       <button type="submit" class="ch-modal-close" value="cancel" aria-label="Close">×</button>
     </header>
     <div class="ch-confirm-body ch-confirm-body--simple">
-      <div class="ch-confirm-copy" style="grid-column: 1 / -1">
+      <div class="ch-confirm-copy">
         <p class="ch-confirm-line" id="datasetCountLine"></p>
-        <p class="ch-form-hint">Adds images to the unlabeled dataset pool for future training. CNN predictions are not treated as ground-truth class labels. The live model is not changed.</p>
+        <p class="ch-form-hint">Adds images to the unlabeled dataset pool for future training. CNN predictions are not treated as ground-truth class labels. The live model is not changed. Start / deploy training from Model Management.</p>
         <p class="ch-form-error" id="datasetError" hidden></p>
-        <div class="ch-confirm-actions">
-          <button type="submit" class="ch-btn ch-btn--ghost" value="cancel" id="datasetNotNowBtn">Not Now</button>
-          <button type="button" class="ch-btn ch-btn--navy" id="datasetConfirmBtn">Add to Dataset</button>
-        </div>
       </div>
+    </div>
+    <div class="ch-confirm-foot">
+      <button type="submit" class="ch-btn ch-btn--ghost" value="cancel" id="datasetNotNowBtn">Not Now</button>
+      <button type="button" class="ch-btn ch-btn--navy" id="datasetConfirmBtn">Add to Dataset</button>
     </div>
   </form>
 </dialog>
@@ -310,7 +338,7 @@
       <h2 id="approveDialogTitle">Approve photo</h2>
       <button type="submit" class="ch-modal-close" value="cancel" aria-label="Close">×</button>
     </header>
-    <div class="ch-confirm-body ch-confirm-body--simple">
+    <div class="ch-confirm-body">
       <div class="ch-confirm-media">
         <img id="approvePreview" src="" alt="Image to approve">
         <p id="approveNoImage" class="ch-thumb-empty" hidden>No image available</p>
@@ -321,11 +349,11 @@
         <p id="approveChangeWarn" class="ch-confirm-warn" hidden>This record was already reviewed. Confirming will change the previous decision and keep an audit entry.</p>
         <p class="ch-form-hint">Marks this photo as suitable for a future dataset. Does not assign Piña / Jusi / Cocoon or retrain the model.</p>
         <p class="ch-form-error" id="approveError" hidden></p>
-        <div class="ch-confirm-actions">
-          <button type="submit" class="ch-btn ch-btn--ghost" value="cancel">Cancel</button>
-          <button type="button" class="ch-btn ch-btn--ok" id="approveConfirmBtn">Approve</button>
-        </div>
       </div>
+    </div>
+    <div class="ch-confirm-foot">
+      <button type="submit" class="ch-btn ch-btn--ghost" value="cancel">Cancel</button>
+      <button type="button" class="ch-btn ch-btn--ok" id="approveConfirmBtn">Approve</button>
     </div>
   </form>
 </dialog>
@@ -336,7 +364,7 @@
       <h2 id="rejectDialogTitle">Reject photo</h2>
       <button type="submit" class="ch-modal-close" value="cancel" aria-label="Close">×</button>
     </header>
-    <div class="ch-confirm-body ch-confirm-body--simple">
+    <div class="ch-confirm-body">
       <div class="ch-confirm-media">
         <img id="rejectPreview" src="" alt="Image to reject">
         <p id="rejectNoImage" class="ch-thumb-empty" hidden>No image available</p>
@@ -347,11 +375,11 @@
         <p id="rejectChangeWarn" class="ch-confirm-warn" hidden>This record was already reviewed. Confirming will change the previous decision and keep an audit entry.</p>
         <p class="ch-form-hint">Rejected photos stay in history but are excluded from the approved dataset pool.</p>
         <p class="ch-form-error" id="rejectError" hidden></p>
-        <div class="ch-confirm-actions">
-          <button type="submit" class="ch-btn ch-btn--ghost" value="cancel">Cancel</button>
-          <button type="button" class="ch-btn ch-btn--bad" id="rejectConfirmBtn">Reject</button>
-        </div>
       </div>
+    </div>
+    <div class="ch-confirm-foot">
+      <button type="submit" class="ch-btn ch-btn--ghost" value="cancel">Cancel</button>
+      <button type="button" class="ch-btn ch-btn--bad" id="rejectConfirmBtn">Reject</button>
     </div>
   </form>
 </dialog>
@@ -395,5 +423,5 @@
 {% endblock %}
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/navbar.js') }}"></script>
-<script src="{{ url_for('static', filename='js/customer-history.js') }}?v=6"></script>
+<script src="{{ url_for('static', filename='js/customer-history.js') }}?v=9"></script>
 {% endblock %}

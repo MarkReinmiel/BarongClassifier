@@ -1,0 +1,9 @@
+{
+  "classes": [
+    "cocoon",
+    "jusi",
+    "pina"
+  ],
+  "image_size": 224,
+  "version": "main_20261104_181936"
+}

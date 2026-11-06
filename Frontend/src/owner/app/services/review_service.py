@@ -271,11 +271,16 @@ def list_customer_classifications(
                 else None
             )
             item["confidence_pct"] = round(float(item.get("confidence") or 0) * 100, 1)
-            item["in_dataset_pool"] = item.get("review_status") == "added_to_dataset"
-            item["selectable_for_review"] = (
-                item.get("review_status") or "pending_review"
-            ) == "pending_review"
-            item["selectable_for_dataset"] = item.get("review_status") == "approved"
+            status = item.get("review_status") or "pending_review"
+            item["in_dataset_pool"] = status == "added_to_dataset"
+            item["selectable_for_review"] = status == "pending_review"
+            item["selectable_for_dataset"] = status == "approved"
+            item["selectable_for_restore"] = status in {
+                "approved",
+                "rejected",
+                "added_to_dataset",
+                "uncertain",
+            }
             items.append(item)
 
         return {
@@ -402,9 +407,16 @@ def submit_review(
         "uncertain": "uncertain",
         "mark_uncertain": "uncertain",
         "added_to_dataset": "added_to_dataset",
+        "restore": "pending_review",
+        "pending": "pending_review",
+        "pending_review": "pending_review",
+        "move_to_pending": "pending_review",
+        "remove": "pending_review",
     }
     if action_key not in status_map:
-        raise ReviewError("Action must be approve, reject, or uncertain.")
+        raise ReviewError(
+            "Action must be approve, reject, restore (move to pending), or uncertain."
+        )
     new_status = status_map[action_key]
 
     # Simplified Owner review: approve/reject photo suitability only.
@@ -441,13 +453,27 @@ def submit_review(
         }:
             raise ReviewError("Only approved images can be marked added_to_dataset.")
 
+        if new_status == "pending_review" and previous == "pending_review":
+            raise ReviewError("This photo is already in Pending.")
+
+        if new_status == "pending_review" and previous not in {
+            "approved",
+            "rejected",
+            "added_to_dataset",
+            "uncertain",
+        }:
+            raise ReviewError("Only reviewed photos can be moved back to Pending.")
+
         if new_status == "added_to_dataset":
             # Keep any separately verified label if present; do not invent one.
             verified = detail.get("verified_label") or verified
 
         image_url = detail.get("image_url")
-        # Clear verified_label on reject/uncertain so CNN prediction is never treated as ground truth.
+        # Clear verified_label on reject/uncertain/restore so CNN prediction is never ground truth.
         store_verified = verified if new_status in {"approved", "added_to_dataset"} else None
+        if new_status == "pending_review":
+            reason = None
+            note = note or "Moved back to Pending by Owner."
         upsert = db.session.execute(
             text(
                 """
@@ -655,30 +681,43 @@ def submit_batch_review(
     *,
     action: str,
 ) -> dict[str, Any]:
-    """Approve or reject many pending classifications. Returns per-id results."""
+    """Batch approve/reject pending items, or restore reviewed items to Pending."""
     action_key = (action or "").strip().lower()
-    if action_key not in {"approve", "approved", "reject", "rejected"}:
-        raise ReviewError("Batch action must be approve or reject.")
-    normalized_action = "approve" if action_key.startswith("approve") else "reject"
+    if action_key in {"approve", "approved"}:
+        normalized_action = "approve"
+        mode = "pending_only"
+    elif action_key in {"reject", "rejected"}:
+        normalized_action = "reject"
+        mode = "pending_only"
+    elif action_key in {"restore", "pending", "pending_review", "move_to_pending", "remove"}:
+        normalized_action = "restore"
+        mode = "restore"
+    else:
+        raise ReviewError("Batch action must be approve, reject, or restore.")
     ids = _normalize_id_list(classification_ids)
 
     results: list[dict[str, Any]] = []
     succeeded: list[str] = []
     failed: list[dict[str, str]] = []
+    restoreable = {"approved", "rejected", "added_to_dataset", "uncertain"}
 
     for classification_id in ids:
         try:
             detail = get_classification_detail(classification_id)
             previous = detail.get("review_status") or "pending_review"
-            if previous != "pending_review":
+            if mode == "pending_only" and previous != "pending_review":
                 raise ReviewError(
                     f"Record is {previous.replace('_', ' ')}, not pending review."
+                )
+            if mode == "restore" and previous not in restoreable:
+                raise ReviewError(
+                    f"Record is {previous.replace('_', ' ')} and cannot be moved to Pending."
                 )
             item = submit_review(
                 actor,
                 classification_id,
                 action=normalized_action,
-                confirm_change=False,
+                confirm_change=mode == "restore",
             )
             results.append(
                 {

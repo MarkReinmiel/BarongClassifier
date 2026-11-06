@@ -1,0 +1,29 @@
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1793965431.524417    3048 port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1793965450.306437    3048 port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+DATABASE_URL not set; skipping DB status updates
+DATABASE_URL not set; skipping DB status updates
+Added contribution contrib_fc7b232f-255_e66791227abc.jpg -> pina
+Added contribution contrib_9be5a91a-09a_1f9993bb19b8.jpg -> jusi
+Added contribution contrib_ceb8451d-047_d75d59fbf364.jpg -> jusi
+Added contribution contrib_13b0cded-32f_81e8fa729a08.jpg -> pina
+Added contribution contrib_1060d8e8-092_b28083a1c113.jpg -> pina
+Added contribution contrib_dcae00f9-c44_fdfeb135122a.jpg -> pina
+Revision snapshot ready: C:\Users\louis\OneDrive\Documents\GitHub\BarongClassifier\ml\data\snapshots\ds_1_2_20261106_114346 counts={'cocoon': 300, 'jusi': 302, 'pina': 304} added=6 dupes=7
+DATABASE_URL not set; skipping DB status updates
+Using folder/snapshot dataset: {'cocoon': 300, 'jusi': 302, 'pina': 304}
+Loaded 50/906
+Loaded 100/906
+Loaded 150/906
+Loaded 200/906
+Loaded 250/906
+Loaded 300/906
+Loaded 350/906
+Loaded 400/906
+Loaded 450/906
+Loaded 500/906
+Loaded 550/906
+Loaded 600/906
+Loaded 650/906
+Loaded 700/906
