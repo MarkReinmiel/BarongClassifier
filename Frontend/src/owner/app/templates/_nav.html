@@ -14,12 +14,6 @@
       </span>
       <span>Home</span>
     </a>
-    <a href="{{ url_for('dashboard.model_analytics') }}" class="{{ 'on' if active == 'analytics' else '' }}">
-      <span class="nav-ico" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5"/><path d="M4 19h16"/><path d="M8 17V10"/><path d="M12 17V7"/><path d="M16 17v-4"/></svg>
-      </span>
-      <span>Model Analytics</span>
-    </a>
     <a href="{{ url_for('classify.classify_page') }}" class="{{ 'on' if active == 'classify' else '' }}">
       <span class="nav-ico" aria-hidden="true">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-2h6l2 2h3v11H4V8z"/><circle cx="12" cy="13" r="3.5"/></svg>
@@ -38,18 +32,45 @@
       </span>
       <span>Customer History</span>
     </a>
-    <a href="{{ url_for('reviews.dataset_contributions') }}" class="{{ 'on' if active == 'contributions' else '' }}">
-      <span class="nav-ico" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16"/><path d="M7 20V10"/><path d="M12 20V4"/><path d="M17 20v-6"/></svg>
-      </span>
-      <span>Contributions</span>
-    </a>
-    <a href="{{ url_for('model_management.model_management_page') }}" class="{{ 'on' if active == 'model_management' else '' }}">
-      <span class="nav-ico" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3"/><path d="M12 18v3"/><path d="M3 12h3"/><path d="M18 12h3"/><circle cx="12" cy="12" r="4"/><path d="m5.6 5.6 2.1 2.1"/><path d="m16.3 16.3 2.1 2.1"/><path d="m16.3 7.7 2.1-2.1"/><path d="m5.6 18.4 2.1-2.1"/></svg>
-      </span>
-      <span>Model Management</span>
-    </a>
+    {% set models_on = active in ['model_management', 'analytics', 'contributions'] %}
+    <div class="nav-dd" data-nav-dd>
+      <button
+        type="button"
+        class="nav-dd-btn {{ 'on' if models_on else '' }}"
+        id="modelsNavBtn"
+        aria-expanded="false"
+        aria-controls="modelsNavMenu"
+        aria-haspopup="true"
+      >
+        <span class="nav-ico" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3"/><path d="M12 18v3"/><path d="M3 12h3"/><path d="M18 12h3"/><circle cx="12" cy="12" r="4"/><path d="m5.6 5.6 2.1 2.1"/><path d="m16.3 16.3 2.1 2.1"/><path d="m16.3 7.7 2.1-2.1"/><path d="m5.6 18.4 2.1-2.1"/></svg>
+        </span>
+        <span>Model Management</span>
+        <span class="nav-dd-caret" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+        </span>
+      </button>
+      <div class="nav-dd-menu" id="modelsNavMenu" role="menu" hidden>
+        <a role="menuitem" href="{{ url_for('model_management.model_management_page') }}" class="{{ 'on' if active == 'model_management' else '' }}">
+          <span class="nav-ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3"/><path d="M12 18v3"/><path d="M3 12h3"/><path d="M18 12h3"/><circle cx="12" cy="12" r="4"/><path d="m5.6 5.6 2.1 2.1"/><path d="m16.3 16.3 2.1 2.1"/><path d="m16.3 7.7 2.1-2.1"/><path d="m5.6 18.4 2.1-2.1"/></svg>
+          </span>
+          <span>Model Management</span>
+        </a>
+        <a role="menuitem" href="{{ url_for('dashboard.model_analytics') }}" class="{{ 'on' if active == 'analytics' else '' }}">
+          <span class="nav-ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5"/><path d="M4 19h16"/><path d="M8 17V10"/><path d="M12 17V7"/><path d="M16 17v-4"/></svg>
+          </span>
+          <span>Model Analytics</span>
+        </a>
+        <a role="menuitem" href="{{ url_for('reviews.dataset_contributions') }}" class="{{ 'on' if active == 'contributions' else '' }}">
+          <span class="nav-ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16"/><path d="M7 20V10"/><path d="M12 20V4"/><path d="M17 20v-6"/></svg>
+          </span>
+          <span>Contributions</span>
+        </a>
+      </div>
+    </div>
     <a href="{{ url_for('dashboard.about') }}" class="{{ 'on' if active == 'about' else '' }}">
       <span class="nav-ico" aria-hidden="true">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
@@ -80,11 +101,11 @@
         <strong>{{ current_user.full_name or current_user.nickname or 'Owner' }}</strong>
         <span class="profile-email">{{ current_user.email }}</span>
       </div>
+      <a class="profile-link" href="{{ url_for('model_management.model_management_page') }}">Model Management</a>
       <a class="profile-link" href="{{ url_for('dashboard.model_analytics') }}">Model Analytics</a>
+      <a class="profile-link" href="{{ url_for('reviews.dataset_contributions') }}">Contributions</a>
       <a class="profile-link" href="{{ url_for('dashboard.textile_types') }}">Textile Types</a>
       <a class="profile-link" href="{{ url_for('reviews.customer_history') }}">Customer History</a>
-      <a class="profile-link" href="{{ url_for('reviews.dataset_contributions') }}">Contributions</a>
-      <a class="profile-link" href="{{ url_for('model_management.model_management_page') }}">Model Management</a>
       <a class="profile-link" href="{{ url_for('dashboard.about') }}">About</a>
       <a class="profile-link" href="{{ url_for('dashboard.account') }}">Account settings</a>
       <a class="profile-link" href="{{ url_for('dashboard.users') }}">User management</a>

@@ -23,27 +23,52 @@ document.querySelectorAll("form[data-loading]").forEach((form) => {
 });
 
 (function () {
-  const root = document.querySelector("[data-profile]");
-  if (!root) return;
-  const button = root.querySelector("#profileBtn");
-  const menu = root.querySelector("#profileMenu");
-  if (!button || !menu) return;
+  const profileRoot = document.querySelector("[data-profile]");
+  const profileBtn = profileRoot?.querySelector("#profileBtn");
+  const profileMenu = profileRoot?.querySelector("#profileMenu");
+  const modelsRoot = document.querySelector("[data-nav-dd]");
+  const modelsBtn = modelsRoot?.querySelector("#modelsNavBtn");
+  const modelsMenu = modelsRoot?.querySelector("#modelsNavMenu");
 
-  function setOpen(open) {
-    menu.hidden = !open;
-    button.setAttribute("aria-expanded", open ? "true" : "false");
+  function setProfileOpen(open) {
+    if (!profileBtn || !profileMenu) return;
+    profileMenu.hidden = !open;
+    profileBtn.setAttribute("aria-expanded", open ? "true" : "false");
   }
 
-  button.addEventListener("click", function (event) {
-    event.stopPropagation();
-    setOpen(menu.hidden);
-  });
+  function setModelsOpen(open) {
+    if (!modelsBtn || !modelsMenu) return;
+    modelsMenu.hidden = !open;
+    modelsBtn.setAttribute("aria-expanded", open ? "true" : "false");
+  }
+
+  if (profileBtn && profileMenu) {
+    profileBtn.addEventListener("click", function (event) {
+      event.stopPropagation();
+      const next = profileMenu.hidden;
+      setModelsOpen(false);
+      setProfileOpen(next);
+    });
+  }
+
+  if (modelsBtn && modelsMenu) {
+    modelsBtn.addEventListener("click", function (event) {
+      event.stopPropagation();
+      const next = modelsMenu.hidden;
+      setProfileOpen(false);
+      setModelsOpen(next);
+    });
+  }
 
   document.addEventListener("click", function (event) {
-    if (!root.contains(event.target)) setOpen(false);
+    if (profileRoot && !profileRoot.contains(event.target)) setProfileOpen(false);
+    if (modelsRoot && !modelsRoot.contains(event.target)) setModelsOpen(false);
   });
 
   document.addEventListener("keydown", function (event) {
-    if (event.key === "Escape") setOpen(false);
+    if (event.key === "Escape") {
+      setProfileOpen(false);
+      setModelsOpen(false);
+    }
   });
 })();
