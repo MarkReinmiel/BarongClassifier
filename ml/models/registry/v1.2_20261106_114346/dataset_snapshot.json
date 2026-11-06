@@ -1,0 +1,21 @@
+{
+  "snapshot_id": "ds_1_2_20261106_114346",
+  "snapshot_dir": "C:\\Users\\louis\\OneDrive\\Documents\\GitHub\\BarongClassifier\\ml\\data\\snapshots\\ds_1_2_20261106_114346",
+  "master_dataset": "C:\\Users\\louis\\OneDrive\\Documents\\GitHub\\BarongClassifier\\ml\\data\\main_classifier",
+  "display_revision": "v1.2",
+  "major_version": 1,
+  "revision_number": 2,
+  "added_to_master": 6,
+  "duplicates_skipped": 7,
+  "failed_count": 0,
+  "failed": [],
+  "class_counts": {
+    "cocoon": 300,
+    "jusi": 302,
+    "pina": 304
+  },
+  "total_images": 906,
+  "includes_original_training_data": true,
+  "includes_previously_approved": true,
+  "includes_newly_approved": true
+}
