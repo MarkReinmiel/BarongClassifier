@@ -1,0 +1,156 @@
+{
+  "snapshot_id": "ds_1_3_20261106_141257",
+  "snapshot_dir": "C:\\Users\\louis\\OneDrive\\Documents\\GitHub\\BarongClassifier\\ml\\data\\snapshots\\ds_1_3_20261106_141257",
+  "master_dataset": "C:\\Users\\louis\\OneDrive\\Documents\\GitHub\\BarongClassifier\\ml\\data\\main_classifier",
+  "major_version": 1,
+  "revision_number": 3,
+  "display_revision": "v1.3",
+  "reuse_revision": true,
+  "contributions": [
+    {
+      "classification_id": "fc7b232f-2555-4492-ab02-a9f23be9abfe",
+      "image_url": "https://res.cloudinary.com/pabodb0y/image/upload/v1793867065/barong/classifications/fc7b232f-2555-4492-ab02-a9f23be9abfe_pina.jpg",
+      "label": "pina",
+      "label_source": "predicted_label_on_approve",
+      "review_status": "approved",
+      "reviewed_at": "2026-11-05T17:32:27Z"
+    },
+    {
+      "classification_id": "9be5a91a-09a2-4e6b-a453-6746c4913d01",
+      "image_url": "https://res.cloudinary.com/pabodb0y/image/upload/v1793858926/barong/classifications/9be5a91a-09a2-4e6b-a453-6746c4913d01_JUSI.jpg",
+      "label": "jusi",
+      "label_source": "predicted_label_on_approve",
+      "review_status": "added_to_dataset",
+      "reviewed_at": "2026-11-05T19:03:36Z"
+    },
+    {
+      "classification_id": "ceb8451d-0471-40f1-b3c3-c941ad8bdf31",
+      "image_url": "https://res.cloudinary.com/pabodb0y/image/upload/v1793855672/barong/classifications/ceb8451d-0471-40f1-b3c3-c941ad8bdf31_cocooon.jpg",
+      "label": "jusi",
+      "label_source": "predicted_label_on_approve",
+      "review_status": "added_to_dataset",
+      "reviewed_at": "2026-11-05T19:03:36Z"
+    },
+    {
+      "classification_id": "ce70ab9c-b829-40a7-aa3d-ae4843a38e3d",
+      "image_url": "https://res.cloudinary.com/pabodb0y/image/upload/v1793855660/barong/classifications/ce70ab9c-b829-40a7-aa3d-ae4843a38e3d_pina.jpg",
+      "label": "pina",
+      "label_source": "predicted_label_on_approve",
+      "review_status": "added_to_dataset",
+      "reviewed_at": "2026-11-06T04:15:22Z"
+    },
+    {
+      "classification_id": "567657a9-8434-4d71-bb3f-65f285ac9977",
+      "image_url": "https://res.cloudinary.com/pabodb0y/image/upload/v1793855589/barong/classifications/567657a9-8434-4d71-bb3f-65f285ac9977_JUSI.jpg",
+      "label": "jusi",
+      "label_source": "predicted_label_on_approve",
+      "review_status": "added_to_dataset",
+      "reviewed_at": "2026-11-06T04:15:23Z"
+    },
+    {
+      "classification_id": "13b0cded-32f3-4464-ba94-584437e15e02",
+      "image_url": "https://res.cloudinary.com/pabodb0y/image/upload/v1793804151/barong/classifications/13b0cded-32f3-4464-ba94-584437e15e02_pn.jpg",
+      "label": "pina",
+      "label_source": "predicted_label_on_approve",
+      "review_status": "added_to_dataset",
+      "reviewed_at": "2026-11-06T04:15:23Z"
+    },
+    {
+      "classification_id": "3df21599-c287-4c0a-8fef-f5a847774ae8",
+      "image_url": "https://res.cloudinary.com/pabodb0y/image/upload/v1793803907/barong/classifications/3df21599-c287-4c0a-8fef-f5a847774ae8_pn.jpg",
+      "label": "pina",
+      "label_source": "predicted_label_on_approve",
+      "review_status": "added_to_dataset",
+      "reviewed_at": "2026-11-06T04:15:24Z"
+    },
+    {
+      "classification_id": "4481a8bd-b1a8-4ade-88aa-84bed93175ba",
+      "image_url": "https://res.cloudinary.com/pabodb0y/image/upload/v1793803668/barong/classifications/4481a8bd-b1a8-4ade-88aa-84bed93175ba_pn.jpg",
+      "label": "pina",
+      "label_source": "predicted_label_on_approve",
+      "review_status": "added_to_dataset",
+      "reviewed_at": "2026-11-06T04:15:25Z"
+    },
+    {
+      "classification_id": "1060d8e8-092b-4920-88a3-39bbd1780f52",
+      "image_url": "https://res.cloudinary.com/pabodb0y/image/upload/v1793109240/barong/classifications/1060d8e8-092b-4920-88a3-39bbd1780f52_1000114923.jpg",
+      "label": "pina",
+      "label_source": "predicted_label_on_approve",
+      "review_status": "approved",
+      "reviewed_at": "2026-11-06T09:43:00Z"
+    },
+    {
+      "classification_id": "ac25572d-616a-4cc4-abad-266f6b00060e",
+      "image_url": "https://res.cloudinary.com/pabodb0y/image/upload/v1793101181/barong/classifications/ac25572d-616a-4cc4-abad-266f6b00060e_pn.jpg",
+      "label": "pina",
+      "label_source": "predicted_label_on_approve",
+      "review_status": "approved",
+      "reviewed_at": "2026-11-06T09:43:00Z"
+    },
+    {
+      "classification_id": "f556eaa7-eead-4a23-9c4e-9cf14761223b",
+      "image_url": "https://res.cloudinary.com/pabodb0y/image/upload/v1792950496/barong/classifications/f556eaa7-eead-4a23-9c4e-9cf14761223b_pn.jpg",
+      "label": "pina",
+      "label_source": "predicted_label_on_approve",
+      "review_status": "approved",
+      "reviewed_at": "2026-11-06T09:43:01Z"
+    },
+    {
+      "classification_id": "2bbd24ec-49ee-4be2-8912-c87a459d99bd",
+      "image_url": "https://res.cloudinary.com/pabodb0y/image/upload/v1792950448/barong/classifications/2bbd24ec-49ee-4be2-8912-c87a459d99bd_4e7dafef-4880-4153-8d5d-d034c33d907a.jpg",
+      "label": "pina",
+      "label_source": "predicted_label_on_approve",
+      "review_status": "approved",
+      "reviewed_at": "2026-11-06T09:43:02Z"
+    },
+    {
+      "classification_id": "dcae00f9-c445-44e3-88b5-4cf8d924b7bd",
+      "image_url": "https://res.cloudinary.com/pabodb0y/image/upload/v1792950159/barong/classifications/dcae00f9-c445-44e3-88b5-4cf8d924b7bd_IMG_20260916_130433.jpg",
+      "label": "pina",
+      "label_source": "predicted_label_on_approve",
+      "review_status": "approved",
+      "reviewed_at": "2026-11-06T09:43:03Z"
+    },
+    {
+      "classification_id": "27e000f0-d035-4d15-afb2-2947c8226807",
+      "image_url": "https://res.cloudinary.com/pabodb0y/image/upload/v1792949623/barong/classifications/27e000f0-d035-4d15-afb2-2947c8226807_IMG_20260916_124819.jpg",
+      "label": "jusi",
+      "label_source": "predicted_label_on_approve",
+      "review_status": "added_to_dataset",
+      "reviewed_at": "2026-11-06T12:51:37Z"
+    },
+    {
+      "classification_id": "c18cf941-8e00-47b3-8828-f9cb62509f06",
+      "image_url": "https://res.cloudinary.com/pabodb0y/image/upload/v1792949615/barong/classifications/c18cf941-8e00-47b3-8828-f9cb62509f06_IMG_20260916_130433.jpg",
+      "label": "pina",
+      "label_source": "predicted_label_on_approve",
+      "review_status": "added_to_dataset",
+      "reviewed_at": "2026-11-06T12:51:38Z"
+    },
+    {
+      "classification_id": "0122ff52-2a5f-4022-b695-2954bbf9cfb6",
+      "image_url": "https://res.cloudinary.com/pabodb0y/image/upload/v1792942316/barong/classifications/0122ff52-2a5f-4022-b695-2954bbf9cfb6_1000114923.jpg",
+      "label": "pina",
+      "label_source": "predicted_label_on_approve",
+      "review_status": "added_to_dataset",
+      "reviewed_at": "2026-11-06T12:51:38Z"
+    },
+    {
+      "classification_id": "00fde51a-9547-401b-a6c3-be68d3bb5718",
+      "image_url": "https://res.cloudinary.com/pabodb0y/image/upload/v1792930570/barong/classifications/00fde51a-9547-401b-a6c3-be68d3bb5718_4e7dafef-4880-4153-8d5d-d034c33d907a.jpg",
+      "label": "pina",
+      "label_source": "predicted_label_on_approve",
+      "review_status": "added_to_dataset",
+      "reviewed_at": "2026-11-06T12:51:39Z"
+    },
+    {
+      "classification_id": "8b50706b-671a-4988-98de-98aa99320a32",
+      "image_url": "https://res.cloudinary.com/pabodb0y/image/upload/v1792930460/barong/classifications/8b50706b-671a-4988-98de-98aa99320a32_1000114386.jpg",
+      "label": "pina",
+      "label_source": "predicted_label_on_approve",
+      "review_status": "added_to_dataset",
+      "reviewed_at": "2026-11-06T12:51:40Z"
+    }
+  ],
+  "newly_added_since_production": 5
+}

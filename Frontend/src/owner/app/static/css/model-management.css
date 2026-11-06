@@ -4,6 +4,42 @@
   --ch-bad: #8b2e3b;
 }
 
+.mm-steps {
+  max-width: 1400px;
+  margin: 0 auto 18px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.mm-step {
+  background: #fffdf8;
+  border: 1px solid rgba(36, 54, 80, 0.12);
+  border-radius: 12px;
+  padding: 12px 14px;
+  display: grid;
+  gap: 4px;
+}
+
+.mm-step strong {
+  font-size: 13px;
+  color: #243650;
+}
+
+.mm-step span {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.mm-step.is-active {
+  border-color: rgba(63, 106, 50, 0.45);
+  background: rgba(63, 106, 50, 0.08);
+}
+
+.mm-step.is-active strong {
+  color: #3f6a32;
+}
+
 .mm-grid {
   max-width: 1400px;
   margin: 0 auto 18px;
@@ -65,6 +101,8 @@
 .mm-badge--failed,
 .mm-badge--evaluation_failed,
 .mm-badge--rejected { background: #8b2e3b; }
+.mm-badge--archived,
+.mm-badge--cancelled { background: #6b7280; }
 .mm-badge--training,
 .mm-badge--pending_evaluation,
 .mm-badge--queued,
@@ -91,19 +129,75 @@
 
 .mm-dl dd { margin: 0; color: #243650; }
 
+.mm-card.is-training {
+  border-color: rgba(138, 106, 47, 0.35);
+  box-shadow: 0 8px 18px rgba(138, 106, 47, 0.08);
+}
+
+.mm-loading {
+  margin-top: 16px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(138, 106, 47, 0.08);
+  border: 1px solid rgba(138, 106, 47, 0.18);
+}
+
+.mm-loading[hidden],
+.mm-loading.is-idle[hidden] {
+  display: none !important;
+}
+
+.mm-loading-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.mm-loading-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #8a6a2f;
+}
+
+.mm-loading-head strong {
+  font-size: 13px;
+  color: #243650;
+}
+
+.mm-loading-msg {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: #6b7280;
+  line-height: 1.4;
+}
+
 .mm-progress {
-  margin-top: 14px;
-  height: 10px;
+  margin-top: 0;
+  height: 12px;
   border-radius: 999px;
-  background: rgba(36, 54, 80, 0.1);
+  background: rgba(36, 54, 80, 0.12);
   overflow: hidden;
+  position: relative;
 }
 
 .mm-progress > span {
   display: block;
   height: 100%;
-  background: #243650;
-  transition: width 0.3s ease;
+  background: linear-gradient(90deg, #8a6a2f, #243650);
+  transition: width 0.35s ease;
+  border-radius: 999px;
+}
+
+.mm-progress--loading.is-indeterminate > span {
+  width: 40% !important;
+  animation: mm-progress-slide 1.2s ease-in-out infinite;
+}
+
+@keyframes mm-progress-slide {
+  0% { transform: translateX(-120%); }
+  100% { transform: translateX(280%); }
 }
 
 .mm-error-line {
@@ -119,6 +213,29 @@
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
+}
+
+.mm-action.is-locked,
+.mm-btn-row .ch-btn.is-locked {
+  opacity: 0.55;
+  cursor: not-allowed;
+  filter: grayscale(0.15);
+}
+
+.mm-lock-note {
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(139, 46, 59, 0.25);
+  background: rgba(139, 46, 59, 0.08);
+  color: #8b2e3b;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.mm-lock-note[hidden] {
+  display: none !important;
 }
 
 .mm-hint {
@@ -190,5 +307,6 @@
 @media (max-width: 900px) {
   .mm-grid,
   .mm-grid--eval { grid-template-columns: 1fr; }
+  .mm-steps { grid-template-columns: 1fr 1fr; }
   .mm-dl > div { grid-template-columns: 1fr; }
 }

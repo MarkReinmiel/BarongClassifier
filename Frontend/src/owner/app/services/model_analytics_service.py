@@ -64,24 +64,87 @@ def _div(num: float, den: float) -> float | None:
     return float(num) / float(den)
 
 
+def _registry_production_paths() -> tuple[Path | None, Path | None, dict[str, Any] | None]:
+    """Return (artifact_dir, keras_path, registry_row) for the live production revision."""
+    try:
+        from app.extensions import db
+        from sqlalchemy import text
+
+        row = db.session.execute(
+            text(
+                """
+                select
+                  id::text as id,
+                  version_label,
+                  coalesce(major_version, version_number, 1)::int as major_version,
+                  coalesce(revision_number, 1)::int as revision_number,
+                  status,
+                  artifact_dir,
+                  dataset_snapshot_id,
+                  to_char(deployed_at at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"')
+                    as deployed_at,
+                  to_char(created_at at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"')
+                    as created_at
+                from public.model_versions
+                where is_production = true
+                order by major_version desc, revision_number desc
+                limit 1
+                """
+            )
+        ).mappings().first()
+        if not row:
+            return None, None, None
+        artifact_dir = Path(row["artifact_dir"] or "")
+        keras = artifact_dir / "main_classifier.keras"
+        return (
+            artifact_dir if artifact_dir.is_dir() else None,
+            keras if keras.is_file() else None,
+            dict(row),
+        )
+    except Exception:
+        logger.exception("Could not read production model from registry")
+        return None, None, None
+
+
 def metrics_candidates() -> list[Path]:
-    return [
-        REPO_ROOT / "ml" / "models" / "active" / "metrics.json",
-        OWNER_ROOT / "models" / "metrics.json",
-    ]
+    paths: list[Path] = []
+    artifact_dir, _keras, _row = _registry_production_paths()
+    if artifact_dir:
+        paths.append(artifact_dir / "metrics.json")
+    paths.extend(
+        [
+            REPO_ROOT / "ml" / "models" / "active" / "metrics.json",
+            OWNER_ROOT / "models" / "metrics.json",
+        ]
+    )
+    # Deduplicate while preserving order.
+    seen: set[str] = set()
+    unique: list[Path] = []
+    for path in paths:
+        key = str(path.resolve()) if path.exists() else str(path)
+        if key in seen:
+            continue
+        seen.add(key)
+        unique.append(path)
+    return unique
 
 
 def active_model_path() -> Path | None:
+    _artifact_dir, registry_keras, _row = _registry_production_paths()
     for path in (
+        registry_keras,
         OWNER_ROOT / "models" / "barong_model.keras",
         REPO_ROOT / "ml" / "models" / "active" / "main_classifier.keras",
     ):
-        if path.is_file():
+        if path and path.is_file():
             return path
     return None
 
 
 def active_dir() -> Path:
+    artifact_dir, _keras, _row = _registry_production_paths()
+    if artifact_dir and artifact_dir.is_dir():
+        return artifact_dir
     return REPO_ROOT / "ml" / "models" / "active"
 
 
@@ -90,7 +153,10 @@ def load_active_metrics() -> dict[str, Any]:
         data = _safe_json(path)
         if isinstance(data, dict) and data:
             data = dict(data)
-            data["_source_path"] = str(path.relative_to(REPO_ROOT)).replace("\\", "/")
+            try:
+                data["_source_path"] = str(path.relative_to(REPO_ROOT)).replace("\\", "/")
+            except ValueError:
+                data["_source_path"] = str(path)
             return data
     return {}
 
@@ -373,15 +439,131 @@ def measure_inference_latency(
     return result
 
 
+def _version_entry_from_registry(row: dict[str, Any]) -> dict[str, Any]:
+    major = int(row.get("major_version") or 1)
+    revision = int(row.get("revision_number") or 1)
+    display = f"v{major}.{revision}"
+    artifact_dir = Path(row.get("artifact_dir") or "")
+    metrics_path = artifact_dir / "metrics.json"
+    metrics = _safe_json(metrics_path) if metrics_path.is_file() else {}
+    if not isinstance(metrics, dict):
+        metrics = {}
+    # Fall back to DB metrics_json if file missing.
+    if not metrics and row.get("metrics_json"):
+        raw = row["metrics_json"]
+        if isinstance(raw, str):
+            try:
+                metrics = json.loads(raw or "{}")
+            except json.JSONDecodeError:
+                metrics = {}
+        elif isinstance(raw, dict):
+            metrics = raw
+
+    keras = artifact_dir / "main_classifier.keras"
+    if not keras.is_file() and row.get("is_production"):
+        owner_keras = OWNER_ROOT / "models" / "barong_model.keras"
+        if owner_keras.is_file():
+            keras = owner_keras
+    size = keras.stat().st_size if keras.is_file() else None
+    cm = metrics.get("confusion_matrix")
+    classes = list(metrics.get("classes") or CLASS_KEYS)
+    scored = metrics_from_confusion(cm, classes) if cm else {}
+    status_raw = str(row.get("status") or "unknown")
+    if row.get("is_production"):
+        status = "Active"
+    elif status_raw in {"archived", "rejected", "failed", "evaluation_failed", "cancelled"}:
+        status = status_raw.replace("_", " ").title()
+    else:
+        status = status_raw.replace("_", " ").title()
+
+    try:
+        artifact_rel = str(keras.relative_to(REPO_ROOT)).replace("\\", "/") if keras.is_file() else str(artifact_dir)
+    except ValueError:
+        artifact_rel = str(keras if keras.is_file() else artifact_dir)
+
+    return {
+        "id": row.get("id") or display,
+        "label": display,
+        "display_revision": display,
+        "major_version": major,
+        "revision_number": revision,
+        "architecture": metrics.get("model") or "MobileNetV2",
+        "created_at": row.get("created_at") or metrics.get("generated_at"),
+        "deployed_at": row.get("deployed_at"),
+        "dataset_snapshot_id": row.get("dataset_snapshot_id"),
+        "dataset": {
+            "train_images": metrics.get("train_images"),
+            "val_images": metrics.get("val_images"),
+            "test_images": metrics.get("test_images"),
+            "seed": metrics.get("seed"),
+            "snapshot_id": row.get("dataset_snapshot_id"),
+        },
+        "evaluation": {
+            "accuracy": metrics.get("test_accuracy", scored.get("accuracy")),
+            "accuracy_pct": _pct(metrics.get("test_accuracy", scored.get("accuracy"))),
+            "macro_f1_pct": (scored.get("macro") or {}).get("f1_pct"),
+            "weighted_f1_pct": (scored.get("weighted") or {}).get("f1_pct"),
+            "precision_pct": (scored.get("macro") or {}).get("precision_pct"),
+            "recall_pct": (scored.get("macro") or {}).get("recall_pct"),
+            "test_images": metrics.get("test_images") or scored.get("support_total"),
+            "dataset_note": (
+                f"Snapshot {row.get('dataset_snapshot_id')}"
+                if row.get("dataset_snapshot_id")
+                else "Held-out test split from training run"
+            ),
+            "note": None
+            if (cm or metrics.get("test_accuracy") is not None)
+            else "No evaluation metrics stored for this revision yet.",
+        },
+        "file_size_bytes": size,
+        "file_size_mb": _mb(size),
+        "format": "Keras .keras",
+        "status": status,
+        "is_production": bool(row.get("is_production")),
+        "artifact": artifact_rel,
+        "comparable": bool(cm or metrics.get("test_accuracy") is not None),
+    }
+
+
 def list_model_versions() -> list[dict[str, Any]]:
+    """Prefer Model Management registry revisions; fall back to local active files."""
     versions: list[dict[str, Any]] = []
+    try:
+        from app.extensions import db
+        from sqlalchemy import text
+
+        rows = db.session.execute(
+            text(
+                """
+                select
+                  id::text as id,
+                  version_label,
+                  coalesce(major_version, version_number, 1)::int as major_version,
+                  coalesce(revision_number, 1)::int as revision_number,
+                  status,
+                  artifact_dir,
+                  is_production,
+                  metrics_json,
+                  dataset_snapshot_id,
+                  to_char(created_at at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"')
+                    as created_at,
+                  to_char(deployed_at at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"')
+                    as deployed_at
+                from public.model_versions
+                order by major_version desc, revision_number desc
+                """
+            )
+        ).mappings().all()
+        for row in rows:
+            versions.append(_version_entry_from_registry(dict(row)))
+        if versions:
+            return versions
+    except Exception:
+        logger.exception("Registry version listing failed; using file fallback")
+
+    # Fallback: active file artifacts only.
     metrics = load_active_metrics()
     model_path = active_model_path()
-    active_version = str(metrics.get("version") or (metrics.get("labels") or {}).get("version") or "")
-    labels = _safe_json(OWNER_ROOT / "models" / "labels.json") or {}
-    if not active_version and isinstance(labels, dict):
-        active_version = str(labels.get("version") or "")
-
     if metrics or model_path:
         size = model_path.stat().st_size if model_path and model_path.is_file() else None
         cm = metrics.get("confusion_matrix") if metrics else None
@@ -389,8 +571,8 @@ def list_model_versions() -> list[dict[str, Any]]:
         scored = metrics_from_confusion(cm, classes) if cm else {}
         versions.append(
             {
-                "id": active_version or "active",
-                "label": active_version or "Active model",
+                "id": str(metrics.get("version") or "active"),
+                "label": str(metrics.get("version") or "Active model"),
                 "architecture": metrics.get("model") or "MobileNetV2",
                 "created_at": metrics.get("generated_at") or metrics.get("deployed_at"),
                 "dataset": {
@@ -413,45 +595,18 @@ def list_model_versions() -> list[dict[str, Any]]:
                 "file_size_mb": _mb(size),
                 "format": "Keras .keras",
                 "status": "Active" if model_path else "Not Available",
-                "artifact": "Frontend/src/owner/models/barong_model.keras"
-                if model_path and "owner" in Path(str(model_path)).parts
-                else "ml/models/active/main_classifier.keras",
+                "is_production": True,
+                "artifact": str(model_path) if model_path else None,
                 "comparable": bool(cm or metrics.get("test_accuracy") is not None),
             }
         )
-
-    backup_dir = REPO_ROOT / "ml" / "models" / "backups" / "pre_retrain_20261024_131011"
-    manifest = _safe_json(backup_dir / "backup_manifest.json")
-    backup_model = backup_dir / "owner_barong_model.keras"
-    if backup_model.is_file():
-        size = backup_model.stat().st_size
-        versions.append(
-            {
-                "id": "backup_pre_retrain_20261024_131011",
-                "label": "Backup (pre-retrain 2026-10-24)",
-                "architecture": "MobileNetV2 (archived copy)",
-                "created_at": (manifest or {}).get("created_at") if isinstance(manifest, dict) else None,
-                "dataset": {},
-                "evaluation": {
-                    "accuracy": None,
-                    "accuracy_pct": None,
-                    "note": "No held-out evaluation report is stored for this backup.",
-                },
-                "file_size_bytes": size,
-                "file_size_mb": _mb(size),
-                "format": "Keras .keras",
-                "status": "Archived",
-                "artifact": "ml/models/backups/pre_retrain_20261024_131011/owner_barong_model.keras",
-                "comparable": False,
-            }
-        )
-
     return versions
 
 
 def build_analytics(*, measure_latency: bool = False) -> dict[str, Any]:
     metrics = load_active_metrics()
     model_path = active_model_path()
+    _artifact_dir, _keras, production = _registry_production_paths()
     classes = list(metrics.get("classes") or CLASS_KEYS)
     cm = metrics.get("confusion_matrix")
     scored = metrics_from_confusion(cm, classes) if cm else {
@@ -495,18 +650,38 @@ def build_analytics(*, measure_latency: bool = False) -> dict[str, Any]:
 
     history = epoch_history(metrics)
     deploy = _safe_json(active_dir() / "deploy_log.json")
-    version = str(metrics.get("version") or "")
-    status = "Active" if model_path and metrics else ("Not Available" if not model_path else "Evaluating")
-    if model_path and not metrics:
+    if production:
+        major = int(production.get("major_version") or 1)
+        revision = int(production.get("revision_number") or 1)
+        version = f"v{major}.{revision}"
         status = "Active"
+        deployed_at = production.get("deployed_at") or metrics.get("deployed_at")
+        snapshot_id = production.get("dataset_snapshot_id")
+    else:
+        version = str(metrics.get("version") or "")
+        status = "Active" if model_path and metrics else ("Not Available" if not model_path else "Evaluating")
+        if model_path and not metrics:
+            status = "Active"
+        deployed_at = metrics.get("deployed_at") or (
+            deploy.get("deployed_at") if isinstance(deploy, dict) else None
+        )
+        snapshot_id = None
+
+    dataset_identifier = None
+    if snapshot_id:
+        dataset_identifier = f"snapshot {snapshot_id}"
+        if metrics.get("test_images"):
+            dataset_identifier += f" · held-out test ({metrics.get('test_images')} images)"
+    elif metrics.get("test_images"):
+        dataset_identifier = f"held-out test ({metrics.get('test_images')} images)"
 
     overview = {
         "name": metrics.get("model") or "MobileNetV2 textile classifier",
         "version": version or None,
         "status": status,
         "last_evaluation_at": metrics.get("generated_at"),
-        "deployed_at": metrics.get("deployed_at")
-        or (deploy.get("deployed_at") if isinstance(deploy, dict) else None),
+        "deployed_at": deployed_at,
+        "dataset_snapshot_id": snapshot_id,
         "classes": [CLASS_LABELS.get(c, c) for c in classes],
         "class_count": len(classes),
         "dataset": {
@@ -514,12 +689,12 @@ def build_analytics(*, measure_latency: bool = False) -> dict[str, Any]:
             "val_images": metrics.get("val_images"),
             "test_images": metrics.get("test_images"),
             "seed": metrics.get("seed"),
-            "identifier": f"held-out test ({metrics.get('test_images')} images)"
-            if metrics.get("test_images")
-            else None,
+            "snapshot_id": snapshot_id,
+            "identifier": dataset_identifier,
         },
         "metrics_source": metrics.get("_source_path"),
         "image_size": metrics.get("image_size"),
+        "registry_backed": bool(production),
     }
 
     performance = {
@@ -596,15 +771,21 @@ def build_analytics(*, measure_latency: bool = False) -> dict[str, Any]:
 
     limitations = []
     if not metrics:
-        limitations.append("No metrics.json found under ml/models/active or Owner/models.")
+        limitations.append(
+            "No metrics.json found for the live production revision (registry artifact, ml/models/active, or Owner/models)."
+        )
     if not cm:
         limitations.append("Confusion matrix missing from evaluation artifacts.")
     if not history.get("available"):
         limitations.append("Per-epoch training history arrays were not found.")
+    if not production:
+        limitations.append(
+            "No production row in the model registry yet — overview falls back to local active files."
+        )
     if len([v for v in versions if v.get("comparable")]) < 2:
         limitations.append(
-            "Only one evaluated model version is available for numeric comparison; "
-            "archived backups without evaluation reports cannot be ranked by accuracy."
+            "Fewer than two evaluated revisions are available for numeric comparison; "
+            "revisions without evaluation reports cannot be ranked by accuracy."
         )
 
     return {

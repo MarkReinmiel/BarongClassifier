@@ -407,6 +407,7 @@ def submit_review(
         "uncertain": "uncertain",
         "mark_uncertain": "uncertain",
         "added_to_dataset": "added_to_dataset",
+        "remove_from_dataset": "approved",
         "restore": "pending_review",
         "pending": "pending_review",
         "pending_review": "pending_review",
@@ -415,7 +416,8 @@ def submit_review(
     }
     if action_key not in status_map:
         raise ReviewError(
-            "Action must be approve, reject, restore (move to pending), or uncertain."
+            "Action must be approve, reject, restore (move to pending), "
+            "remove_from_dataset, or uncertain."
         )
     new_status = status_map[action_key]
 
@@ -453,6 +455,9 @@ def submit_review(
         }:
             raise ReviewError("Only approved images can be marked added_to_dataset.")
 
+        if action_key == "remove_from_dataset" and previous != "added_to_dataset":
+            raise ReviewError("Only photos in the dataset pool can be removed from it.")
+
         if new_status == "pending_review" and previous == "pending_review":
             raise ReviewError("This photo is already in Pending.")
 
@@ -466,6 +471,9 @@ def submit_review(
 
         if new_status == "added_to_dataset":
             # Keep any separately verified label if present; do not invent one.
+            verified = detail.get("verified_label") or verified
+        if action_key == "remove_from_dataset":
+            # Leaving the pool keeps approval + any prior verified label.
             verified = detail.get("verified_label") or verified
 
         image_url = detail.get("image_url")
@@ -591,7 +599,8 @@ def list_approved_contributions(
         return empty
     page = max(1, int(page or 1))
     per_page = min(100, max(1, int(per_page or 24)))
-    clauses = ["r.review_status in ('approved', 'added_to_dataset')"]
+    # Contributions page = dataset pool only (added after Owner "Add to Dataset").
+    clauses = ["r.review_status = 'added_to_dataset'"]
     params: dict[str, Any] = {"limit": per_page, "offset": (page - 1) * per_page}
     if verified_label:
         clauses.append("r.verified_label = :verified_label")
@@ -645,6 +654,7 @@ def list_approved_contributions(
             )
             item["confidence_pct"] = round(float(item.get("confidence") or 0) * 100, 1)
             item["labeled_for_training"] = bool(item.get("verified_label"))
+            item["in_dataset_pool"] = True
             items.append(item)
         return {
             "items": items,
@@ -814,6 +824,87 @@ def add_to_dataset_pool(
             failed.append({"id": classification_id, "error": str(exc)})
             current_app.logger.warning(
                 "add_to_dataset_pool failed id=%s error=%s",
+                classification_id,
+                exc,
+            )
+
+    return {
+        "ok": len(failed) == 0,
+        "requested": len(ids),
+        "succeeded_count": len(succeeded),
+        "skipped_count": len(skipped),
+        "failed_count": len(failed),
+        "succeeded": succeeded,
+        "skipped": skipped,
+        "failed": failed,
+        "results": results,
+        "counts": contribution_counts(),
+    }
+
+
+def remove_from_dataset_pool(
+    actor: OwnerUser,
+    classification_ids: list[str] | None,
+) -> dict[str, Any]:
+    """Undo accidental Add to Dataset: move added_to_dataset back to approved.
+
+    Photo stays Owner-approved for suitability, but leaves the dataset pool /
+    Contributions training set. Does not delete the image or change production models.
+    """
+    ids = _normalize_id_list(classification_ids)
+    results: list[dict[str, Any]] = []
+    succeeded: list[str] = []
+    skipped: list[dict[str, str]] = []
+    failed: list[dict[str, str]] = []
+
+    for classification_id in ids:
+        try:
+            detail = get_classification_detail(classification_id)
+            previous = detail.get("review_status") or "pending_review"
+            if previous == "approved":
+                skipped.append(
+                    {
+                        "id": classification_id,
+                        "error": "Already removed from the dataset pool.",
+                    }
+                )
+                results.append(
+                    {
+                        "id": classification_id,
+                        "ok": True,
+                        "already": True,
+                        "review_status": "approved",
+                        "item": detail,
+                    }
+                )
+                continue
+            if previous != "added_to_dataset":
+                raise ReviewError(
+                    "Only photos in the dataset pool can be removed from it."
+                )
+            item = submit_review(
+                actor,
+                classification_id,
+                action="remove_from_dataset",
+                confirm_change=True,
+                notes="Removed from dataset pool (still approved).",
+            )
+            results.append(
+                {
+                    "id": classification_id,
+                    "ok": True,
+                    "already": False,
+                    "review_status": item.get("review_status"),
+                    "item": item,
+                }
+            )
+            succeeded.append(classification_id)
+        except ReviewError as exc:
+            entry = {"id": classification_id, "ok": False, "error": str(exc)}
+            results.append(entry)
+            failed.append({"id": classification_id, "error": str(exc)})
+            current_app.logger.warning(
+                "remove_from_dataset_pool failed id=%s error=%s",
                 classification_id,
                 exc,
             )

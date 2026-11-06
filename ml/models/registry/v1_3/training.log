@@ -1,0 +1,49 @@
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1793974379.163570    6072 port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1793974389.434394    6072 port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+DATABASE_URL not set; skipping DB status updates
+DATABASE_URL not set; skipping DB status updates
+Revision snapshot ready: C:\Users\louis\OneDrive\Documents\GitHub\BarongClassifier\ml\data\snapshots\ds_1_3_20261106_141257 counts={'cocoon': 300, 'jusi': 303, 'pina': 305} added=0 dupes=18
+DATABASE_URL not set; skipping DB status updates
+Using folder/snapshot dataset: {'cocoon': 300, 'jusi': 303, 'pina': 305}
+Loaded 50/908
+Loaded 100/908
+Loaded 150/908
+Loaded 200/908
+Loaded 250/908
+Loaded 300/908
+Loaded 350/908
+Loaded 400/908
+Loaded 450/908
+Loaded 500/908
+Loaded 550/908
+Loaded 600/908
+Loaded 650/908
+Loaded 700/908
+Loaded 750/908
+Loaded 800/908
+Loaded 850/908
+Loaded 900/908
+Loaded 908/908
+DATABASE_URL not set; skipping DB status updates
+WARNING:tensorflow:TensorFlow GPU support is not available on native Windows for TensorFlow >= 2.11. Even if CUDA/cuDNN are installed, GPU will not be used. Please use WSL2 or the TensorFlow-DirectML plugin.
+Epoch 1/12
+20/20 - 18s - 881ms/step - accuracy: 0.6057 - loss: 0.9224 - val_accuracy: 0.8029 - val_loss: 0.5778
+Epoch 2/12
+20/20 - 16s - 806ms/step - accuracy: 0.8502 - loss: 0.4281 - val_accuracy: 0.8832 - val_loss: 0.3902
+Epoch 3/12
+20/20 - 17s - 830ms/step - accuracy: 0.8849 - loss: 0.3152 - val_accuracy: 0.9197 - val_loss: 0.2875
+Epoch 4/12
+20/20 - 15s - 756ms/step - accuracy: 0.9164 - loss: 0.2561 - val_accuracy: 0.9051 - val_loss: 0.2838
+Epoch 5/12
+20/20 - 16s - 799ms/step - accuracy: 0.9274 - loss: 0.2138 - val_accuracy: 0.9270 - val_loss: 0.2331
+Epoch 6/12
+20/20 - 13s - 651ms/step - accuracy: 0.9479 - loss: 0.1596 - val_accuracy: 0.9343 - val_loss: 0.2052
+Epoch 7/12
+20/20 - 13s - 675ms/step - accuracy: 0.9432 - loss: 0.1694 - val_accuracy: 0.9489 - val_loss: 0.1870
+Epoch 8/12
+20/20 - 13s - 671ms/step - accuracy: 0.9669 - loss: 0.1447 - val_accuracy: 0.9489 - val_loss: 0.1753
+Epoch 9/12
+20/20 - 14s - 722ms/step - accuracy: 0.9448 - loss: 0.1582 - val_accuracy: 0.9489 - val_loss: 0.1573
+Epoch 10/12

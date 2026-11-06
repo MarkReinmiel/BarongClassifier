@@ -151,12 +151,18 @@ def _display_revision(major: int, revision: int) -> str:
     return f"v{int(major)}.{int(revision)}"
 
 
-def _resolve_next_revision(
+def _resolve_training_target(
     *,
     new_major: bool,
     production: dict[str, Any] | None,
-) -> tuple[int, int, str]:
-    """Return (major, revision, display_label) for the next training candidate."""
+) -> tuple[int, int, str, dict[str, Any] | None]:
+    """Return (major, revision, display, reuse_row).
+
+    Cancel / reject / failed candidates are reused in-place (same vN.r) so retries
+    do not create v1.3, v1.4, … and orphan weight files. A new revision number is
+    allocated only when starting a new major, or when the current major has no
+    replaceable non-production candidate (e.g. production is already v1.2).
+    """
     if new_major:
         max_major = int(
             db.session.execute(
@@ -166,28 +172,73 @@ def _resolve_next_revision(
         )
         major = max(max_major, int((production or {}).get("major_version") or 0)) + 1
         revision = 1
-    else:
-        major = int((production or {}).get("major_version") or 1)
-        max_rev = int(
-            db.session.execute(
-                text(
-                    """
-                    select coalesce(max(revision_number), 0)::int
-                    from public.model_versions
-                    where major_version = :major
-                    """
-                ),
-                {"major": major},
-            ).scalar()
-            or 0
+        return major, revision, _display_revision(major, revision), None
+
+    major = int((production or {}).get("major_version") or 1)
+    # Reuse failed/rejected/cancelled slots only. Never overwrite a previously
+    # deployed archived revision (needed for Restore).
+    replaceable = db.session.execute(
+        text(
+            """
+            select
+              id::text as id,
+              version_label,
+              artifact_dir,
+              status,
+              coalesce(major_version, 1)::int as major_version,
+              coalesce(revision_number, 1)::int as revision_number
+            from public.model_versions
+            where major_version = :major
+              and is_production = false
+              and deployed_at is null
+              and status in (
+                'failed', 'evaluation_failed', 'rejected', 'cancelled'
+              )
+            order by revision_number desc, updated_at desc nulls last
+            limit 1
+            """
+        ),
+        {"major": major},
+    ).mappings().first()
+    if replaceable:
+        revision = int(replaceable["revision_number"])
+        return (
+            major,
+            revision,
+            _display_revision(major, revision),
+            dict(replaceable),
         )
-        # Always advance past both DB max and the live production revision.
-        prod_rev = int((production or {}).get("revision_number") or 0)
-        revision = max(max_rev, prod_rev) + 1
-        if revision <= 1 and not production:
-            major = 1
-            revision = 1
-    return major, revision, _display_revision(major, revision)
+
+    max_rev = int(
+        db.session.execute(
+            text(
+                """
+                select coalesce(max(revision_number), 0)::int
+                from public.model_versions
+                where major_version = :major
+                """
+            ),
+            {"major": major},
+        ).scalar()
+        or 0
+    )
+    prod_rev = int((production or {}).get("revision_number") or 0)
+    revision = max(max_rev, prod_rev) + 1
+    if revision <= 1 and not production:
+        major = 1
+        revision = 1
+    return major, revision, _display_revision(major, revision), None
+
+
+def _stable_artifact_dir(major: int, revision: int) -> Path:
+    """Stable folder per revision so retries overwrite instead of stacking copies."""
+    return REGISTRY_ROOT / f"v{int(major)}_{int(revision)}"
+
+
+def _reset_artifact_dir(path: Path) -> None:
+    if path.exists():
+        shutil.rmtree(path, ignore_errors=True)
+    path.mkdir(parents=True, exist_ok=True)
 
 
 TRAINABLE_CLASSES = ("cocoon", "jusi", "pina")
@@ -478,7 +529,8 @@ def list_model_versions(limit: int = 50) -> list[dict[str, Any]]:
                   dataset_snapshot_id,
                   notes,
                   to_char(created_at at time zone 'UTC', 'Mon DD, YYYY HH24:MI UTC') as created_at,
-                  to_char(deployed_at at time zone 'UTC', 'Mon DD, YYYY HH24:MI UTC') as deployed_at
+                  to_char(deployed_at at time zone 'UTC', 'Mon DD, YYYY HH24:MI UTC') as deployed_at,
+                  (deployed_at is not null) as was_deployed
                 from public.model_versions
                 order by major_version desc, revision_number desc
                 limit :limit
@@ -511,6 +563,13 @@ def list_model_versions(limit: int = 50) -> list[dict[str, Any]]:
             )
             item["test_accuracy"] = metrics.get("test_accuracy")
             item["artifact_location"] = item.get("artifact_dir")
+            art = Path(item.get("artifact_dir") or "")
+            item["can_restore"] = bool(
+                not item.get("is_production")
+                and item.get("was_deployed")
+                and (art / "main_classifier.keras").is_file()
+                and (art / "labels.json").is_file()
+            )
             items.append(item)
         return items
     except SQLAlchemyError:
@@ -518,7 +577,26 @@ def list_model_versions(limit: int = 50) -> list[dict[str, Any]]:
         return []
 
 
+# Candidate still needs Owner action before another train can start.
+_ACTIVE_CANDIDATE_STATUSES = {
+    "training",
+    "queued",
+    "pending_evaluation",
+    "evaluation_passed",
+    "approved_for_deployment",
+}
+# Safe to start a new revision after these.
+_TERMINAL_CANDIDATE_STATUSES = {
+    "failed",
+    "evaluation_failed",
+    "rejected",
+    "archived",
+    "cancelled",
+}
+
+
 def get_latest_candidate() -> dict[str, Any] | None:
+    """Prefer the newest actionable candidate; otherwise show the latest archived/rejected one."""
     try:
         row = db.session.execute(
             text(
@@ -554,7 +632,17 @@ def get_latest_candidate() -> dict[str, Any] | None:
                   limit 1
                 ) j on true
                 where v.is_production = false
-                order by v.major_version desc nulls last, v.revision_number desc nulls last
+                order by
+                  case
+                    when v.status in (
+                      'training', 'queued', 'pending_evaluation',
+                      'evaluation_passed', 'approved_for_deployment'
+                    ) then 0
+                    when v.status in ('failed', 'evaluation_failed') then 1
+                    else 2
+                  end,
+                  v.major_version desc nulls last,
+                  v.revision_number desc nulls last
                 limit 1
                 """
             )
@@ -571,8 +659,124 @@ def get_latest_candidate() -> dict[str, Any] | None:
         return None
 
 
+def _cancel_training_jobs_for_version(
+    version_id: str,
+    *,
+    reason: str = "Cancelled because the candidate was rejected.",
+) -> int:
+    """Mark queued/running jobs cancelled and best-effort stop the worker process."""
+    rows = db.session.execute(
+        text(
+            """
+            select id::text as id, pid
+            from public.training_jobs
+            where model_version_id = cast(:version_id as uuid)
+              and status in ('queued', 'running')
+            """
+        ),
+        {"version_id": version_id},
+    ).mappings().all()
+    for row in rows:
+        pid = row.get("pid")
+        if pid:
+            try:
+                if os.name == "nt":
+                    subprocess.run(
+                        ["taskkill", "/PID", str(pid), "/T", "/F"],
+                        capture_output=True,
+                        check=False,
+                    )
+                else:
+                    os.kill(int(pid), 15)
+            except OSError:
+                pass
+        db.session.execute(
+            text(
+                """
+                update public.training_jobs
+                set status = 'cancelled',
+                    finished_at = timezone('utc', now()),
+                    progress_message = :reason,
+                    error_message = :reason,
+                    updated_at = timezone('utc', now())
+                where id = cast(:id as uuid)
+                """
+            ),
+            {"id": row["id"], "reason": reason[:500]},
+        )
+    return len(rows)
+
+
+def _pid_is_alive(pid: int | None) -> bool:
+    if not pid:
+        return False
+    try:
+        if os.name == "nt":
+            result = subprocess.run(
+                ["tasklist", "/FI", f"PID eq {int(pid)}"],
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            return str(pid) in (result.stdout or "")
+        os.kill(int(pid), 0)
+        return True
+    except OSError:
+        return False
+
+
+def reconcile_stale_training_jobs() -> int:
+    """Clear stuck jobs (dead process or terminal candidate) so retraining is possible."""
+    try:
+        rows = db.session.execute(
+            text(
+                """
+                select j.id::text as id, j.pid, v.id::text as version_id, v.status as version_status
+                from public.training_jobs j
+                join public.model_versions v on v.id = j.model_version_id
+                where j.status in ('queued', 'running')
+                """
+            )
+        ).mappings().all()
+        cleared = 0
+        for row in rows:
+            terminal = row["version_status"] in _TERMINAL_CANDIDATE_STATUSES
+            dead = not _pid_is_alive(row.get("pid"))
+            prod = False
+            if terminal or dead:
+                reason = (
+                    f"Auto-cleared stale job; candidate status is {row['version_status']}."
+                    if terminal
+                    else "Auto-cleared stale job; training process is no longer running."
+                )
+                if dead and not terminal and row["version_status"] == "training":
+                    db.session.execute(
+                        text(
+                            """
+                            update public.model_versions
+                            set status = 'failed',
+                                updated_at = timezone('utc', now())
+                            where id = cast(:id as uuid)
+                              and status = 'training'
+                            """
+                        ),
+                        {"id": row["version_id"]},
+                    )
+                cleared += _cancel_training_jobs_for_version(
+                    row["version_id"], reason=reason
+                )
+            _ = prod
+        if cleared:
+            db.session.commit()
+        return cleared
+    except SQLAlchemyError:
+        db.session.rollback()
+        return 0
+
+
 def get_active_training_job() -> dict[str, Any] | None:
     try:
+        reconcile_stale_training_jobs()
         row = db.session.execute(
             text(
                 """
@@ -590,6 +794,8 @@ def get_active_training_job() -> dict[str, Any] | None:
                 from public.training_jobs j
                 join public.model_versions v on v.id = j.model_version_id
                 where j.status in ('queued', 'running')
+                  and v.status not in ('rejected', 'archived')
+                  and v.is_production = false
                 order by j.created_at desc
                 limit 1
                 """
@@ -657,6 +863,197 @@ def dashboard_payload() -> dict[str, Any]:
         db.session.rollback()
 
     major_groups = group_versions_by_major(versions)
+    last_trainable = 0
+    if candidate:
+        summary = candidate.get("dataset_summary") or {}
+        if isinstance(summary, str):
+            try:
+                summary = json.loads(summary or "{}")
+            except json.JSONDecodeError:
+                summary = {}
+        last_trainable = int(summary.get("trainable_contribution_count") or 0)
+    current_trainable = int(dataset.get("trainable_contribution_count") or 0)
+    new_since_last_revision = max(0, current_trainable - last_trainable)
+
+    cand_status = (candidate or {}).get("status")
+    has_blocking_candidate = bool(
+        candidate and cand_status in _ACTIVE_CANDIDATE_STATUSES
+    )
+    can_start = active_job is None and not has_blocking_candidate
+    previous_production = None
+    if production:
+        previous_production = db.session.execute(
+            text(
+                """
+                select id::text as id, version_label, artifact_dir
+                from public.model_versions
+                where id <> cast(:current as uuid)
+                  and deployed_at is not null
+                  and artifact_dir is not null
+                order by deployed_at desc nulls last
+                limit 1
+                """
+            ),
+            {"current": production["id"]},
+        ).mappings().first()
+
+    can_retry = bool(
+        can_start and candidate and cand_status in _TERMINAL_CANDIDATE_STATUSES
+    )
+    can_evaluate = bool(
+        candidate
+        and cand_status
+        in {
+            "pending_evaluation",
+            "evaluation_passed",
+            "evaluation_failed",
+            "approved_for_deployment",
+        }
+    )
+    can_deploy = bool(
+        candidate and cand_status in {"evaluation_passed", "approved_for_deployment"}
+    )
+    can_reject = bool(
+        candidate
+        and not candidate.get("is_production")
+        and cand_status not in {"rejected", "archived", "active"}
+    )
+    can_rollback = bool(previous_production)
+    can_view_logs = bool(
+        candidate and (candidate.get("artifact_dir") or candidate.get("job_id"))
+    )
+    can_cancel = bool(active_job and candidate and can_reject)
+
+    display_cand = (
+        (candidate or {}).get("display_revision")
+        or (candidate or {}).get("version_label")
+        or "candidate"
+    )
+    if active_job:
+        start_block = (
+            "Training is already running. Wait for it to finish, or Cancel Training."
+        )
+    elif has_blocking_candidate:
+        start_block = (
+            f"{display_cand} is still '{cand_status}'. "
+            "Deploy it or Reject it before starting another training run."
+        )
+    else:
+        start_block = ""
+
+    # Lifecycle stepper for Owner guidance.
+    if active_job or cand_status == "training":
+        step_key = "train"
+    elif cand_status in {"pending_evaluation", "evaluation_passed", "approved_for_deployment"}:
+        step_key = "deploy" if can_deploy else "evaluate"
+    elif cand_status in _TERMINAL_CANDIDATE_STATUSES:
+        step_key = "dataset"
+    elif int(dataset.get("added_to_dataset") or 0) > 0 or current_trainable > 0:
+        step_key = "train"
+    else:
+        step_key = "dataset"
+    lifecycle_steps = [
+        {
+            "key": "dataset",
+            "label": "1. Dataset",
+            "detail": "Approve + Add to Dataset",
+            "active": step_key == "dataset",
+        },
+        {
+            "key": "train",
+            "label": "2. Train",
+            "detail": "Train next revision",
+            "active": step_key == "train",
+        },
+        {
+            "key": "evaluate",
+            "label": "3. Evaluate",
+            "detail": "Auto-eval after train",
+            "active": step_key == "evaluate",
+        },
+        {
+            "key": "deploy",
+            "label": "4. Deploy",
+            "detail": "Approve and go live",
+            "active": step_key == "deploy",
+        },
+    ]
+
+    button_notes = {
+        "start_train": (
+            ""
+            if can_start
+            else start_block or "Training cannot start right now."
+        ),
+        "start_major": (
+            ""
+            if can_start
+            else start_block or "A new major version cannot start right now."
+        ),
+        "retry": (
+            ""
+            if can_retry
+            else (
+                start_block
+                if not can_start
+                else "Retry is only for failed, rejected, or archived candidates. Use Train Next Revision for a fresh run."
+            )
+        ),
+        "evaluate": (
+            ""
+            if can_evaluate
+            else (
+                "No candidate metrics yet. Start training and wait until it finishes (auto-evaluation runs after training)."
+                if not candidate
+                else f"{display_cand} status is '{cand_status}'. Re-evaluate is available after training finishes."
+            )
+        ),
+        "deploy": (
+            ""
+            if can_deploy
+            else (
+                "Nothing to deploy yet. Train a candidate and wait until evaluation passes."
+                if not candidate
+                else f"{display_cand} status is '{cand_status}'. Deploy unlocks only after evaluation passes."
+            )
+        ),
+        "reject": (
+            ""
+            if can_reject
+            else (
+                "No active candidate to reject."
+                if not candidate
+                else f"{display_cand} is already '{cand_status}' and cannot be rejected again."
+            )
+        ),
+        "cancel": (
+            ""
+            if can_cancel
+            else "Cancel is only available while a training job is running."
+        ),
+        "rollback": (
+            ""
+            if can_rollback
+            else "Restore needs a previously deployed production revision. Deploy at least one newer model first."
+        ),
+        "view_logs": (
+            ""
+            if can_view_logs
+            else "No training logs yet. Start a training run first."
+        ),
+        "restore_version": (
+            "Choose an archived previously-deployed revision from Model history."
+        ),
+    }
+
+    preview_label = "v1.2"
+    will_reuse = False
+    if production:
+        _maj, _rev, preview_label, reuse_row = _resolve_training_target(
+            new_major=False, production=production
+        )
+        will_reuse = reuse_row is not None
+
     return {
         "production": production,
         "candidate": candidate,
@@ -669,42 +1066,43 @@ def dashboard_payload() -> dict[str, Any]:
         "candidate_metrics": cand_metrics or {},
         "classifications_handled": classifications_handled,
         "min_test_accuracy": _min_accuracy(),
-        "can_start_training": active_job is None,
-        "can_retry": bool(
-            candidate
-            and candidate.get("status") in {"failed", "evaluation_failed"}
-            and active_job is None
+        # One active candidate at a time: Deploy or Reject before starting another.
+        "can_start_training": can_start,
+        "can_retry": can_retry,
+        "can_evaluate": can_evaluate,
+        "can_deploy": can_deploy,
+        "can_reject": can_reject,
+        "can_cancel": can_cancel,
+        "can_rollback": can_rollback,
+        "can_view_logs": can_view_logs,
+        "button_notes": button_notes,
+        "lifecycle_steps": lifecycle_steps,
+        "lifecycle_step": step_key,
+        "previous_production_label": (
+            (previous_production or {}).get("version_label") if previous_production else None
         ),
-        "can_evaluate": bool(
-            candidate
-            and candidate.get("status")
-            in {"pending_evaluation", "evaluation_passed", "evaluation_failed", "approved_for_deployment"}
-        ),
-        "can_deploy": bool(
-            candidate
-            and candidate.get("status") in {"evaluation_passed", "approved_for_deployment"}
-        ),
-        "can_rollback": bool(production and len(versions) > 1),
-        "next_revision_preview": (
-            _display_revision(
-                int((production or {}).get("major_version") or 1),
-                int(
-                    db.session.execute(
-                        text(
-                            """
-                            select coalesce(max(revision_number), 0)::int + 1
-                            from public.model_versions
-                            where major_version = :major
-                            """
-                        ),
-                        {"major": int((production or {}).get("major_version") or 1)},
-                    ).scalar()
-                    or 1
-                ),
+        "workflow_hint": (
+            "Training in progress - wait, view logs, or Cancel Training."
+            if active_job
+            else (
+                "Candidate ready - Approve and Deploy, or Reject to train again."
+                if cand_status
+                in {
+                    "pending_evaluation",
+                    "evaluation_passed",
+                    "approved_for_deployment",
+                }
+                else (
+                    "Candidate closed - Train / Retry reuses the same revision number (e.g. stays v1.2) and refreshes weights."
+                    if cand_status in _TERMINAL_CANDIDATE_STATUSES
+                    else "Approve photos, Add to Dataset, then Train. Cancel/retry keeps the same revision slot to save disk."
+                )
             )
-            if production
-            else "v1.2"
         ),
+        "last_revision_trainable_count": last_trainable,
+        "new_images_since_last_revision": new_since_last_revision,
+        "next_revision_preview": preview_label,
+        "will_reuse_revision": will_reuse,
     }
 
 
@@ -728,30 +1126,36 @@ def start_training(
                 "A training job is already queued or running. Wait for it to finish.",
                 409,
             )
+        existing = get_latest_candidate()
+        if existing and existing.get("status") in _ACTIVE_CANDIDATE_STATUSES:
+            raise ModelRegistryError(
+                f"Candidate {existing.get('display_revision') or existing.get('version_label')} "
+                f"is still {existing.get('status')}. Deploy it or Reject it before starting another training run.",
+                409,
+            )
 
         production = get_production_model()
-        major, revision, display = _resolve_next_revision(
+        major, revision, display, reuse_row = _resolve_training_target(
             new_major=new_major, production=production
         )
-        next_number = int(
-            db.session.execute(
-                text("select coalesce(max(version_number), 0)::int + 1 from public.model_versions")
-            ).scalar()
-            or 1
-        )
-        stamp = _utc_now().strftime("%Y%m%d_%H%M%S")
-        version_label = f"{display}_{stamp}"
-        artifact_dir = REGISTRY_ROOT / version_label
-        artifact_dir.mkdir(parents=True, exist_ok=True)
-        # Immutable candidate path — never writes into production keras files.
+        reused = reuse_row is not None
+        version_label = display
+        artifact_dir = _stable_artifact_dir(major, revision)
+        # Drop previous failed/rejected weights for this revision slot (saves disk).
+        if reused and reuse_row.get("artifact_dir"):
+            old_dir = Path(reuse_row["artifact_dir"])
+            if old_dir.resolve() != artifact_dir.resolve() and old_dir.exists():
+                shutil.rmtree(old_dir, ignore_errors=True)
+        _reset_artifact_dir(artifact_dir)
+        # Candidate-only path — never writes into live production keras files.
         (artifact_dir / "CANDIDATE_ONLY.txt").write_text(
-            "Independent candidate artifact. Production inference uses app model files until deploy.\n",
+            "Independent candidate artifact. Production inference uses app model files until deploy.\n"
+            f"Revision slot {display} is reused on cancel/retry to avoid extra versions.\n",
             encoding="utf-8",
         )
         dataset = _build_dataset_snapshot(
             major=major, revision=revision, production=production
         )
-        # Immutable plan for the worker — staging happens off the request thread.
         plan_path = artifact_dir / "dataset_plan.json"
         plan_path.write_text(
             json.dumps(
@@ -762,6 +1166,7 @@ def start_training(
                     "major_version": major,
                     "revision_number": revision,
                     "display_revision": display,
+                    "reuse_revision": reused,
                     "contributions": dataset.get("contributions") or [],
                     "newly_added_since_production": dataset.get(
                         "newly_added_since_production"
@@ -771,46 +1176,89 @@ def start_training(
             ),
             encoding="utf-8",
         )
-        # Keep DB summary lean (omit full contribution URL list).
         dataset_for_db = {
             k: v for k, v in dataset.items() if k != "contributions"
         }
+        notes = (
+            "retry_same_revision"
+            if reused or retry
+            else ("new_major" if new_major else "revision_under_current_major")
+        )
 
-        version = db.session.execute(
-            text(
-                """
-                insert into public.model_versions (
-                  version_label, version_number, major_version, revision_number,
-                  status, artifact_dir, parent_version_id, is_production, created_by,
-                  metrics_json, dataset_summary, dataset_snapshot_id, notes,
-                  created_at, updated_at
-                ) values (
-                  :version_label, :version_number, :major_version, :revision_number,
-                  'training', :artifact_dir, cast(:parent_id as uuid), false, :created_by,
-                  '{}'::jsonb, cast(:dataset_summary as jsonb), :snapshot_id, :notes,
-                  timezone('utc', now()), timezone('utc', now())
-                )
-                returning id::text as id, version_label, version_number,
-                          major_version, revision_number, status, artifact_dir
-                """
-            ),
-            {
-                "version_label": version_label,
-                "version_number": next_number,
-                "major_version": major,
-                "revision_number": revision,
-                "artifact_dir": str(artifact_dir),
-                "parent_id": production.get("id") if production else None,
-                "created_by": str(actor.id),
-                "dataset_summary": json.dumps(dataset_for_db),
-                "snapshot_id": dataset["snapshot_id"],
-                "notes": (
-                    "retry_revision"
-                    if retry
-                    else ("new_major" if new_major else "revision_under_current_major")
+        if reused:
+            _cancel_training_jobs_for_version(
+                reuse_row["id"],
+                reason="Superseded by a same-revision retrain.",
+            )
+            version = db.session.execute(
+                text(
+                    """
+                    update public.model_versions
+                    set version_label = :version_label,
+                        status = 'training',
+                        artifact_dir = :artifact_dir,
+                        parent_version_id = cast(:parent_id as uuid),
+                        is_production = false,
+                        metrics_json = '{}'::jsonb,
+                        dataset_summary = cast(:dataset_summary as jsonb),
+                        dataset_snapshot_id = :snapshot_id,
+                        notes = :notes,
+                        updated_at = timezone('utc', now())
+                    where id = cast(:id as uuid)
+                    returning id::text as id, version_label, version_number,
+                              major_version, revision_number, status, artifact_dir
+                    """
                 ),
-            },
-        ).mappings().first()
+                {
+                    "id": reuse_row["id"],
+                    "version_label": version_label,
+                    "artifact_dir": str(artifact_dir),
+                    "parent_id": production.get("id") if production else None,
+                    "dataset_summary": json.dumps(dataset_for_db),
+                    "snapshot_id": dataset["snapshot_id"],
+                    "notes": notes,
+                },
+            ).mappings().first()
+        else:
+            next_number = int(
+                db.session.execute(
+                    text(
+                        "select coalesce(max(version_number), 0)::int + 1 from public.model_versions"
+                    )
+                ).scalar()
+                or 1
+            )
+            version = db.session.execute(
+                text(
+                    """
+                    insert into public.model_versions (
+                      version_label, version_number, major_version, revision_number,
+                      status, artifact_dir, parent_version_id, is_production, created_by,
+                      metrics_json, dataset_summary, dataset_snapshot_id, notes,
+                      created_at, updated_at
+                    ) values (
+                      :version_label, :version_number, :major_version, :revision_number,
+                      'training', :artifact_dir, cast(:parent_id as uuid), false, :created_by,
+                      '{}'::jsonb, cast(:dataset_summary as jsonb), :snapshot_id, :notes,
+                      timezone('utc', now()), timezone('utc', now())
+                    )
+                    returning id::text as id, version_label, version_number,
+                              major_version, revision_number, status, artifact_dir
+                    """
+                ),
+                {
+                    "version_label": version_label,
+                    "version_number": next_number,
+                    "major_version": major,
+                    "revision_number": revision,
+                    "artifact_dir": str(artifact_dir),
+                    "parent_id": production.get("id") if production else None,
+                    "created_by": str(actor.id),
+                    "dataset_summary": json.dumps(dataset_for_db),
+                    "snapshot_id": dataset["snapshot_id"],
+                    "notes": notes,
+                },
+            ).mappings().first()
         assert version is not None
 
         log_path = artifact_dir / "training.log"
@@ -886,11 +1334,13 @@ def start_training(
             "job_id": job["id"],
             "pid": process.pid,
             "dataset_snapshot": dataset_for_db,
+            "reused_revision": reused,
             "message": (
-                f"Started training revision {display} in the background. "
+                f"{'Reusing' if reused else 'Started'} training revision {display} "
+                f"{'(same slot — no new version number)' if reused else 'in the background'}. "
                 f"Production remains on "
                 f"{(production or {}).get('display_revision') or (production or {}).get('version_label') or 'current'}. "
-                "Weights were not overwritten."
+                "Live production weights were not overwritten."
             ),
         }
     except ModelRegistryError:
@@ -1157,7 +1607,9 @@ def reject_candidate(actor: OwnerUser, version_id: str) -> dict[str, Any]:
     row = db.session.execute(
         text(
             """
-            select id::text as id, version_label, is_production, status
+            select id::text as id, version_label, is_production, status,
+                   coalesce(major_version, version_number, 1)::int as major_version,
+                   coalesce(revision_number, 1)::int as revision_number
             from public.model_versions where id::text = :id limit 1
             """
         ),
@@ -1167,6 +1619,11 @@ def reject_candidate(actor: OwnerUser, version_id: str) -> dict[str, Any]:
         raise ModelRegistryError("Candidate not found.", 404)
     if row["is_production"]:
         raise ModelRegistryError("Cannot reject the active production model.")
+    # Keep artifacts for history; stop any worker so Train Next Revision can run.
+    cancelled = _cancel_training_jobs_for_version(
+        version_id,
+        reason="Cancelled because the Owner rejected this candidate.",
+    )
     db.session.execute(
         text(
             """
@@ -1183,40 +1640,71 @@ def reject_candidate(actor: OwnerUser, version_id: str) -> dict[str, Any]:
             insert into public.model_deployments (
               model_version_id, action, success, actor_user_id, details
             ) values (
-              cast(:id as uuid), 'reject', true, :actor, '{}'::jsonb
+              cast(:id as uuid), 'reject', true, :actor, cast(:details as jsonb)
             )
             """
         ),
-        {"id": version_id, "actor": str(actor.id)},
+        {
+            "id": version_id,
+            "actor": str(actor.id),
+            "details": json.dumps({"cancelled_jobs": cancelled}),
+        },
     )
     db.session.commit()
-    return {"ok": True, "message": f"Rejected candidate {row['version_label']}."}
+    display = _display_revision(row["major_version"], row["revision_number"])
+    return {
+        "ok": True,
+        "message": (
+            f"Rejected {display}. Artifacts kept in history. "
+            "Use Train Next Revision (or Retry Training) to train again; "
+            "the next run will include the current dataset pool, including any newly added batches."
+        ),
+    }
 
 
-def rollback_production(actor: OwnerUser) -> dict[str, Any]:
+def restore_version(actor: OwnerUser, version_id: str) -> dict[str, Any]:
+    """Restore any previously deployed archived revision to production."""
     production = get_production_model()
     if not production:
         raise ModelRegistryError("No production model is registered.")
-    previous = db.session.execute(
+    target = db.session.execute(
         text(
             """
-            select id::text as id, version_label, artifact_dir, status
+            select id::text as id, version_label, artifact_dir, status, is_production,
+                   deployed_at,
+                   coalesce(major_version, version_number, 1)::int as major_version,
+                   coalesce(revision_number, 1)::int as revision_number
             from public.model_versions
-            where id <> cast(:current as uuid)
-              and artifact_dir is not null
-            order by
-              case when deployed_at is not null then 0 else 1 end,
-              deployed_at desc nulls last,
-              version_number desc
+            where id::text = :id
             limit 1
             """
         ),
-        {"current": production["id"]},
+        {"id": version_id},
     ).mappings().first()
-    if not previous:
-        raise ModelRegistryError("No previous version available for rollback.")
+    if not target:
+        raise ModelRegistryError("Version not found.", 404)
+    if target["is_production"]:
+        raise ModelRegistryError("That revision is already the live production model.")
+    if not target.get("deployed_at"):
+        raise ModelRegistryError(
+            "Only previously deployed revisions can be restored. "
+            "Rejected unfinished candidates cannot be restored — train a new revision instead."
+        )
+    artifact_dir = Path(target["artifact_dir"] or "")
+    if not (artifact_dir / "main_classifier.keras").is_file():
+        raise ModelRegistryError("Restore artifacts are missing.", 400)
+    if not (artifact_dir / "labels.json").is_file():
+        raise ModelRegistryError("Restore labels are missing.", 400)
 
-    # Mark previous as evaluation_passed so deploy_candidate accepts it.
+    # If a candidate is mid-flight, reject/cancel it first so only one active path exists.
+    candidate = get_latest_candidate()
+    if (
+        candidate
+        and candidate.get("id") != target["id"]
+        and candidate.get("status") in _ACTIVE_CANDIDATE_STATUSES
+    ):
+        reject_candidate(actor, candidate["id"])
+
     db.session.execute(
         text(
             """
@@ -1225,10 +1713,10 @@ def rollback_production(actor: OwnerUser) -> dict[str, Any]:
             where id = cast(:id as uuid)
             """
         ),
-        {"id": previous["id"]},
+        {"id": target["id"]},
     )
     db.session.commit()
-    result = deploy_candidate(actor, previous["id"])
+    result = deploy_candidate(actor, target["id"])
     db.session.execute(
         text(
             """
@@ -1237,18 +1725,55 @@ def rollback_production(actor: OwnerUser) -> dict[str, Any]:
               actor_user_id, details
             ) values (
               cast(:model_version_id as uuid), cast(:previous_version_id as uuid),
-              'rollback', true, :actor, cast(:details as jsonb)
+              'restore', true, :actor, cast(:details as jsonb)
             )
             """
         ),
         {
-            "model_version_id": previous["id"],
+            "model_version_id": target["id"],
             "previous_version_id": production["id"],
             "actor": str(actor.id),
-            "details": json.dumps({"rolled_back_from": production["version_label"]}),
+            "details": json.dumps(
+                {
+                    "restored_from": production["version_label"],
+                    "restored_to": target["version_label"],
+                }
+            ),
         },
     )
     db.session.commit()
+    display = _display_revision(target["major_version"], target["revision_number"])
+    result["message"] = (
+        f"Restored {display} to production. "
+        f"Previous live model {production.get('display_revision') or production['version_label']} was archived."
+    )
+    return result
+
+
+def rollback_production(actor: OwnerUser) -> dict[str, Any]:
+    """Restore the most recently deployed non-current production revision."""
+    production = get_production_model()
+    if not production:
+        raise ModelRegistryError("No production model is registered.")
+    previous = db.session.execute(
+        text(
+            """
+            select id::text as id, version_label
+            from public.model_versions
+            where id <> cast(:current as uuid)
+              and deployed_at is not null
+              and artifact_dir is not null
+            order by deployed_at desc nulls last
+            limit 1
+            """
+        ),
+        {"current": production["id"]},
+    ).mappings().first()
+    if not previous:
+        raise ModelRegistryError(
+            "No previously deployed production revision is available to restore yet."
+        )
+    result = restore_version(actor, previous["id"])
     result["message"] = (
         f"Rolled back to {previous['version_label']}. "
         f"Previous production {production['version_label']} was archived."

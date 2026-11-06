@@ -1,0 +1,2 @@
+Independent candidate artifact. Production inference uses app model files until deploy.
+Revision slot v1.3 is reused on cancel/retry to avoid extra versions.

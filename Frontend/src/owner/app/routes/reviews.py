@@ -7,6 +7,7 @@ from flask import Blueprint, current_app, jsonify, render_template, request
 from app.services.review_service import ReviewError, list_approved_contributions
 from app.services.review_service import (
     add_to_dataset_pool,
+    remove_from_dataset_pool,
     get_classification_detail,
     list_customer_classifications,
     submit_batch_review,
@@ -195,12 +196,19 @@ def classification_dataset_batch_api():
     assert actor is not None
     payload = request.get_json(silent=True) or {}
     ids = payload.get("ids") or payload.get("classification_ids") or []
+    action = (payload.get("action") or "add").strip().lower()
     if not isinstance(ids, list):
         return jsonify({"ok": False, "error": "ids must be a list."}), 400
     try:
-        result = add_to_dataset_pool(actor, ids)
+        if action in {"remove", "remove_from_dataset", "undo"}:
+            result = remove_from_dataset_pool(actor, ids)
+            log_label = "dataset_remove"
+        else:
+            result = add_to_dataset_pool(actor, ids)
+            log_label = "dataset_batch"
         current_app.logger.info(
-            "dataset_batch actor=%s requested=%s added=%s skipped=%s failed=%s",
+            "%s actor=%s requested=%s succeeded=%s skipped=%s failed=%s",
+            log_label,
             actor.id,
             result.get("requested"),
             result.get("succeeded_count"),
@@ -213,8 +221,9 @@ def classification_dataset_batch_api():
         return jsonify(result), status
     except ReviewError as exc:
         current_app.logger.warning(
-            "dataset_batch failed actor=%s error=%s",
+            "dataset_batch failed actor=%s action=%s error=%s",
             getattr(actor, "id", None),
+            action,
             exc,
         )
         return jsonify({"ok": False, "error": str(exc)}), exc.status_code
