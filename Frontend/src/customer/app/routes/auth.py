@@ -426,6 +426,10 @@ def nickname_setup():
             return _json_error(error)
         flash(str(error), "error")
         return render_template("auth/nickname.html", user=user), 400
+    # First real landing after account creation → start the home tour once.
+    from app.services.tour_service import flag_tour_after_nickname
+
+    flag_tour_after_nickname()
     if request.is_json:
         return jsonify({"ok": True, "redirect": url_for("main.dashboard")})
     return redirect(url_for("main.dashboard"))

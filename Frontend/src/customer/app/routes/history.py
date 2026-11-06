@@ -5,6 +5,7 @@ from app.services.history_service import (
     list_for_user,
     stats_for_user,
 )
+from app.services.tour_service import get_tour_progress, section_needs_tour
 from app.utils.security import current_user, nickname_required, no_store
 
 bp = Blueprint("history", __name__)
@@ -73,4 +74,6 @@ def history_page():
         per_page_options=PER_PAGE_OPTIONS,
         stats=stats,
         filters_active=bool(selected_type or date_preset or (per_page != 10)),
+        launch_history_tour=section_needs_tour(user, "history"),
+        tour_progress=get_tour_progress(user),
     )

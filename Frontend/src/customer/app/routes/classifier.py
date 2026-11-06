@@ -35,10 +35,14 @@ def classify_page():
                 "created_label": _format_recent_when(row.created_at),
             }
         )
+    from app.services.tour_service import get_tour_progress, section_needs_tour
+
     return render_template(
         "classifier.html",
         user=user,
         recent=recent,
+        launch_classify_tour=section_needs_tour(user, "classify"),
+        tour_progress=get_tour_progress(user),
     )
 
 

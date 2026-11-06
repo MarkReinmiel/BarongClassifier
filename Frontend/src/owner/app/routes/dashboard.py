@@ -7,6 +7,7 @@ from app.services.model_analytics_service import analytics_json
 from app.services.users_service import (
     UsersError,
     dashboard_stats,
+    delete_user,
     list_directory_users,
     list_recent_classifications,
     update_user_role,
@@ -189,6 +190,18 @@ def set_status(user_id: str):
     try:
         update_user_status(actor, user_id, active)
         flash("Status updated.", "success")
+    except UsersError as exc:
+        flash(str(exc), "error")
+    return redirect(url_for("dashboard.users"))
+
+
+@bp.post("/users/<user_id>/delete")
+@login_required
+def remove_user(user_id: str):
+    actor = current_user()
+    try:
+        delete_user(actor, user_id)
+        flash("User deleted.", "success")
     except UsersError as exc:
         flash(str(exc), "error")
     return redirect(url_for("dashboard.users"))

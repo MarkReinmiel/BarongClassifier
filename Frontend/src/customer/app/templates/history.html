@@ -4,13 +4,19 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/history.css') }}?v=15">
 {% endblock %}
 {% block content %}
+<div
+  id="onboarding-tour"
+  hidden
+  data-section="history"
+  data-launch="{{ '1' if launch_history_tour|default(false) else '0' }}"
+></div>
 <div class="history-page">
   <header class="history-page-header">
     <p class="eyebrow">Barong Tagalog Textile Classifier</p>
     <h2>History</h2>
   </header>
 
-  <section class="history-stats" aria-label="History summary">
+  <section class="history-stats" data-tour="history-stats" aria-label="History summary">
     <article class="history-stat-card">
       <p class="history-stat-label">Total Classifications</p>
       <p class="history-stat-value">{{ stats.total }}</p>
@@ -25,7 +31,7 @@
     </article>
   </section>
 
-  <section class="history-panel">
+  <section class="history-panel" data-tour="history-panel">
     <div class="history-panel-head">
       <div>
         <h3 class="history-panel-title">Classifications</h3>

@@ -101,12 +101,36 @@ def create_app(config_object: type[Config] = Config) -> Flask:
             active = turnstile_active()
         except Exception:
             active = False
+        import json as _json
+
+        tour_progress = {
+            "main": True,
+            "classify": True,
+            "textile": True,
+            "history": True,
+            "profile": True,
+        }
+        if user and getattr(user, "nickname_completed", False):
+            try:
+                from app.services.tour_service import get_tour_progress
+
+                tour_progress = get_tour_progress(user)
+            except Exception:
+                logger.exception("tour progress failed in template context")
+                try:
+                    db.session.rollback()
+                except Exception:
+                    pass
+        # Pre-serialize so templates never call |tojson on Undefined/odd types.
+        tour_progress_json = _json.dumps(tour_progress)
         return {
             "app_name": flask_app.config["APP_NAME"],
             "current_user": user,
             "user_avatar_url": url_for("static", filename="images/avatar-unknown.svg") + "?v=10",
             "turnstile_enabled": active,
             "turnstile_site_key": (flask_app.config.get("TURNSTILE_SITE_KEY") or "") if active else "",
+            "tour_progress": tour_progress,
+            "tour_progress_json": tour_progress_json,
         }
 
     @flask_app.get("/health")

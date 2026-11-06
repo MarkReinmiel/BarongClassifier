@@ -1,6 +1,14 @@
 {% extends "base.html" %}
 {% block title %}Home | {{ app_name }}{% endblock %}
 {% block content %}
+{# Main tour: dashboard highlights, then required Classify click → classify page tour #}
+<div
+  id="onboarding-tour"
+  hidden
+  data-section="main"
+  data-launch="{{ '1' if launch_tour|default(false) else '0' }}"
+></div>
+
 <div class="dashboard">
 
   <section class="dashboard-hero reveal">
@@ -9,7 +17,7 @@
       <h1>Welcome, <span>{{ user.nickname or 'Friend' }}</span></h1>
       <p class="dashboard-tagline">Identify and preserve Barong Tagalog textiles</p>
       <div class="hero-actions">
-        <a href="{{ url_for('classifier.classify_page') }}" class="classify-button">
+        <a href="{{ url_for('classifier.classify_page') }}" class="classify-button" data-tour="classify">
           Classify Textile
           <span aria-hidden="true">&rarr;</span>
         </a>
@@ -24,7 +32,7 @@
 
   <section class="overview-section reveal reveal-delay-1">
     <div class="overview-cards overview-cards--pair">
-      <article class="overview-card" onclick="window.location.href='{{ url_for('main.textile_types') }}'" tabindex="0" role="button">
+      <article class="overview-card" data-tour="textile-types" onclick="window.location.href='{{ url_for('main.textile_types') }}'" tabindex="0" role="button">
         <div class="overview-icon" aria-hidden="true">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
@@ -36,7 +44,7 @@
         </div>
       </article>
 
-      <div class="overview-card" onclick="window.location.href='{{ url_for('history.history_page') }}'" tabindex="0" role="button">
+      <div class="overview-card" data-tour="history" onclick="window.location.href='{{ url_for('history.history_page') }}'" tabindex="0" role="button">
         <div class="overview-icon" aria-hidden="true">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>
@@ -98,7 +106,7 @@
 
   <section class="dashboard-lower">
     <div class="dashboard-main-col">
-      <section class="how-section float-panel" id="how-it-works" aria-label="How it works">
+      <section class="how-section float-panel" id="how-it-works" data-tour="how-it-works" aria-label="How it works" tabindex="0">
         <div class="section-heading how-heading">
           <h3 class="how-title">How it works</h3>
         </div>
@@ -179,4 +187,6 @@
 
 </div>
 {% endblock %}
-{% block scripts %}<script src="{{ url_for('static', filename='js/dashboard.js') }}?v=16"></script>{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}?v=16"></script>
+{% endblock %}

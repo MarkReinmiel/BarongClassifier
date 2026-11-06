@@ -4,6 +4,12 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/textiletypes.css') }}?v=41">
 {% endblock %}
 {% block content %}
+<div
+  id="onboarding-tour"
+  hidden
+  data-section="textile"
+  data-launch="{{ '1' if launch_textile_tour|default(false) else '0' }}"
+></div>
 <div class="textile-page textile-page--customer">
   <header class="history-page-header textile-page-header">
     <p class="eyebrow">Barong Tagalog Textile Classifier</p>
@@ -13,8 +19,8 @@
     Explore the textile types supported by the BarongClassifier system.
   </p>
 
-  <section class="textile-grid">
-    <article class="textile-card" data-textile="pina" tabindex="0" role="button">
+  <section class="textile-grid" data-tour="textile-grid">
+    <article class="textile-card" data-tour="textile-card" data-textile="pina" tabindex="0" role="button">
       <div class="textile-card-media">
         <img class="textile-thumb" src="{{ url_for('static', filename='images/textiles/pina.png') }}" alt="Piña textile">
       </div>

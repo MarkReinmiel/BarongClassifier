@@ -1,0 +1,398 @@
+/* =========================================================
+   First-login onboarding tour — auto-guided virtual cursor
+   - Physical mouse is blocked (capture layer + optional Pointer Lock)
+   - Spotlight + multi curved arrows stay for attention
+   - .tour-cursor is the fake pointer that the script animates
+   ========================================================= */
+
+.tour-root {
+  position: fixed;
+  inset: 0;
+  z-index: 12000;
+  pointer-events: none;
+}
+
+/* Eats ALL real pointer/touch input for the duration of the step */
+.tour-block {
+  position: fixed;
+  inset: 0;
+  z-index: 12000;
+  pointer-events: auto;
+  cursor: none;
+  background: transparent;
+  touch-action: none;
+  user-select: none;
+}
+
+.tour-spotlight {
+  position: fixed;
+  z-index: 12001;
+  border-radius: 14px;
+  box-shadow: 0 0 0 9999px rgba(15, 18, 28, 0.78);
+  outline: 2px solid rgba(251, 249, 244, 0.95);
+  outline-offset: 3px;
+  transition: top 0.28s ease, left 0.28s ease, width 0.28s ease, height 0.28s ease;
+  pointer-events: none;
+  animation: tour-spotlight-glow 1.4s ease-in-out infinite;
+}
+
+@keyframes tour-spotlight-glow {
+  0%,
+  100% {
+    outline-color: rgba(251, 249, 244, 0.95);
+    box-shadow:
+      0 0 0 9999px rgba(15, 18, 28, 0.78),
+      0 0 0 0 rgba(200, 70, 48, 0.35);
+  }
+  50% {
+    outline-color: rgba(224, 122, 102, 0.95);
+    box-shadow:
+      0 0 0 9999px rgba(15, 18, 28, 0.78),
+      0 0 0 10px rgba(200, 70, 48, 0.18);
+  }
+}
+
+/* Highlight only — NOT clickable during auto-guide */
+.tour-target-live {
+  position: relative !important;
+  z-index: 12002 !important;
+  pointer-events: none !important;
+  filter: none !important;
+  opacity: 1 !important;
+  animation: tour-target-pulse 1.35s ease-in-out infinite;
+}
+
+/*
+ * Secondary interactive highlight (Classify / forced user click):
+ * lock is released, virtual cursor hidden, THIS class re-enables real clicks
+ * on the spotlighted control while the rest of the page stays blocked.
+ */
+.tour-target-live.tour-target-user {
+  z-index: 12006 !important;
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  box-shadow: 0 0 0 3px rgba(200, 70, 48, 0.45);
+}
+
+/* Transparent click bridge — always above the dim layer */
+.tour-hit-proxy {
+  position: fixed;
+  z-index: 12020;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 14px;
+  background: transparent;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+}
+.tour-hit-proxy:focus-visible {
+  outline: 2px solid rgba(200, 70, 48, 0.7);
+  outline-offset: 2px;
+}
+
+.tour-target-live.tour-target-pressed {
+  animation: none;
+  transform: scale(0.97);
+  filter: brightness(0.96);
+}
+
+/* Your-turn: restore the REAL mouse (tour-active forces cursor:none otherwise) */
+body.tour-active.tour-user-phase,
+body.tour-active.tour-user-phase * {
+  cursor: auto !important;
+}
+
+body.tour-active.tour-user-phase .tour-hit-proxy,
+body.tour-active.tour-user-phase .tour-target-user,
+body.tour-active.tour-user-phase .tour-target-user * {
+  cursor: pointer !important;
+}
+
+body.tour-user-phase .tour-block {
+  /* Let the hit-proxy receive clicks; block only dims visually */
+  pointer-events: none !important;
+  cursor: auto !important;
+}
+
+/* Fake black cursor stays off; tip description is shown */
+.tour-cursor,
+.tour-cursor-ripple {
+  display: none !important;
+}
+
+@keyframes tour-target-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.03);
+  }
+}
+
+.tour-tip {
+  position: fixed;
+  z-index: 12003;
+  width: min(300px, calc(100vw - 32px));
+  padding: 14px 14px 12px;
+  border-radius: 14px;
+  background: var(--surface, #fbf9f4);
+  border: 1.5px solid var(--line, #d4cdbb);
+  box-shadow: 0 16px 36px rgba(31, 34, 50, 0.22);
+  color: var(--ink, #1f2232);
+  pointer-events: none;
+  font-family: var(--sans, "DM Sans", sans-serif);
+  animation: tour-tip-in 0.28s ease;
+}
+
+@keyframes tour-tip-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.tour-tip-title {
+  margin: 0 0 6px;
+  font-family: var(--serif, "Playfair Display", Georgia, serif);
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--ink, #1f2232);
+}
+
+.tour-tip-body {
+  margin: 0 0 10px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--ink2, #596475);
+}
+
+.tour-tip-step {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink2, #596475);
+}
+
+.tour-tip-nudge {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent, #c84630);
+}
+
+/* ---------------------------------------------------------
+   ARROW TUNING
+   - --tour-arrow-size / --tour-arrow-stroke
+   - Count & angles: tour.js → ARROW_LAYOUT
+   --------------------------------------------------------- */
+.tour-arrows {
+  position: fixed;
+  z-index: 12004;
+  pointer-events: none;
+  --tour-arrow-size: 56px;
+  --tour-arrow-stroke: 2.6;
+}
+
+.tour-curved-arrow {
+  position: absolute;
+  width: var(--tour-arrow-size);
+  height: var(--tour-arrow-size);
+  left: 50%;
+  top: 50%;
+  margin-left: calc(var(--tour-arrow-size) / -2);
+  margin-top: calc(var(--tour-arrow-size) / -2);
+  color: var(--accent, #c84630);
+  filter: drop-shadow(0 3px 8px rgba(31, 34, 50, 0.4));
+  transform: rotate(var(--orbit-angle, 0deg))
+    translateY(calc(var(--orbit, 78px) * -1))
+    rotate(var(--spin, 0deg));
+  transform-origin: center center;
+  opacity: 0;
+  animation:
+    tour-arrow-draw 0.55s ease forwards,
+    tour-arrow-bounce 1.05s ease-in-out 0.55s infinite;
+  animation-delay: var(--delay, 0s), var(--delay, 0s);
+}
+
+.tour-curved-arrow svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.tour-curved-arrow .tour-curve {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: var(--tour-arrow-stroke);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 64;
+  stroke-dashoffset: 64;
+  animation: tour-stroke-draw 0.65s ease forwards;
+  animation-delay: var(--delay, 0s);
+}
+
+.tour-curved-arrow .tour-head {
+  fill: currentColor;
+  opacity: 0;
+  animation: tour-head-pop 0.35s ease forwards;
+  animation-delay: calc(var(--delay, 0s) + 0.35s);
+}
+
+.tour-curved-arrow:nth-child(1) {
+  --delay: 0s;
+}
+.tour-curved-arrow:nth-child(2) {
+  --delay: 0.08s;
+}
+.tour-curved-arrow:nth-child(3) {
+  --delay: 0.16s;
+}
+.tour-curved-arrow:nth-child(4) {
+  --delay: 0.24s;
+}
+.tour-curved-arrow:nth-child(5) {
+  --delay: 0.32s;
+}
+
+@keyframes tour-stroke-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes tour-head-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes tour-arrow-draw {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes tour-arrow-bounce {
+  0%,
+  100% {
+    transform: rotate(var(--orbit-angle, 0deg))
+      translateY(calc(var(--orbit, 78px) * -1))
+      rotate(var(--spin, 0deg))
+      scale(1);
+  }
+  50% {
+    transform: rotate(var(--orbit-angle, 0deg))
+      translateY(calc(var(--orbit, 78px) * -1 + 10px))
+      rotate(var(--spin, 0deg))
+      scale(1.08);
+  }
+}
+
+/* ---------------------------------------------------------
+   VIRTUAL CURSOR
+   Position is set in JS via left/top (viewport coords).
+   Hotspot ≈ top-left tip of the pointer graphic.
+   --------------------------------------------------------- */
+.tour-cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 12010;
+  width: 28px;
+  height: 28px;
+  margin: 0;
+  pointer-events: none;
+  color: #1f2232;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.35));
+  transform: translate3d(-9999px, -9999px, 0);
+  will-change: transform;
+  transition: opacity 0.2s ease;
+}
+
+.tour-cursor svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  transform-origin: 4px 4px;
+}
+
+.tour-cursor.is-pressing svg {
+  transform: scale(0.86);
+  transition: transform 0.12s ease;
+}
+
+.tour-cursor-ripple {
+  position: fixed;
+  z-index: 12009;
+  width: 18px;
+  height: 18px;
+  margin-left: -9px;
+  margin-top: -9px;
+  border-radius: 50%;
+  border: 2px solid var(--accent, #c84630);
+  pointer-events: none;
+  opacity: 0;
+}
+
+.tour-cursor-ripple.is-on {
+  animation: tour-click-ripple 0.55s ease-out forwards;
+}
+
+@keyframes tour-click-ripple {
+  0% {
+    opacity: 0.9;
+    transform: scale(0.4);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(2.4);
+  }
+}
+
+body.tour-active {
+  overflow: hidden;
+  cursor: none !important;
+}
+
+body.tour-active * {
+  cursor: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tour-spotlight,
+  .tour-target-live,
+  .tour-curved-arrow,
+  .tour-curved-arrow .tour-curve,
+  .tour-curved-arrow .tour-head,
+  .tour-cursor-ripple {
+    animation: none !important;
+    transition: none !important;
+    opacity: 1 !important;
+    stroke-dashoffset: 0 !important;
+  }
+}
+
+@media (max-width: 720px) {
+  .tour-arrows {
+    --tour-arrow-size: 48px;
+  }
+  .tour-curved-arrow {
+    --orbit: 64px;
+  }
+}

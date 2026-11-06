@@ -309,6 +309,94 @@ def update_user_status(actor: OwnerUser, user_id: str, is_active: bool) -> None:
         raise UsersError("User status could not be updated.", 503) from error
 
 
+def delete_user(actor: OwnerUser, user_id: str) -> None:
+    """Permanently remove a directory + portal user (not admin, not self)."""
+    if str(actor.id) == str(user_id):
+        raise UsersError("You cannot delete your own account here.", 403)
+
+    uid = str(user_id)
+
+    if current_app.config.get("TESTING"):
+        target = OwnerUser.query.filter_by(id=uid).first()
+        if not target:
+            raise UsersError("User was not found.", 404)
+        if (target.role or "").lower() == "admin":
+            raise UsersError("Admin accounts cannot be deleted here.", 403)
+        db.session.delete(target)
+        db.session.commit()
+        return
+
+    try:
+        _enable_trusted_user_write()
+        directory_role = _directory_role(uid)
+        target = _find_customer_user(uid)
+
+        if directory_role is None and target is None:
+            raise UsersError("User was not found.", 404)
+        if (directory_role or (target.role if target else "") or "").lower() == "admin":
+            raise UsersError("Admin accounts cannot be deleted here.", 403)
+
+        # Use SQL (not ORM delete) so FK children and sync triggers behave correctly.
+        # ORM session.delete() fails when verifications/devices still point at the user.
+        for sql in (
+            "delete from customer.email_verifications where user_id::text = :id",
+            "delete from customer.trusted_devices where user_id::text = :id",
+            "delete from customer.classifications where user_id::text = :id",
+        ):
+            try:
+                with db.session.begin_nested():
+                    db.session.execute(text(sql), {"id": uid})
+            except SQLAlchemyError:
+                # Optional/missing table — ignore and continue.
+                pass
+
+        db.session.execute(
+            text("delete from customer.users where id::text = :id"),
+            {"id": uid},
+        )
+
+        # Directory row: sync trigger only removes source='customer'; clear any leftover.
+        db.session.execute(
+            text(
+                """
+                delete from public.users
+                where id::text = :id
+                  and role::text <> 'admin'
+                """
+            ),
+            {"id": uid},
+        )
+        still_there = db.session.execute(
+            text("select 1 from public.users where id::text = :id limit 1"),
+            {"id": uid},
+        ).first()
+        portal_left = db.session.execute(
+            text("select 1 from customer.users where id::text = :id limit 1"),
+            {"id": uid},
+        ).first()
+        if still_there or portal_left:
+            raise UsersError(
+                "User could not be fully deleted (database blocked the remove).",
+                503,
+            )
+
+        db.session.commit()
+    except UsersError:
+        db.session.rollback()
+        raise
+    except SQLAlchemyError as error:
+        db.session.rollback()
+        current_app.logger.exception("delete_user failed for %s", uid)
+        detail = str(getattr(error, "orig", None) or error)
+        # Keep flash short; log has the full driver message.
+        if "foreign key" in detail.lower():
+            raise UsersError(
+                "User could not be deleted because related records still exist.",
+                503,
+            ) from error
+        raise UsersError("User could not be deleted.", 503) from error
+
+
 def find_user_email(user_id: str) -> str | None:
     row = OwnerUser.query.filter_by(id=user_id).first()
     if row:
