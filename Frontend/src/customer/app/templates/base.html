@@ -14,6 +14,9 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/motion.css') }}?v=5">
   {% block head %}{% endblock %}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-ui.css') }}?v=15">
+  {% if current_user and current_user.nickname_completed %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/tour.css') }}?v=8">
+  {% endif %}
 </head>
 <body data-static-root="{{ url_for('static', filename='') }}">
   <header class="top">
@@ -56,6 +59,7 @@
         type="button"
         class="avatar-btn"
         id="profileBtn"
+        data-tour="profile-btn"
         aria-label="Account menu for {{ current_user.nickname or 'User' }}"
         aria-expanded="false"
         aria-controls="profileMenu"
@@ -121,6 +125,19 @@
       <span class="nb-label">History</span>
     </a>
   </nav>
+  {% endif %}
+
+  {% if current_user and current_user.nickname_completed %}
+  {# Shared tour state — progress JSON is prepared in the Flask context processor #}
+  <div
+    id="tour-state"
+    hidden
+    data-user-id="{{ current_user.id }}"
+    data-complete-url="{{ url_for('main.tour_complete') }}"
+    data-csrf="{{ csrf_token() }}"
+    data-progress='{{ tour_progress_json|default("{\"main\":true,\"classify\":true,\"textile\":true,\"history\":true,\"profile\":true}")|safe }}'
+  ></div>
+  <script src="{{ url_for('static', filename='js/tour.js') }}?v=9" defer></script>
   {% endif %}
 
   <script src="{{ url_for('static', filename='js/motion.js') }}?v=5"></script>
