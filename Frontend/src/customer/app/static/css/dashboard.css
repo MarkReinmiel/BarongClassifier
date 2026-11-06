@@ -467,7 +467,7 @@ body:has(.dashboard){
     min-height:0;
   }
   .recent-panel .float-list{
-    flex:none;
+  flex:none;
     min-height:0;
     gap:10px;
   }

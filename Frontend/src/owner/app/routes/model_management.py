@@ -11,6 +11,7 @@ from app.services.model_registry_service import (
     evaluate_candidate,
     read_training_log,
     reject_candidate,
+    restore_version,
     rollback_production,
     start_training,
 )
@@ -145,6 +146,22 @@ def model_rollback_api():
     assert actor is not None
     try:
         result = rollback_production(actor)
+        return jsonify(result)
+    except ModelRegistryError as exc:
+        return jsonify({"ok": False, "error": str(exc)}), exc.status_code
+
+
+@bp.post("/api/model-management/restore")
+@login_required
+def model_restore_api():
+    actor = current_user()
+    assert actor is not None
+    payload = request.get_json(silent=True) or {}
+    version_id = (payload.get("version_id") or "").strip()
+    if not version_id:
+        return jsonify({"ok": False, "error": "version_id is required."}), 400
+    try:
+        result = restore_version(actor, version_id)
         return jsonify(result)
     except ModelRegistryError as exc:
         return jsonify({"ok": False, "error": str(exc)}), exc.status_code

@@ -5,7 +5,7 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/topnav.css') }}?v=16">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/history.css') }}?v=6">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/customer-history.css') }}?v=9">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/model-management.css') }}?v=3">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/model-management.css') }}?v=7">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-app.css') }}?v=9">
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <meta name="model-api-base" content="{{ request.script_root }}/api/model-management">
@@ -18,12 +18,13 @@
 {% set pm = data.production_metrics or {} %}
 {% set cm = data.candidate_metrics or {} %}
 {% set ds = data.dataset or {} %}
+{% set notes = data.button_notes or {} %}
 <main class="history-page ch-page mm-page">
   <section class="history-page-header reveal">
     <p class="eyebrow">CNN LIFECYCLE</p>
     <h1>Model Management</h1>
     <hr class="stitch-divider" aria-hidden="true">
-    <p class="page-description">Train candidate models in the background while customers keep using the live production model. Deploy only after evaluation passes. Dataset approval stays in Customer Classification History.</p>
+    <p class="page-description">One candidate at a time. Train with the live dataset pool, auto-evaluate, then deploy. Locked buttons explain why when clicked.</p>
   </section>
 
   {% if error %}
@@ -31,6 +32,15 @@
   {% endif %}
   <div class="ch-flash ch-flash--error" id="mmError" hidden></div>
   <div class="ch-flash ch-flash--ok" id="mmSuccess" hidden></div>
+
+  <section class="mm-steps" aria-label="Model lifecycle steps">
+    {% for step in data.lifecycle_steps or [] %}
+    <div class="mm-step{% if step.active %} is-active{% endif %}">
+      <strong>{{ step.label }}</strong>
+      <span>{{ step.detail }}</span>
+    </div>
+    {% endfor %}
+  </section>
 
   <section class="mm-grid">
     <article class="mm-card">
@@ -51,13 +61,14 @@
       </dl>
     </article>
 
-    <article class="mm-card">
+    {% set train_busy = (job.status in ['queued', 'running']) or (cand.status in ['training', 'queued']) %}
+    <article class="mm-card{% if train_busy %} is-training{% endif %}" id="mmCandidateCard">
       <header class="mm-card-head">
         <div>
           <p class="mm-kicker">Training candidate</p>
           <h2>{{ cand.display_revision or cand.version_label or 'No candidate yet' }}</h2>
         </div>
-        <span class="mm-badge mm-badge--{{ cand.status or 'idle' }}">{{ (cand.status or job.status or 'idle')|replace('_',' ')|title }}</span>
+        <span class="mm-badge mm-badge--{{ cand.status or 'idle' }}" id="mmCandidateBadge">{{ (cand.status or job.status or 'idle')|replace('_',' ')|title }}</span>
       </header>
       <dl class="mm-dl">
         <div><dt>Revision</dt><dd>{% if cand.major_version %}v{{ cand.major_version }}.{{ cand.revision_number }}{% else %}—{% endif %}</dd></div>
@@ -65,11 +76,19 @@
         <div><dt>Progress</dt><dd><span id="mmProgressPct">{{ '%.0f'|format(job.progress_pct or cand.progress_pct or 0) }}</span>%</dd></div>
         <div><dt>Message</dt><dd id="mmProgressMsg">{{ job.progress_message or cand.progress_message or '—' }}</dd></div>
         <div><dt>Approved pool</dt><dd>{{ ds.approved or 0 }} approved · {{ ds.added_to_dataset or 0 }} in dataset pool</dd></div>
-        <div><dt>Trainable for next revision</dt><dd>{{ ds.trainable_contribution_count or 0 }} (rejected excluded · undefined excluded)</dd></div>
+        <div><dt>Trainable for next revision</dt><dd>{{ ds.trainable_contribution_count or 0 }} (rejected / undefined excluded)</dd></div>
+        <div><dt>New since last revision</dt><dd>{{ data.new_images_since_last_revision or 0 }} (included automatically on next train)</dd></div>
         <div><dt>Attempt</dt><dd>{{ cand.attempt or job.attempt or '—' }}</dd></div>
       </dl>
-      <div class="mm-progress" aria-hidden="true">
-        <span id="mmProgressBar" style="width: {{ '%.0f'|format(job.progress_pct or cand.progress_pct or 0) }}%"></span>
+      <div class="mm-loading{% if not train_busy %} is-idle{% endif %}" id="mmLoadingBlock" {% if not train_busy %}hidden{% endif %}>
+        <div class="mm-loading-head">
+          <span class="mm-loading-label" id="mmLoadingLabel">{% if train_busy %}Processing training…{% else %}Training idle{% endif %}</span>
+          <strong id="mmLoadingPct">{{ '%.0f'|format(job.progress_pct or cand.progress_pct or 0) }}%</strong>
+        </div>
+        <div class="mm-progress mm-progress--loading{% if train_busy and (job.progress_pct or 0) < 5 %} is-indeterminate{% endif %}" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ '%.0f'|format(job.progress_pct or cand.progress_pct or 0) }}" id="mmProgressTrack">
+          <span id="mmProgressBar" style="width: {{ '%.0f'|format(job.progress_pct or cand.progress_pct or 0) }}%"></span>
+        </div>
+        <p class="mm-loading-msg" id="mmLoadingMsg">{{ job.progress_message or cand.progress_message or 'Waiting for worker updates…' }}</p>
       </div>
       {% if cand.error_message or job.error_message %}
       <p class="mm-error-line">{{ cand.error_message or job.error_message }}</p>
@@ -81,19 +100,22 @@
     <div class="history-panel-head">
       <div>
         <h3 class="history-panel-title">Controls</h3>
-        <p class="history-panel-sub">Default training creates the next revision under the current major (e.g. {{ data.next_revision_preview or 'v2.2' }}), not a new major. Production weights stay untouched until you deploy.</p>
+        <p class="history-panel-sub">{{ data.workflow_hint or 'Approve → Add to Dataset → Train → Deploy.' }}</p>
       </div>
     </div>
-    <div class="mm-btn-row">
-      <button type="button" class="ch-btn ch-btn--navy" id="mmStartTrain" {% if not data.can_start_training %}disabled{% endif %}>Train Next Revision ({{ data.next_revision_preview or 'v?.?' }})</button>
-      <button type="button" class="ch-btn ch-btn--ghost ch-btn--inline" id="mmStartMajor" {% if not data.can_start_training %}disabled{% endif %}>Start New Major Version</button>
-      <button type="button" class="ch-btn ch-btn--ghost ch-btn--inline" id="mmRetryTrain" {% if not data.can_retry %}disabled{% endif %}>Retry Training</button>
-      <button type="button" class="ch-btn ch-btn--ghost ch-btn--inline" id="mmEvaluate" {% if not data.can_evaluate %}disabled{% endif %} data-version-id="{{ cand.id or '' }}">Evaluate Model</button>
-      <button type="button" class="ch-btn ch-btn--ok" id="mmDeploy" {% if not data.can_deploy %}disabled{% endif %} data-version-id="{{ cand.id or '' }}">Approve and Deploy</button>
-      <button type="button" class="ch-btn ch-btn--bad" id="mmReject" {% if not cand.id or prod.id == cand.id %}disabled{% endif %} data-version-id="{{ cand.id or '' }}">Reject Candidate</button>
-      <button type="button" class="ch-btn ch-btn--ghost ch-btn--inline" id="mmRollback" {% if not data.can_rollback %}disabled{% endif %}>Rollback</button>
-      <button type="button" class="ch-btn ch-btn--ghost ch-btn--inline" id="mmViewLogs" data-version-id="{{ cand.id or '' }}">View Training Logs</button>
+    <div class="mm-btn-row" id="mmBtnRow">
+      <button type="button" class="ch-btn ch-btn--navy mm-action{% if not data.can_start_training %} is-locked{% endif %}" id="mmStartTrain" data-action="start_train" data-enabled="{{ '1' if data.can_start_training else '0' }}" title="{{ notes.start_train or 'Train next revision' }}">{% if data.will_reuse_revision %}Retrain {{ data.next_revision_preview or 'v?.?' }} (reuse slot){% else %}Train Next Revision ({{ data.next_revision_preview or 'v?.?' }}){% endif %}</button>
+      <button type="button" class="ch-btn ch-btn--ghost ch-btn--inline mm-action{% if not data.can_start_training %} is-locked{% endif %}" id="mmStartMajor" data-action="start_major" data-enabled="{{ '1' if data.can_start_training else '0' }}" title="{{ notes.start_major or 'Start new major' }}">Start New Major Version</button>
+      <button type="button" class="ch-btn ch-btn--ghost ch-btn--inline mm-action{% if not data.can_retry %} is-locked{% endif %}" id="mmRetryTrain" data-action="retry" data-enabled="{{ '1' if data.can_retry else '0' }}" title="{{ notes.retry or 'Retry after fail/reject' }}">Retry Training</button>
+      <button type="button" class="ch-btn ch-btn--ghost ch-btn--inline mm-action{% if not data.can_evaluate %} is-locked{% endif %}" id="mmEvaluate" data-action="evaluate" data-enabled="{{ '1' if data.can_evaluate else '0' }}" data-version-id="{{ cand.id or '' }}" title="{{ notes.evaluate or 'Re-evaluate' }}">Re-evaluate Model</button>
+      <button type="button" class="ch-btn ch-btn--ok mm-action{% if not data.can_deploy %} is-locked{% endif %}" id="mmDeploy" data-action="deploy" data-enabled="{{ '1' if data.can_deploy else '0' }}" data-version-id="{{ cand.id or '' }}" title="{{ notes.deploy or 'Deploy candidate' }}">Approve and Deploy</button>
+      <button type="button" class="ch-btn ch-btn--bad mm-action{% if not data.can_cancel %} is-locked{% endif %}" id="mmCancel" data-action="cancel" data-enabled="{{ '1' if data.can_cancel else '0' }}" data-version-id="{{ cand.id or '' }}" title="{{ notes.cancel or 'Cancel running training' }}">Cancel Training</button>
+      <button type="button" class="ch-btn ch-btn--bad mm-action{% if not data.can_reject %} is-locked{% endif %}" id="mmReject" data-action="reject" data-enabled="{{ '1' if data.can_reject else '0' }}" data-version-id="{{ cand.id or '' }}" title="{{ notes.reject or 'Reject candidate' }}">Reject Candidate</button>
+      <button type="button" class="ch-btn ch-btn--ghost ch-btn--inline mm-action{% if not data.can_rollback %} is-locked{% endif %}" id="mmRollback" data-action="rollback" data-enabled="{{ '1' if data.can_rollback else '0' }}" title="{{ notes.rollback or 'Restore previous production' }}">Restore Previous Production{% if data.previous_production_label %} ({{ data.previous_production_label }}){% endif %}</button>
+      <button type="button" class="ch-btn ch-btn--ghost ch-btn--inline mm-action{% if not data.can_view_logs %} is-locked{% endif %}" id="mmViewLogs" data-action="view_logs" data-enabled="{{ '1' if data.can_view_logs else '0' }}" data-version-id="{{ cand.id or '' }}" title="{{ notes.view_logs or 'View logs' }}">View Training Logs</button>
     </div>
+    <p class="mm-lock-note" id="mmLockNote" hidden></p>
+    <script type="application/json" id="mmButtonNotes">{{ notes|tojson }}</script>
   </section>
 
   <section class="mm-grid mm-grid--eval">
@@ -107,10 +129,11 @@
       <dl class="mm-dl">
         <div><dt>Candidate accuracy</dt><dd>{% if cm.test_accuracy is defined %}{{ '%.1f'|format((cm.test_accuracy or 0) * 100) }}%{% else %}—{% endif %}</dd></div>
         <div><dt>Production accuracy</dt><dd>{% if pm.test_accuracy is defined %}{{ '%.1f'|format((pm.test_accuracy or 0) * 100) }}%{% else %}—{% endif %}</dd></div>
+        <div><dt>Min required</dt><dd>{{ '%.0f'|format((data.min_test_accuracy or 0.85) * 100) }}%</dd></div>
         <div><dt>Candidate train/val/test</dt><dd>{{ cm.train_images or '—' }} / {{ cm.val_images or '—' }} / {{ cm.test_images or '—' }}</dd></div>
         <div><dt>Confusion matrix</dt><dd><code class="mm-code">{{ cm.confusion_matrix or '—' }}</code></dd></div>
       </dl>
-      <p class="mm-hint">OOD / Undefined Textile rejection continues to use the deployed relevance gate; it is preserved on deploy and not retrained by this job.</p>
+      <p class="mm-hint">Training auto-evaluates when finished. OOD / Undefined Textile rejection keeps using the deployed relevance gate.</p>
     </article>
 
     <article class="mm-card">
@@ -134,7 +157,7 @@
                   <th>Test acc.</th>
                   <th>Snapshot</th>
                   <th>Trained</th>
-                  <th>Artifact</th>
+                  <th>Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -149,7 +172,22 @@
                   <td>{% if v.test_accuracy is not none %}{{ '%.1f'|format((v.test_accuracy or 0) * 100) }}%{% else %}—{% endif %}</td>
                   <td>{{ v.dataset_snapshot_id or '—' }}</td>
                   <td>{{ v.created_at or '—' }}</td>
-                  <td><code class="mm-code" title="{{ v.artifact_location or v.artifact_dir or '' }}">{{ (v.artifact_location or v.artifact_dir or '—')|replace('\\', '/')|truncate(40, True, '…') }}</code></td>
+                  <td>
+                    {% if v.can_restore %}
+                    <button
+                      type="button"
+                      class="ch-btn ch-btn--ghost ch-btn--inline mm-action"
+                      data-action="restore_version"
+                      data-enabled="1"
+                      data-version-id="{{ v.id }}"
+                      title="Restore this archived deployed revision to production"
+                    >Restore</button>
+                    {% elif v.is_production %}
+                    <span class="mm-hint">Live</span>
+                    {% else %}
+                    <span class="mm-hint" title="{{ notes.restore_version }}">—</span>
+                    {% endif %}
+                  </td>
                 </tr>
                 {% endfor %}
               </tbody>
@@ -195,5 +233,5 @@
 {% endblock %}
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/navbar.js') }}"></script>
-<script src="{{ url_for('static', filename='js/model-management.js') }}?v=3"></script>
+<script src="{{ url_for('static', filename='js/model-management.js') }}?v=9"></script>
 {% endblock %}

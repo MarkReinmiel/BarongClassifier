@@ -236,8 +236,33 @@ def main() -> int:
         print(f"Saved candidate only: {model_path}", flush=True)
         print("Production Customer/Owner weights were NOT modified.", flush=True)
 
-        update_version(status="pending_evaluation", metrics=metrics)
-        update_job(status="succeeded", pct=100, message=f"Training complete. test_accuracy={acc:.3f}")
+        # Auto-evaluate against deployment threshold so Owner controls unlock correctly.
+        min_acc = float(os.environ.get("MODEL_MIN_TEST_ACCURACY") or 0.85)
+        passed = acc >= min_acc
+        eval_status = "evaluation_passed" if passed else "evaluation_failed"
+        metrics["evaluation"] = {
+            "auto": True,
+            "passed": passed,
+            "min_required_accuracy": min_acc,
+            "test_accuracy": acc,
+        }
+        (artifact_dir / "metrics.json").write_text(
+            json.dumps(metrics, indent=2), encoding="utf-8"
+        )
+        update_version(status=eval_status, metrics=metrics)
+        update_job(
+            status="succeeded",
+            pct=100,
+            message=(
+                f"Training complete. Auto-eval {'PASSED' if passed else 'FAILED'} "
+                f"(test_accuracy={acc:.3f}, min={min_acc:.3f})."
+            ),
+        )
+        print(
+            f"Auto-evaluation: {'PASSED' if passed else 'FAILED'} "
+            f"(acc={acc:.3f}, min={min_acc:.3f})",
+            flush=True,
+        )
         return 0
     except Exception as error:
         traceback.print_exc()

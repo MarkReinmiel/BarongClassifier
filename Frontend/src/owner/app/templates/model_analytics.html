@@ -5,7 +5,7 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/topnav.css') }}?v=16">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}?v=11">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-app.css') }}?v=9">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/model-analytics.css') }}?v=12">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/model-analytics.css') }}?v=13">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js" defer></script>
 {% endblock %}
 {% block body %}
@@ -23,9 +23,10 @@
       <p class="ma-kicker">OWNER · MACHINE LEARNING</p>
       <h1>Model Analytics</h1>
       <hr class="stitch-divider" aria-hidden="true">
-      <p class="ma-lead">Held-out evaluation and training artifacts for the active Barong textile classifier. Values come from saved reports — not invented placeholders.</p>
+      <p class="ma-lead">Held-out evaluation for the live production revision from Model Management. Metrics come from registry artifacts — not invented placeholders.</p>
     </div>
     <div class="ma-header-actions">
+      <a class="ma-btn ma-btn--ghost" href="{{ url_for('model_management.model_management_page') }}">Model Management</a>
       <a class="ma-btn ma-btn--ghost" href="{{ url_for('dashboard.model_analytics') }}">Refresh</a>
       <a class="ma-btn ma-btn--ghost" href="{{ url_for('dashboard.model_analytics', measure_latency=1) }}">Refresh timing</a>
       <button type="button" class="ma-btn ma-btn--primary" id="exportAnalyticsJson">Export JSON</button>
@@ -53,8 +54,12 @@
     </div>
     <div class="ma-overview-grid">
       <div>
-        <span class="ma-label">Version</span>
+        <span class="ma-label">Live revision</span>
         <strong>{{ o.version or '—' }}</strong>
+      </div>
+      <div>
+        <span class="ma-label">Deployed at</span>
+        <strong>{{ o.deployed_at or '—' }}</strong>
       </div>
       <div>
         <span class="ma-label">Last evaluation</span>
@@ -298,14 +303,15 @@
     <div class="ma-section-head">
       <div>
         <p class="ma-kicker">Model versions</p>
-        <h2>Versions &amp; comparison</h2>
+        <h2>Registry revisions &amp; comparison</h2>
       </div>
+      <p class="ma-note">Same major.revision history as Model Management.</p>
     </div>
     <div class="ma-table-wrap">
       <table class="ma-table">
         <thead>
           <tr>
-            <th>Version</th>
+            <th>Revision</th>
             <th>Architecture</th>
             <th>Created</th>
             <th>Accuracy</th>
@@ -315,8 +321,11 @@
         </thead>
         <tbody>
           {% for v in analytics.versions %}
-          <tr>
-            <th scope="row">{{ v.label }}</th>
+          <tr {% if v.is_production %}class="is-live"{% endif %}>
+            <th scope="row">
+              {{ v.label }}
+              {% if v.is_production %}<span class="ma-pill">Live</span>{% endif %}
+            </th>
             <td>{{ v.architecture }}</td>
             <td>{{ v.created_at or '—' }}</td>
             <td>
@@ -327,10 +336,10 @@
               {% endif %}
             </td>
             <td>{% if v.file_size_mb is not none %}{{ v.file_size_mb }} MB{% else %}—{% endif %}</td>
-            <td><span class="ma-status ma-status--{{ v.status|lower }}">{{ v.status }}</span></td>
+            <td><span class="ma-status ma-status--{{ (v.status or 'unknown')|lower|replace(' ', '-') }}">{{ v.status }}</span></td>
           </tr>
           {% else %}
-          <tr><td colspan="6">No model artifacts discovered.</td></tr>
+          <tr><td colspan="6">No registry revisions discovered.</td></tr>
           {% endfor %}
         </tbody>
       </table>

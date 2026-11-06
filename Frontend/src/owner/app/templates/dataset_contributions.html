@@ -4,8 +4,10 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/shared.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/topnav.css') }}?v=16">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/history.css') }}?v=6">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/customer-history.css') }}?v=9">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/customer-history.css') }}?v=10">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-app.css') }}?v=9">
+<meta name="csrf-token" content="{{ csrf_token() }}">
+<meta name="dataset-api" content="{{ url_for('reviews.classification_dataset_batch_api') }}">
 {% endblock %}
 {% block body %}
 {% include "_nav.html" %}
@@ -14,7 +16,7 @@
     <p class="eyebrow">DATASET MANAGEMENT</p>
     <h1>Customer Contributions</h1>
     <hr class="stitch-divider" aria-hidden="true">
-    <p class="page-description">Owner-approved photos that are suitable for future dataset work. They are not auto-assigned to Piña / Jusi / Cocoon training folders, and the live model is unchanged.</p>
+    <p class="page-description">Photos you added to the dataset pool from Customer History. Remove anything added by mistake — it stays Approved, but leaves this pool. The live model is unchanged.</p>
   </section>
 
   <section class="ch-stats" aria-label="Contribution counts">
@@ -26,6 +28,10 @@
       <span class="ch-stat-label">Approved</span>
       <strong>{{ counts.approved or 0 }}</strong>
     </article>
+    <article class="ch-stat">
+      <span class="ch-stat-label">In Dataset Pool</span>
+      <strong>{{ counts.added_to_dataset or 0 }}</strong>
+    </article>
     <article class="ch-stat ch-stat--bad">
       <span class="ch-stat-label">Rejected</span>
       <strong>{{ counts.rejected or 0 }}</strong>
@@ -35,47 +41,55 @@
   <section class="history-panel">
     <div class="history-panel-head">
       <div>
-        <h3 class="history-panel-title">Approved contributions</h3>
-        <p class="history-panel-sub">Suitable photos only — class labeling is a separate step</p>
+        <h3 class="history-panel-title">Dataset pool</h3>
+        <p class="history-panel-sub">Accidentally added? Remove from dataset — photo returns to Approved in Customer History</p>
       </div>
-      <a class="ch-link" href="{{ url_for('reviews.customer_history') }}">← Back to Customer History</a>
+      <a class="ch-link" href="{{ url_for('reviews.customer_history', panel='approved') }}">← Back to Customer History</a>
     </div>
 
     {% if error %}
     <div class="ch-flash ch-flash--error">{{ error }}</div>
     {% endif %}
-
+    <div class="ch-flash ch-flash--error" id="contribError" hidden></div>
+    <div class="ch-flash ch-flash--ok" id="contribSuccess" hidden></div>
 
     {% if not rows %}
     <div class="history-empty">
-      <h3>No approved contributions yet</h3>
-      <p>Approve customer images from Customer Classification History to populate this queue.</p>
-      <a href="{{ url_for('reviews.customer_history') }}" class="history-empty-link">Review classifications →</a>
+      <h3>No photos in the dataset pool yet</h3>
+      <p>Approve photos in Customer History, then use Add to Dataset to send them here.</p>
+      <a href="{{ url_for('reviews.customer_history', panel='approved') }}" class="history-empty-link">Review classifications →</a>
     </div>
     {% else %}
-    <div class="ch-grid">
+    <div class="ch-grid" id="contribGrid">
       {% for row in rows %}
-      <article class="ch-card">
+      <article class="ch-card" data-id="{{ row.id }}">
         <div class="ch-thumb">
           {% if row.image_url %}
-          <img src="{{ row.image_url }}" alt="Approved contribution" loading="lazy">
+          <img src="{{ row.image_url }}" alt="Dataset contribution" loading="lazy">
           {% else %}
           <div class="ch-thumb-empty" aria-hidden="true">No image</div>
           {% endif %}
-          <span class="ch-badge ch-badge--{{ row.review_status }}">{% if row.review_status == 'pending_review' %}Pending Review{% elif row.review_status == 'approved' %}Approved{% elif row.review_status == 'rejected' %}Rejected{% else %}{{ row.review_status.replace('_', ' ')|title }}{% endif %}</span>
+          <span class="ch-badge ch-badge--added_to_dataset">In Dataset Pool</span>
         </div>
         <div class="ch-card-body">
           <h3>{{ row.predicted_display or 'Approved photo' }}</h3>
-          <p class="ch-meta">CNN predicted · {{ '%.1f'|format(row.confidence_pct) }}% · not class-labeled yet</p>
+          <p class="ch-meta">CNN predicted · {{ '%.1f'|format(row.confidence_pct) }}% · in dataset pool</p>
           <p class="ch-customer">{{ row.customer_name }}</p>
           <p class="ch-email">{{ row.customer_email or '—' }}</p>
           <p class="ch-date-line">Reviewed {{ row.reviewed_at or '—' }}</p>
+          <div class="ch-card-actions">
+            <button
+              type="button"
+              class="ch-btn ch-btn--ghost ch-btn--inline ch-remove-dataset"
+              data-id="{{ row.id }}"
+            >Remove from Dataset</button>
+          </div>
         </div>
       </article>
       {% endfor %}
     </div>
     <div class="history-footer">
-      <p class="history-count">{{ total }} approved contribution{{ '' if total == 1 else 's' }}</p>
+      <p class="history-count">{{ total }} photo{{ '' if total == 1 else 's' }} in dataset pool</p>
       <nav class="history-pager" aria-label="Contribution pages">
         {% if page > 1 %}
         <a class="history-page-btn" href="{{ url_for('reviews.dataset_contributions', page=page-1) }}">Previous</a>
@@ -89,7 +103,27 @@
     {% endif %}
   </section>
 </main>
+
+<dialog class="ch-confirm" id="removeDatasetDialog" aria-labelledby="removeDatasetTitle">
+  <form method="dialog" class="ch-confirm-inner">
+    <header class="ch-confirm-head">
+      <h2 id="removeDatasetTitle">Remove from Dataset?</h2>
+      <button type="submit" class="ch-modal-close" value="cancel" aria-label="Close">×</button>
+    </header>
+    <div class="ch-confirm-body ch-confirm-body--simple">
+      <div class="ch-confirm-copy">
+        <p class="ch-confirm-line" id="removeDatasetLine">This photo will leave the dataset pool and return to Approved in Customer History. It will not be deleted.</p>
+        <p class="ch-form-error" id="removeDatasetError" hidden></p>
+      </div>
+    </div>
+    <div class="ch-confirm-foot">
+      <button type="submit" class="ch-btn ch-btn--ghost" value="cancel">Cancel</button>
+      <button type="button" class="ch-btn ch-btn--navy" id="removeDatasetConfirmBtn">Remove from Dataset</button>
+    </div>
+  </form>
+</dialog>
 {% endblock %}
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/navbar.js') }}"></script>
+<script src="{{ url_for('static', filename='js/contributions.js') }}?v=1"></script>
 {% endblock %}

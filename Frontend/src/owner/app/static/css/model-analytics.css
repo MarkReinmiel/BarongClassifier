@@ -221,15 +221,40 @@
 }
 
 .ma-status--archived,
-.ma-status--candidate {
+.ma-status--candidate,
+.ma-status--ready,
+.ma-status--evaluated {
   background: var(--gold-soft, #f3e6d0);
   color: #8a6a2f;
 }
 
 .ma-status--failed,
+.ma-status--rejected,
+.ma-status--cancelled,
+.ma-status--evaluation-failed,
 .ma-status--not-available {
   background: #f8e8eb;
   color: #8b2e3b;
+}
+
+.ma-pill {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: var(--forest, #1e3a2f);
+  color: #f7f3ea;
+  vertical-align: middle;
+}
+
+.ma-table tr.is-live th,
+.ma-table tr.is-live td {
+  background: color-mix(in srgb, var(--forest-soft, #e6efe9) 55%, transparent);
 }
 
 .ma-table-wrap,
