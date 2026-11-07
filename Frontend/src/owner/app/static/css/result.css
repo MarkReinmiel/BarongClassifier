@@ -614,18 +614,31 @@ body.modal-open {
 
     .result-image-actions {
         display: flex !important;
-        flex-direction: column;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        align-items: stretch;
+        justify-content: stretch;
+        gap: 8px;
         visibility: visible !important;
+        width: 100%;
     }
 
     .view-image-button,
     .result-file-btn,
     .result-file-btn--save,
     .result-file-btn--download {
-        display: block !important;
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
         visibility: visible !important;
-        width: 100%;
-        min-height: 48px;
+        flex: 1 1 0;
+        width: auto;
+        min-width: 0;
+        min-height: 44px;
+        padding: 10px 8px;
+        font-size: 12px;
+        white-space: nowrap;
+        text-align: center;
     }
 
     .result-file-hint {
@@ -689,4 +702,144 @@ body.modal-open {
     border-color: #d4a5a5;
     background: #f8ecec;
     color: #7a3b3b;
+}
+.result-hierarchy-message.unidentified_textile {
+    border-color: #c9b07a;
+    background: #f8f1e2;
+    color: #6a5428;
+}
+
+/* Unidentified Textile — Why? control */
+.result-type-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.why-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--gold-line, #d4bc8a);
+  background: transparent;
+  color: var(--ink-soft, #5c5348);
+  font-family: "DM Sans", Arial, sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.why-btn:hover {
+  border-color: var(--forest, #1e3a2f);
+  color: var(--forest, #1e3a2f);
+  background: rgba(36, 54, 80, 0.05);
+}
+
+.why-btn-ico {
+  font-style: normal;
+  font-size: 13px;
+  line-height: 1;
+}
+
+.why-modal {
+  width: min(440px, calc(100vw - 24px));
+  max-height: calc(100dvh - 24px);
+  border: 0;
+  border-radius: 16px;
+  padding: 0;
+  background: #fffdf8;
+  box-shadow: 0 24px 56px rgba(20, 28, 40, 0.28);
+}
+
+.why-modal::backdrop {
+  background: rgba(20, 28, 40, 0.55);
+}
+
+.why-modal-inner {
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100dvh - 24px);
+}
+
+.why-modal-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 16px 12px;
+  border-bottom: 1px solid rgba(36, 54, 80, 0.1);
+}
+
+.why-modal-head h2 {
+  margin: 0;
+  font-size: 20px;
+  color: #243650;
+  line-height: 1.25;
+}
+
+.why-modal-close {
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 50%;
+  background: #f3e6d0;
+  color: #243650;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  flex: none;
+}
+
+.why-modal-body {
+  padding: 14px 16px;
+  overflow: auto;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #243650;
+}
+
+.why-modal-body p { margin: 0 0 10px; }
+.why-modal-sub { font-weight: 700; margin-top: 4px !important; }
+.why-modal-body ul { margin: 0 0 12px; padding-left: 1.2em; }
+.why-modal-body li { margin: 0 0 6px; color: #5c5348; }
+.why-modal-close-msg { font-weight: 600; }
+
+.why-modal-foot {
+  padding: 12px 16px 16px;
+  border-top: 1px solid rgba(36, 54, 80, 0.1);
+}
+
+.why-modal-done {
+  width: 100%;
+  min-height: 44px;
+  border: 0;
+  border-radius: 999px;
+  background: #243650;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+@media (max-width: 900px) {
+  .why-btn {
+    display: inline-flex !important;
+    visibility: visible !important;
+    min-height: 34px;
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+
+  .why-modal {
+    width: calc(100vw - 24px);
+  }
+
+  .why-modal-head h2 {
+    font-size: 18px;
+  }
 }

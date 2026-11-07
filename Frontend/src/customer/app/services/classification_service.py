@@ -149,8 +149,12 @@ def classify_image(user: CustomerUser, file_storage) -> dict:
     if not user or not user.id:
         raise ClassificationError("Sign in again.", 401)
 
-    name = getattr(file_storage, "filename", None) or "upload.jpg"
+    from shared.image_processing import as_webp_filename
+
+    original_name = getattr(file_storage, "filename", None) or "upload.jpg"
     content = prepare_image_bytes(file_storage)
+    # Bytes are WebP; persist WebP name in history / DB / Cloudinary public_id.
+    name = as_webp_filename(original_name)
 
     model = None
     model_path = _model_file()
@@ -209,7 +213,7 @@ def classify_image(user: CustomerUser, file_storage) -> dict:
             "confidence": float(row.confidence),
             "image_name": row.image_name,
             "image_path": row.image_path,
-            "image_data_url": f"data:image/jpeg;base64,{image_b64}",
+            "image_data_url": f"data:image/webp;base64,{image_b64}",
             "created_at": row.created_at.isoformat() if row.created_at else "",
             "model_version": _model_version(),
         }
@@ -223,30 +227,48 @@ def classify_image(user: CustomerUser, file_storage) -> dict:
     if not label or not str(label).strip():
         raise ClassificationError("The model did not return a textile label.")
 
+    from shared.confidence_identification import apply_confidence_identification
+
     label_text = str(label).strip()
-    display = display_name_for(label_text)
+    predicted_display = display_name_for(label_text)
+    identified = apply_confidence_identification(
+        predicted_label=label_text,
+        predicted_display=predicted_display,
+        confidence=confidence,
+    )
+    # Keep original CNN class in predicted_label; customer-facing name in display_name.
     row = _persist_classification(
         user=user,
         name=name,
         content=content,
-        label_text=label_text,
-        display=display,
+        label_text=identified["predicted_class"]
+        if identified["predicted_class"] in {"pina", "jusi", "cocoon"}
+        else label_text,
+        display=identified["display_name"],
         confidence=confidence,
     )
 
     conf = float(row.confidence)
-    display = row.display_name or row.predicted_label
     image_b64 = base64.b64encode(content).decode("ascii")
     payload = {
         "id": str(row.id),
-        "label": display,
+        "label": identified["label"],
         "confidence": conf,
         "image_name": row.image_name,
         "image_path": row.image_path,
-        "image_data_url": f"data:image/jpeg;base64,{image_b64}",
+        "image_data_url": f"data:image/webp;base64,{image_b64}",
         "created_at": row.created_at.isoformat() if row.created_at else "",
+        "predicted_class": identified["predicted_class"],
+        "predicted_display": identified["predicted_display"],
+        "displayed_class": identified["displayed_class"],
+        "is_identified": identified["is_identified"],
+        "confidence_threshold": identified["confidence_threshold"],
     }
-    payload.update(hierarchical_result(display, conf, image_bytes=content))
+    payload.update(hierarchical_result(predicted_display, conf, image_bytes=content))
+    payload["status"] = identified["status"]
+    payload["message"] = identified["message"]
+    payload["main_class_label"] = identified["main_class_label"]
+    payload["label"] = identified["label"]
     if gate is not None and gate.status == status_classified:
         payload["gate"] = gate.details
     return payload

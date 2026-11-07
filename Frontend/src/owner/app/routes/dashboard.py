@@ -7,6 +7,7 @@ from app.services.model_analytics_service import analytics_json
 from app.services.users_service import (
     UsersError,
     dashboard_stats,
+    delete_classification,
     delete_user,
     list_directory_users,
     list_recent_classifications,
@@ -126,6 +127,36 @@ def history():
         per_page=result["per_page"],
     )
     return no_store(response)
+
+
+@bp.post("/history/<classification_id>/delete")
+@login_required
+def delete_history_item(classification_id: str):
+    wants_json = (
+        "application/json" in (request.accept_mimetypes.best or "")
+        or request.headers.get("X-Requested-With") == "XMLHttpRequest"
+    )
+    try:
+        delete_classification(classification_id)
+    except UsersError as error:
+        if wants_json:
+            return jsonify({"ok": False, "error": str(error)}), int(
+                getattr(error, "status_code", 400) or 400
+            )
+        flash(str(error), "error")
+        return redirect(url_for("dashboard.history"))
+    if wants_json:
+        return jsonify({"ok": True})
+    flash("Classification deleted.", "success")
+    return redirect(
+        url_for(
+            "dashboard.history",
+            fabric=request.args.get("fabric") or request.form.get("fabric") or "",
+            date=request.args.get("date") or request.form.get("date") or "",
+            per_page=request.args.get("per_page") or request.form.get("per_page") or 10,
+            page=request.args.get("page") or request.form.get("page") or 1,
+        )
+    )
 
 
 @bp.get("/account")

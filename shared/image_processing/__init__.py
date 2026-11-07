@@ -10,6 +10,7 @@ Phase 3: bulk dataset conversion helpers (``bulk``)
 from shared.image_processing.bulk import BulkConversionReport, convert_dataset_tree, write_report
 from shared.image_processing.convert import convert_to_webp
 from shared.image_processing.errors import ImageProcessingError
+from shared.image_processing.names import as_webp_filename
 from shared.image_processing.result import ConversionResult
 from shared.image_processing.settings import WebPSettings, settings_from_environ
 
@@ -18,6 +19,7 @@ __all__ = [
     "ConversionResult",
     "ImageProcessingError",
     "WebPSettings",
+    "as_webp_filename",
     "convert_dataset_tree",
     "convert_to_webp",
     "settings_from_environ",

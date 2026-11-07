@@ -783,3 +783,254 @@
   .ch-batch-actions { margin-left: 0; width: 100%; }
   .ch-batch-actions .ch-btn { flex: 1 1 auto; }
 }
+
+/* Compact phone layout — Customer History + Contributions (no behavior change) */
+@media (max-width: 640px) {
+  .history-page.ch-page {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 8px 12px calc(88px + env(safe-area-inset-bottom, 0px));
+    box-sizing: border-box;
+  }
+
+  .ch-page .history-page-header {
+    margin: 0 0 12px;
+    text-align: left;
+  }
+
+  .ch-page .history-page-header h1 {
+    font-size: 22px;
+    line-height: 1.2;
+    margin: 0;
+  }
+
+  .ch-page .history-page-header .eyebrow {
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    margin-bottom: 4px;
+  }
+
+  .ch-page .page-description {
+    font-size: 12px;
+    line-height: 1.45;
+    margin: 8px 0 0;
+    color: var(--ink-soft, #6b7280);
+  }
+
+  .ch-page .stitch-divider {
+    margin: 8px 0;
+  }
+
+  .ch-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin: 0 0 12px;
+  }
+
+  .ch-stat {
+    padding: 10px 12px;
+    border-radius: 12px;
+    box-shadow: none;
+  }
+
+  .ch-stat-label {
+    font-size: 9px;
+    margin-bottom: 4px;
+  }
+
+  .ch-stat strong {
+    font-size: 20px;
+  }
+
+  .ch-tabs {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+    margin: 0 0 12px;
+  }
+
+  .ch-tab {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    padding: 10px 10px;
+    border-radius: 12px;
+  }
+
+  .ch-tab-label {
+    font-size: 11px;
+  }
+
+  .ch-tab strong {
+    font-size: 16px;
+  }
+
+  .ch-page .history-panel {
+    border-radius: 16px;
+    padding: 12px 10px 10px;
+    margin: 0;
+  }
+
+  .ch-page .history-panel-head {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .ch-page .history-panel-title {
+    font-size: 15px;
+  }
+
+  .ch-page .history-panel-sub {
+    font-size: 12px;
+  }
+
+  .ch-link {
+    font-size: 12px;
+    white-space: normal;
+  }
+
+  .ch-approved-tools {
+    margin-bottom: 10px;
+  }
+
+  .ch-approved-tools .ch-btn {
+    width: 100%;
+    min-height: 40px;
+    font-size: 12px;
+  }
+
+  .ch-toolbar {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 12px;
+    align-items: stretch;
+  }
+
+  .ch-search,
+  .ch-toolbar .history-select-wrap,
+  .ch-date,
+  .ch-toolbar .ch-btn,
+  .ch-batch-actions {
+    grid-column: 1 / -1;
+  }
+
+  .ch-toolbar .history-select-wrap:nth-of-type(1),
+  .ch-toolbar .history-select-wrap:nth-of-type(2) {
+    grid-column: auto;
+  }
+
+  .ch-search input,
+  .ch-date input,
+  .ch-toolbar .history-select,
+  .ch-btn {
+    min-height: 40px;
+    font-size: 13px;
+  }
+
+  .ch-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .ch-card {
+    border-radius: 14px;
+  }
+
+  .ch-thumb {
+    aspect-ratio: 16 / 10;
+  }
+
+  .ch-thumb-empty {
+    min-height: 110px;
+    font-size: 11px;
+  }
+
+  .ch-badge {
+    left: 8px;
+    top: 8px;
+    font-size: 10px;
+    padding: 3px 8px;
+  }
+
+  .ch-card-body {
+    padding: 10px 12px 12px;
+    gap: 3px;
+  }
+
+  .ch-card-body h3 {
+    font-size: 15px;
+    line-height: 1.25;
+  }
+
+  .ch-meta,
+  .ch-customer,
+  .ch-email,
+  .ch-date-line {
+    font-size: 12px;
+    line-height: 1.35;
+  }
+
+  .ch-card-actions {
+    margin-top: 8px;
+    gap: 6px;
+  }
+
+  .ch-card-actions .ch-btn {
+    min-height: 36px;
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+
+  .ch-modal {
+    width: calc(100vw - 16px);
+    max-height: calc(100dvh - 16px);
+    border-radius: 14px;
+  }
+
+  .ch-modal-head {
+    padding: 12px 14px;
+  }
+
+  .ch-modal-head h2 {
+    font-size: 18px;
+  }
+
+  .ch-modal-close {
+    width: 36px;
+    height: 36px;
+  }
+
+  .ch-modal-grid {
+    max-height: calc(100dvh - 88px);
+  }
+
+  .ch-modal-media {
+    min-height: 180px;
+    padding: 10px;
+  }
+
+  .ch-modal-media img {
+    max-height: 42vh;
+  }
+
+  .ch-modal-side {
+    padding: 12px 14px 16px;
+  }
+
+  .ch-dl > div {
+    grid-template-columns: 88px 1fr;
+    gap: 6px;
+  }
+
+  .ch-toast {
+    left: 12px;
+    right: 12px;
+    bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    max-width: none;
+    font-size: 13px;
+  }
+}

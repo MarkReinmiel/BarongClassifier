@@ -5,8 +5,16 @@ from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 
 from sqlalchemy import or_
+from sqlalchemy.exc import SQLAlchemyError
 
+from app.extensions import db
 from app.models import Classification, CustomerUser
+
+
+class HistoryError(Exception):
+    def __init__(self, message: str, status_code: int = 400):
+        super().__init__(message)
+        self.status_code = status_code
 
 _FABRIC_ALIASES = {
     "pina": ("pina", "piña", "Piña", "Pina"),
@@ -110,6 +118,31 @@ def stats_for_user(user: CustomerUser) -> dict:
         "avg_confidence": avg_pct,
         "avg_confidence_label": f"{round(avg_pct):.0f}%",
     }
+
+
+def delete_for_user(user: CustomerUser, classification_id: str) -> None:
+    """Delete one classification owned by the signed-in customer."""
+    if not user or not user.id:
+        raise HistoryError("Sign in again.", 401)
+    row_id = str(classification_id or "").strip()
+    if not row_id:
+        raise HistoryError("Missing classification id.")
+    uid = str(user.id)
+    row = (
+        Classification.query.filter(
+            Classification.id == row_id,
+            Classification.user_id.in_([uid, user.id]),
+        )
+        .first()
+    )
+    if row is None:
+        raise HistoryError("That classification was not found.", 404)
+    try:
+        db.session.delete(row)
+        db.session.commit()
+    except SQLAlchemyError as error:
+        db.session.rollback()
+        raise HistoryError("Could not delete that classification.", 503) from error
 
 
 def format_history_when_parts(created_at) -> tuple[str, str]:

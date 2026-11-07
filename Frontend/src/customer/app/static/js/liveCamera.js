@@ -39,6 +39,14 @@
 
   function setCameraOpen(open) {
     if (form) form.classList.toggle("camera-open", !!open);
+    document.body.classList.toggle("camera-live-open", !!open);
+    if (open && cameraPanel) {
+      try {
+        cameraPanel.scrollIntoView({ block: "center", behavior: "smooth" });
+      } catch (err) {
+        // ignore
+      }
+    }
   }
 
   function showCameraNotice(message) {

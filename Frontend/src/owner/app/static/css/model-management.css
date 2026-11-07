@@ -310,3 +310,138 @@
   .mm-steps { grid-template-columns: 1fr 1fr; }
   .mm-dl > div { grid-template-columns: 1fr; }
 }
+
+/* Compact phone layout — Model Management */
+@media (max-width: 640px) {
+  .mm-page.history-page {
+    padding: 8px 12px calc(88px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .mm-page .history-page-header h1 {
+    font-size: 22px;
+  }
+
+  .mm-page .page-description {
+    font-size: 12px;
+    line-height: 1.45;
+  }
+
+  .mm-steps {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .mm-step {
+    padding: 10px;
+    border-radius: 10px;
+  }
+
+  .mm-step strong {
+    font-size: 12px;
+  }
+
+  .mm-step span {
+    font-size: 11px;
+    line-height: 1.35;
+  }
+
+  .mm-grid,
+  .mm-grid--eval {
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .mm-card {
+    padding: 12px 12px;
+    border-radius: 14px;
+    box-shadow: 0 4px 12px rgba(36, 54, 80, 0.05);
+  }
+
+  .mm-card-head {
+    margin-bottom: 10px;
+    gap: 8px;
+  }
+
+  .mm-card-head h2 {
+    font-size: 17px;
+  }
+
+  .mm-kicker {
+    font-size: 10px;
+  }
+
+  .mm-badge {
+    font-size: 10px;
+    padding: 3px 8px;
+  }
+
+  .mm-dl {
+    gap: 6px;
+  }
+
+  .mm-dl > div {
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(36, 54, 80, 0.06);
+  }
+
+  .mm-dl dt {
+    font-size: 11px;
+  }
+
+  .mm-dl dd {
+    font-size: 13px;
+  }
+
+  .mm-actions {
+    margin-bottom: 12px;
+    border-radius: 16px;
+    padding: 12px 10px;
+  }
+
+  .mm-btn-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .mm-btn-row .ch-btn,
+  .mm-actions .ch-btn,
+  .mm-card .ch-btn {
+    width: 100%;
+    min-height: 40px;
+    font-size: 12px;
+  }
+
+  .mm-log-card {
+    margin-bottom: 16px;
+  }
+
+  .mm-log {
+    max-height: 220px;
+    font-size: 11px;
+    padding: 10px;
+  }
+
+  .mm-major-block h3 {
+    font-size: 14px;
+  }
+
+  .mm-table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 0 -4px;
+    padding: 0 4px;
+  }
+
+  .mm-table {
+    min-width: 560px;
+    font-size: 12px;
+  }
+
+  .mm-table th,
+  .mm-table td {
+    padding: 8px 6px;
+    white-space: nowrap;
+  }
+}

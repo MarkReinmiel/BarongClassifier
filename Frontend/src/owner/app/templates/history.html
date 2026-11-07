@@ -3,8 +3,9 @@
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/shared.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/topnav.css') }}?v=16">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/history.css') }}?v=5">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-app.css') }}?v=9">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/history.css') }}?v=6">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-app.css') }}?v=11">
+<meta name="csrf-token" content="{{ csrf_token() }}">
 {% endblock %}
 {% block body %}
 {% include "_nav.html" %}
@@ -57,21 +58,40 @@
     <div class="history-empty">
       <h3>No classifications yet</h3>
       <p>Upload a textile image from Classify to start building history.</p>
-      <a href="{{ url_for('classify.classify_page') }}" class="history-empty-link">Go to Classify ?</a>
+      <a href="{{ url_for('classify.classify_page') }}" class="history-empty-link">Go to Classify →</a>
     </div>
     {% else %}
     <div class="history-table-wrap">
       <table class="history-table">
         <thead>
           <tr>
+            <th>Preview</th>
             <th>Date</th>
             <th>Textile name</th>
             <th>Confidence</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
           {% for row in rows %}
-          <tr>
+          {% set preview = row.image_url or '' %}
+          <tr data-history-row data-id="{{ row.id }}">
+            <td>
+              {% if preview %}
+              <button
+                type="button"
+                class="history-thumb history-thumb-btn"
+                data-history-preview
+                data-preview-src="{{ preview }}"
+                data-preview-label="{{ row.predicted_label }}"
+                aria-label="Preview classified image"
+              >
+                <img src="{{ preview }}" alt="" loading="lazy">
+              </button>
+              {% else %}
+              <div class="history-thumb history-thumb--empty" aria-hidden="true">No photo</div>
+              {% endif %}
+            </td>
             <td>{{ row.created_at or '—' }}</td>
             <td>
               <span class="history-textile">{{ row.predicted_label }}</span>
@@ -80,6 +100,26 @@
               {% endif %}
             </td>
             <td>{{ '%.0f'|format((row.confidence or 0) * 100) }}%</td>
+            <td>
+              <div class="history-row-actions">
+                {% if preview %}
+                <button
+                  type="button"
+                  class="history-action-btn history-action-btn--preview"
+                  data-history-preview
+                  data-preview-src="{{ preview }}"
+                  data-preview-label="{{ row.predicted_label }}"
+                >Preview</button>
+                {% endif %}
+                <button
+                  type="button"
+                  class="history-action-btn history-action-btn--delete"
+                  data-history-delete
+                  data-delete-url="{{ url_for('dashboard.delete_history_item', classification_id=row.id) }}"
+                  data-delete-label="{{ row.predicted_label }}"
+                >Delete</button>
+              </div>
+            </td>
           </tr>
           {% endfor %}
         </tbody>
@@ -117,7 +157,36 @@
     {% endif %}
   </section>
 </main>
+
+<dialog id="historyPreviewModal" class="history-preview-modal" aria-labelledby="historyPreviewTitle">
+  <div class="history-preview-inner">
+    <header class="history-preview-head">
+      <h2 id="historyPreviewTitle">Classification preview</h2>
+      <button type="button" class="history-preview-close" data-preview-close aria-label="Close">×</button>
+    </header>
+    <div class="history-preview-body">
+      <img id="historyPreviewImage" src="" alt="Classified textile preview">
+    </div>
+  </div>
+</dialog>
+
+<dialog id="historyDeleteModal" class="history-delete-modal" aria-labelledby="historyDeleteTitle">
+  <div class="history-delete-inner">
+    <header class="history-delete-head">
+      <h2 id="historyDeleteTitle">Delete classification?</h2>
+      <button type="button" class="history-preview-close" data-delete-cancel aria-label="Close">×</button>
+    </header>
+    <div class="history-delete-body">
+      <p>This removes <strong id="historyDeleteLabel">this classification</strong> from history. This cannot be undone.</p>
+    </div>
+    <footer class="history-delete-foot">
+      <button type="button" class="history-action-btn" data-delete-cancel>Cancel</button>
+      <button type="button" class="history-action-btn history-action-btn--delete" id="historyDeleteConfirm">Delete</button>
+    </footer>
+  </div>
+</dialog>
 {% endblock %}
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/navbar.js') }}"></script>
+<script src="{{ url_for('static', filename='js/history.js') }}?v=1"></script>
 {% endblock %}
