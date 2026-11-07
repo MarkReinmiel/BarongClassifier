@@ -1,5 +1,10 @@
 {% extends "base.html" %}
 {% block title %}Home | {{ app_name }}{% endblock %}
+{% block head %}
+  {% if request.args.get('from_login') == '1' or request.args.get('from_google') == '1' %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/page-skeleton.css') }}?v=3">
+  {% endif %}
+{% endblock %}
 {% block content %}
 {# Main tour: Classify highlight only — one click → /classify (then classify page tour) #}
 <div
@@ -8,6 +13,10 @@
   data-section="main"
   data-launch="{{ '1' if launch_tour|default(false) else '0' }}"
 ></div>
+
+{% if request.args.get('from_login') == '1' or request.args.get('from_google') == '1' %}
+  {% include "_page_skeleton.html" %}
+{% endif %}
 
 <div class="dashboard">
 
@@ -237,4 +246,24 @@
 {% endblock %}
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/dashboard.js') }}?v=16"></script>
+{% if request.args.get('from_login') == '1' or request.args.get('from_google') == '1' %}
+<script>
+(function () {
+  var skel = document.getElementById("pageSkeleton");
+  if (!skel) return;
+  window.setTimeout(function () {
+    skel.classList.add("is-done");
+    window.setTimeout(function () {
+      if (skel.parentNode) skel.parentNode.removeChild(skel);
+      try {
+        var url = new URL(window.location.href);
+        url.searchParams.delete("from_login");
+        url.searchParams.delete("from_google");
+        window.history.replaceState({}, "", url.pathname + url.search + url.hash);
+      } catch (e) {}
+    }, 280);
+  }, 1100);
+})();
+</script>
+{% endif %}
 {% endblock %}
