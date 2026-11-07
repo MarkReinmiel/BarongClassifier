@@ -1,7 +1,7 @@
 ﻿{% extends "base.html" %}
 {% block title %}Classify Textile | {{ app_name }}{% endblock %}
 {% block head %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/classifier.css') }}?v=34">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/classifier.css') }}?v=33">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/camera.css') }}?v=4">
 {% endblock %}
 {% block content %}
@@ -171,14 +171,22 @@
     {% if recent %}
     <div class="classify-latest-row">
       {% for row in recent %}
-      {% set photo = row.image_url or row.image_path or none %}
-      {% set photo = photo if photo and photo.startswith('http') else none %}
+      {% set key = row.textile_key or '' %}
+      {% if 'jusi' in key %}
+        {% set thumb = url_for('static', filename='images/textiles/jusi.png') %}
+      {% elif 'cocoon' in key %}
+        {% set thumb = url_for('static', filename='images/textiles/cocoon.jpg') %}
+      {% elif 'pina' in key or 'seda' in key %}
+        {% set thumb = url_for('static', filename='images/textiles/pina.png') %}
+      {% else %}
+        {% set thumb = url_for('static', filename='images/barong.jpg') %}
+      {% endif %}
       <a class="classify-latest-card" href="{{ url_for('history.history_page') }}">
         <div class="classify-latest-thumb" aria-hidden="true">
-          {% if photo %}
-          <img src="{{ photo }}" alt="" loading="lazy">
+          {% if row.image_path and row.image_path.startswith('https://') %}
+          <img src="{{ row.image_path }}" alt="" loading="lazy">
           {% else %}
-          <span class="classify-latest-fallback">{{ (row.label or '?')[:1]|upper }}</span>
+          <img src="{{ thumb }}" alt="" loading="lazy">
           {% endif %}
         </div>
         <div class="classify-latest-copy">

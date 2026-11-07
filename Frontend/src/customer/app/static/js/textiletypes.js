@@ -1,4 +1,4 @@
-const TEXTILE_ORDER = ["pina", "jusi", "cocoon"];
+const TEXTILE_ORDER = ["pina", "jusi", "cocoon", "others"];
 
 const TEXTILES = {
   pina: {
@@ -14,7 +14,7 @@ const TEXTILES = {
   jusi: {
     title: "Jusi",
     description:
-      "A sheer, crisp textile associated with Barong Tagalog garments and formal wear.",
+      "A lightweight textile commonly associated with Barong Tagalog garments and formal wear.",
     material: "Silk / pineapple blend",
     origin: "Philippines",
     uses: "Everyday formal Barong, celebrations",
@@ -24,12 +24,22 @@ const TEXTILES = {
   cocoon: {
     title: "Cocoon",
     description:
-      "A lightweight silk fabric with a smooth texture and subtle sheen, giving an elegant and refined appearance.",
+      "A lightweight silk fabric with a smooth texture and subtle sheen, giving the Barong Tagalog an elegant and refined appearance.",
     material: "Silk cocoon fibers",
     origin: "Philippines",
     uses: "Elegant Barong Tagalog",
     characteristics: "Smooth, Soft sheen",
     images: ["images/textiles/cocoon.jpg"],
+  },
+  others: {
+    title: "Others",
+    description:
+      "Other textile materials and fabric types that may be associated with traditional Filipino clothing.",
+    material: "Mixed / alternative fibers",
+    origin: "Various",
+    uses: "Traditional and contemporary garments",
+    characteristics: "Varies by fabric",
+    images: ["images/textiles/others.png"],
   },
 };
 

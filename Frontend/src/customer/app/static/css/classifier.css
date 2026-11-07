@@ -840,12 +840,6 @@ button.classify-source-btn {
   object-fit: cover;
   display: block;
 }
-.classify-latest-fallback {
-  font-family: var(--serif);
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--accent);
-}
 
 .classify-latest-copy {
   min-width: 0;
