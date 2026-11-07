@@ -323,7 +323,7 @@ def google_complete():
     target = (
         url_for("auth.nickname_setup")
         if not user.nickname_completed
-        else url_for("main.dashboard", from_login=1)
+        else url_for("main.dashboard")
     )
     body = jsonify({"ok": True, "redirect": target})
     try:
@@ -426,11 +426,7 @@ def _complete_login(user: CustomerUser, set_device: bool = False, remember: bool
         except Exception:
             pass
 
-    target = (
-        url_for("auth.nickname_setup")
-        if not user.nickname_completed
-        else url_for("main.dashboard", from_login=1)
-    )
+    target = url_for("auth.nickname_setup") if not user.nickname_completed else url_for("main.dashboard")
     response = make_response(redirect(target))
     if set_device:
         try:
@@ -592,7 +588,7 @@ def verify_code():
         target = (
             url_for("auth.nickname_setup")
             if not user.nickname_completed
-            else url_for("main.dashboard", from_login=1)
+            else url_for("main.dashboard")
         )
         response = make_response(
             jsonify({"verified": True, "redirect": target})
@@ -659,7 +655,7 @@ def nickname_setup():
     user = current_user()
     assert user is not None
     if user.nickname_completed:
-        return redirect(url_for("main.dashboard", from_login=1))
+        return redirect(url_for("main.dashboard"))
 
     if request.method == "GET":
         return render_template("auth/nickname.html", user=user)
@@ -679,8 +675,8 @@ def nickname_setup():
 
     flag_tour_after_nickname()
     if request.is_json:
-        return jsonify({"ok": True, "redirect": url_for("main.dashboard", from_login=1)})
-    return redirect(url_for("main.dashboard", from_login=1))
+        return jsonify({"ok": True, "redirect": url_for("main.dashboard")})
+    return redirect(url_for("main.dashboard"))
 
 
 @bp.route("/logout", methods=["POST", "GET"])

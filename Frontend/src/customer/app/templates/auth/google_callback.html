@@ -3,44 +3,29 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{{ app_name }}</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/page-skeleton.css') }}?v=2">
+  <title>Signing in… | {{ app_name }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}?v=40">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}?v=52">
   <style>
-    html, body { margin: 0; min-height: 100%; background: #c2baa4; }
-    .google-error {
-      position: relative;
-      z-index: 130;
-      min-height: 100vh;
-      display: none;
-      place-items: center;
-      padding: 24px;
-      text-align: center;
-      font-family: "DM Sans", Arial, sans-serif;
-      color: #1f2232;
-      background: #c2baa4;
-    }
-    .google-error.is-visible { display: grid; }
-    .google-error p { margin: 8px 0 0; color: #596475; }
-    .google-error a { color: #c84630; font-weight: 600; }
+    .google-wait{min-height:100vh;display:grid;place-items:center;padding:24px;text-align:center}
+    .google-wait p{margin:8px 0 0;color:var(--ink2,#596475)}
   </style>
 </head>
-<body>
-  {% include "_page_skeleton.html" %}
-
-  <div class="google-error" id="googleErrorPanel" hidden>
+<body class="auth-body">
+  <div class="google-wait">
     <div>
-      <h2>Sign-in did not finish</h2>
-      <p id="googleError"></p>
-      <p style="margin-top:16px"><a id="googleBack" href="{{ login_url|default('/auth/login') }}">Back to sign in</a></p>
+      <h2>Finishing Google sign-in…</h2>
+      <p id="googleStatus">Please wait a moment.</p>
+      <p id="googleError" class="flash error" hidden style="margin-top:16px"></p>
+      <p style="margin-top:16px"><a id="googleBack" href="{{ register_url|default('/auth/register') }}" hidden>Back to create account</a></p>
     </div>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
   (function () {
-    var panel = document.getElementById("googleErrorPanel");
+    var statusEl = document.getElementById("googleStatus");
     var errorEl = document.getElementById("googleError");
     var backEl = document.getElementById("googleBack");
-    var skel = document.getElementById("pageSkeleton");
     var completeUrl = {{ (complete_url or "/auth/google/complete")|tojson }};
     var loginUrl = {{ (login_url or "/auth/login")|tojson }};
     var registerUrl = {{ (register_url or "/auth/register")|tojson }};
@@ -50,20 +35,16 @@
     var supabaseKey = {{ (supabase_anon_key or "")|tojson }};
 
     function fail(message, redirectTo) {
-      if (skel) skel.hidden = true;
       if (redirectTo) {
         window.location.replace(redirectTo);
         return;
       }
-      if (panel) {
-        panel.hidden = false;
-        panel.classList.add("is-visible");
-      }
-      if (errorEl) errorEl.textContent = message || "Please try again.";
-      if (backEl) {
-        backEl.href = loginUrl || registerUrl;
-        backEl.textContent = "Back to sign in";
-      }
+      statusEl.textContent = "Sign-in did not finish.";
+      errorEl.hidden = false;
+      errorEl.textContent = message || "Please try again.";
+      backEl.hidden = false;
+      backEl.href = loginUrl || registerUrl;
+      backEl.textContent = "Back to sign in";
     }
 
     function finish(accessToken) {
@@ -113,6 +94,7 @@
 
     var loc = tokenFromLocation();
     if (loc.error) {
+      /* Prefer Sign in so existing accounts can complete Google without a register error. */
       window.location.replace(loginUrl);
       return;
     }
@@ -143,7 +125,10 @@
         if (loc.accessToken) {
           return finish(loc.accessToken);
         }
-        fail("No Google session was returned.", loginUrl);
+        fail(
+          "No Google session was returned.",
+          loginUrl
+        );
       })
       .catch(function () {
         fail("Could not read the Google session.", loginUrl);
