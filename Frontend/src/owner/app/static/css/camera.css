@@ -307,59 +307,138 @@
 
 .preview-actions {
     display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    gap: 8px;
     margin-top: 12px;
     padding: 0 4px 4px;
+    width: 100%;
 }
 
 .preview-actions[hidden] {
     display: none !important;
 }
 
-.preview-actions .remove-button {
-    flex: 1;
-}
-
-.preview-actions .remove-button[hidden] {
-    display: none;
-}
-
+.preview-actions .view-image-button,
 .preview-actions .result-file-btn,
-#saveImage {
+#viewPreviewBtn,
+#saveImage,
+#downloadPreviewBtn {
     display: inline-flex !important;
     align-items: center;
     justify-content: center;
-    width: 100%;
+    flex: 1 1 0;
+    width: auto;
+    min-width: 0;
+    min-height: 44px;
     margin: 0;
-    padding: 13px 22px;
+    padding: 10px 8px;
     border-radius: 999px;
-    border: 1px solid var(--accent, #8b6914);
-    background: transparent;
-    color: var(--deep, #1f2a24);
     font-family: var(--sans, inherit);
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
     cursor: pointer;
+    white-space: nowrap;
+    text-align: center;
 }
 
-.preview-actions .result-file-btn:hover,
+.preview-actions .view-image-button,
+#viewPreviewBtn {
+    border: none;
+    background: var(--forest, var(--accent, #243650));
+    color: #fff;
+}
+
+.preview-actions .result-file-btn--save,
+#saveImage {
+    border: 1px solid var(--forest-mid, var(--accent, #243650));
+    background: transparent;
+    color: var(--forest, #1e3a2f);
+}
+
+.preview-actions .result-file-btn--download,
+#downloadPreviewBtn {
+    border: 1px solid var(--gold-line, #d4bc8a);
+    background: var(--gold-soft, #f3e6d0);
+    color: var(--forest, #1e3a2f);
+}
+
+.preview-actions .view-image-button:hover,
+#viewPreviewBtn:hover {
+    filter: brightness(0.95);
+}
+
+.preview-actions .result-file-btn--save:hover,
 #saveImage:hover {
-    background: var(--accent, #8b6914);
+    background: var(--forest, #243650);
     color: #fff;
 }
 
 .preview-actions .result-file-btn:disabled,
-#saveImage:disabled {
+.preview-actions .view-image-button:disabled,
+#saveImage:disabled,
+#downloadPreviewBtn:disabled,
+#viewPreviewBtn:disabled {
     opacity: 0.65;
     cursor: wait;
 }
 
-/* Mobile live-camera / classify preview: no Save WebP control */
+.classify-preview-card .image-modal {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(20, 28, 40, 0.88);
+    z-index: 1200;
+    box-sizing: border-box;
+}
+
+.classify-preview-card .image-modal[hidden] {
+    display: none;
+}
+
+.classify-preview-card .modal-image {
+    display: block;
+    max-width: 90vw;
+    max-height: 85vh;
+    object-fit: contain;
+    border-radius: 10px;
+    background: #fff;
+}
+
+.classify-preview-card .close-image-modal {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    width: 42px;
+    height: 42px;
+    border: 0;
+    border-radius: 50%;
+    background: #fff;
+    color: #333;
+    font-size: 28px;
+    line-height: 1;
+    cursor: pointer;
+}
+
 @media (max-width: 899px) {
-    #previewActions,
-    #saveImage {
-        display: none !important;
+    #previewActions:not([hidden]) {
+        display: flex !important;
+    }
+
+    .preview-actions .view-image-button,
+    .preview-actions .result-file-btn,
+    #viewPreviewBtn,
+    #saveImage,
+    #downloadPreviewBtn {
+        display: inline-flex !important;
+        visibility: visible !important;
+        font-size: 11px;
+        padding: 10px 6px;
+        min-height: 42px;
     }
 }
 

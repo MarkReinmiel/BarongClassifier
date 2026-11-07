@@ -9,6 +9,11 @@
   var loading = document.getElementById("classifyLoading");
   var previewActions = document.getElementById("previewActions");
   var saveImageBtn = document.getElementById("saveImage");
+  var viewPreviewBtn = document.getElementById("viewPreviewBtn");
+  var downloadPreviewBtn = document.getElementById("downloadPreviewBtn");
+  var previewImageModal = document.getElementById("previewImageModal");
+  var fullPreviewImage = document.getElementById("fullPreviewImage");
+  var closePreviewImageModal = document.getElementById("closePreviewImageModal");
   var url = null;
   var currentFile = null;
   var submitting = false;
@@ -104,10 +109,14 @@
     }, 1500);
   }
 
-  async function savePreviewAsWebp() {
+  async function getPreviewWebp() {
     var source = currentFile || (fileInput.files && fileInput.files[0]);
     if (!source) throw new Error("Capture or choose a photo first.");
-    var webp = await blobToWebp(source);
+    return blobToWebp(source);
+  }
+
+  async function savePreviewAsWebp() {
+    var webp = await getPreviewWebp();
     var filename = "barong-capture-" + Date.now() + ".webp";
     try {
       if (window.showSaveFilePicker) {
@@ -140,9 +149,38 @@
     downloadBlob(webp, filename);
   }
 
+  async function downloadPreviewAsWebp() {
+    var webp = await getPreviewWebp();
+    downloadBlob(webp, "barong-capture-" + Date.now() + ".webp");
+  }
+
+  function openPreviewModal() {
+    if (!previewImageModal || !fullPreviewImage) return;
+    var src = (prev && prev.src) || url;
+    if (!src) return;
+    fullPreviewImage.src = src;
+    previewImageModal.hidden = false;
+  }
+
+  function closePreviewModal() {
+    if (!previewImageModal) return;
+    previewImageModal.hidden = true;
+  }
+
   clearFile();
 
   if (clearBtn) clearBtn.onclick = clearFile;
+  if (viewPreviewBtn) {
+    viewPreviewBtn.addEventListener("click", openPreviewModal);
+  }
+  if (closePreviewImageModal) {
+    closePreviewImageModal.addEventListener("click", closePreviewModal);
+  }
+  if (previewImageModal) {
+    previewImageModal.addEventListener("click", function (event) {
+      if (event.target === previewImageModal) closePreviewModal();
+    });
+  }
   if (saveImageBtn) {
     saveImageBtn.addEventListener("click", function () {
       saveImageBtn.disabled = true;
@@ -153,6 +191,19 @@
         })
         .finally(function () {
           saveImageBtn.disabled = false;
+        });
+    });
+  }
+  if (downloadPreviewBtn) {
+    downloadPreviewBtn.addEventListener("click", function () {
+      downloadPreviewBtn.disabled = true;
+      Promise.resolve(downloadPreviewAsWebp())
+        .catch(function (err) {
+          console.error(err);
+          window.alert((err && err.message) || "Could not download the photo.");
+        })
+        .finally(function () {
+          downloadPreviewBtn.disabled = false;
         });
     });
   }
