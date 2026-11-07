@@ -144,11 +144,23 @@
       .filter(Boolean);
   }
 
+  function isMobileBatchLayout() {
+    return window.matchMedia("(max-width: 640px)").matches;
+  }
+
   function syncSelectionUi() {
     const ids = selectedIds();
     const checks = eligibleChecks();
     if (els.batchBar) {
-      els.batchBar.hidden = ids.length === 0;
+      // Mobile: keep select strip visible for fast batch picking.
+      els.batchBar.hidden = isMobileBatchLayout() ? false : ids.length === 0;
+      els.batchBar.classList.toggle("has-selection", ids.length > 0);
+      const actions = els.batchBar.querySelector(".ch-batch-actions");
+      if (actions && isMobileBatchLayout()) {
+        actions.style.display = ids.length > 0 ? "flex" : "none";
+      } else if (actions) {
+        actions.style.display = "";
+      }
     }
     if (els.selectedCount) {
       els.selectedCount.textContent = String(ids.length);
@@ -598,11 +610,29 @@
     input.addEventListener("change", syncSelectionUi);
   });
 
+  // Fast batch select: tap photo (mobile) toggles selection without opening review.
+  document.getElementById("historyGrid")?.addEventListener("click", (event) => {
+    if (!isMobileBatchLayout()) return;
+    const thumb = event.target.closest(".ch-thumb");
+    if (!thumb) return;
+    if (event.target.closest(".ch-check, .ch-open, button, a")) return;
+    const card = thumb.closest(".ch-card");
+    const check = card?.querySelector(".ch-card-check");
+    if (!check || check.disabled) return;
+    event.preventDefault();
+    check.checked = !check.checked;
+    syncSelectionUi();
+  });
+
   els.selectAll?.addEventListener("change", () => {
     const checked = Boolean(els.selectAll.checked);
     eligibleChecks().forEach((input) => {
       input.checked = checked;
     });
+    syncSelectionUi();
+  });
+
+  window.addEventListener("resize", () => {
     syncSelectionUi();
   });
 

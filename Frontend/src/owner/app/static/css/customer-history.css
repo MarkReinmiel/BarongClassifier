@@ -779,28 +779,31 @@
 }
 
 @media (max-width: 800px) {
-  .ch-tabs { grid-template-columns: 1fr; }
+  .ch-tabs {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+  }
   .ch-batch-actions { margin-left: 0; width: 100%; }
   .ch-batch-actions .ch-btn { flex: 1 1 auto; }
 }
 
-/* Compact phone layout — Customer History + Contributions (no behavior change) */
+/* Compact phone layout — Customer Classification History */
 @media (max-width: 640px) {
   .history-page.ch-page {
     width: 100%;
     max-width: none;
     margin: 0;
-    padding: 8px 12px calc(88px + env(safe-area-inset-bottom, 0px));
+    padding: 8px 10px calc(96px + env(safe-area-inset-bottom, 0px));
     box-sizing: border-box;
   }
 
   .ch-page .history-page-header {
-    margin: 0 0 12px;
+    margin: 0 0 10px;
     text-align: left;
   }
 
   .ch-page .history-page-header h1 {
-    font-size: 22px;
+    font-size: 20px;
     line-height: 1.2;
     margin: 0;
   }
@@ -813,8 +816,8 @@
 
   .ch-page .page-description {
     font-size: 12px;
-    line-height: 1.45;
-    margin: 8px 0 0;
+    line-height: 1.4;
+    margin: 6px 0 0;
     color: var(--ink-soft, #6b7280);
   }
 
@@ -825,7 +828,7 @@
   .ch-stats {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 8px;
-    margin: 0 0 12px;
+    margin: 0 0 10px;
   }
 
   .ch-stat {
@@ -840,34 +843,42 @@
   }
 
   .ch-stat strong {
-    font-size: 20px;
+    font-size: 18px;
   }
 
+  /* Top panel nav: always 3 across and fitting */
   .ch-tabs {
+    display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 6px;
-    margin: 0 0 12px;
+    margin: 0 0 10px;
   }
 
   .ch-tab {
     flex-direction: column;
     align-items: flex-start;
-    gap: 4px;
-    padding: 10px 10px;
+    gap: 2px;
+    min-width: 0;
+    padding: 8px 8px;
     border-radius: 12px;
   }
 
   .ch-tab-label {
-    font-size: 11px;
+    font-size: 10px;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
   }
 
   .ch-tab strong {
-    font-size: 16px;
+    font-size: 15px;
   }
 
   .ch-page .history-panel {
     border-radius: 16px;
-    padding: 12px 10px 10px;
+    padding: 10px 8px 10px;
     margin: 0;
   }
 
@@ -875,16 +886,16 @@
     display: flex;
     flex-direction: column;
     align-items: stretch;
-    gap: 8px;
-    margin-bottom: 10px;
+    gap: 6px;
+    margin-bottom: 8px;
   }
 
   .ch-page .history-panel-title {
-    font-size: 15px;
+    font-size: 14px;
   }
 
   .ch-page .history-panel-sub {
-    font-size: 12px;
+    font-size: 11px;
   }
 
   .ch-link {
@@ -893,7 +904,7 @@
   }
 
   .ch-approved-tools {
-    margin-bottom: 10px;
+    margin-bottom: 8px;
   }
 
   .ch-approved-tools .ch-btn {
@@ -902,87 +913,219 @@
     font-size: 12px;
   }
 
+  /* Filters: 2-column grid (no continuous horizontal scroll) */
   .ch-toolbar {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 8px;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
+    padding: 0;
+    overflow: visible;
     align-items: stretch;
   }
 
   .ch-search,
   .ch-toolbar .history-select-wrap,
   .ch-date,
-  .ch-toolbar .ch-btn,
-  .ch-batch-actions {
+  .ch-toolbar .ch-btn {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .ch-search {
     grid-column: 1 / -1;
   }
 
-  .ch-toolbar .history-select-wrap:nth-of-type(1),
-  .ch-toolbar .history-select-wrap:nth-of-type(2) {
-    grid-column: auto;
+  .ch-toolbar .ch-btn {
+    grid-column: 1 / -1;
+    padding-inline: 14px;
+    white-space: nowrap;
+  }
+
+  .ch-date {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .ch-date span {
+    font-size: 10px;
   }
 
   .ch-search input,
   .ch-date input,
   .ch-toolbar .history-select,
   .ch-btn {
-    min-height: 40px;
-    font-size: 13px;
+    width: 100%;
+    min-height: 38px;
+    font-size: 12px;
+    box-sizing: border-box;
   }
 
+  /* Fast batch select strip always available on mobile */
+  .ch-batch-bar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0 0 10px;
+    padding: 10px;
+    border-radius: 12px;
+    background: rgba(255, 253, 248, 0.96);
+    backdrop-filter: blur(8px);
+  }
+
+  .ch-batch-bar[hidden] {
+    display: flex !important;
+  }
+
+  .ch-batch-bar:not(.has-selection) .ch-batch-actions {
+    display: none !important;
+  }
+
+  .ch-batch-bar:not(.has-selection) .ch-selected-count {
+    opacity: 0.65;
+  }
+
+  .ch-batch-bar.has-selection .ch-batch-actions {
+    display: flex !important;
+    flex-wrap: wrap;
+    gap: 6px;
+    width: 100%;
+    margin: 4px 0 0;
+  }
+
+  .ch-batch-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .ch-batch-actions .ch-btn {
+    flex: 1 1 calc(50% - 6px);
+    min-height: 42px;
+    font-size: 12px;
+    padding-inline: 8px;
+  }
+
+  .ch-batch-actions #batchApproveBtn,
+  .ch-batch-actions #batchRejectBtn {
+    display: inline-flex !important;
+    visibility: visible !important;
+  }
+
+  /* 3 photo cards across */
   .ch-grid {
-    grid-template-columns: 1fr;
-    gap: 10px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
   }
 
   .ch-card {
-    border-radius: 14px;
+    border-radius: 12px;
   }
 
   .ch-thumb {
-    aspect-ratio: 16 / 10;
+    aspect-ratio: 1 / 1;
+    cursor: pointer;
   }
 
   .ch-thumb-empty {
-    min-height: 110px;
-    font-size: 11px;
+    min-height: 0;
+    font-size: 9px;
+    padding: 6px;
+    text-align: center;
+  }
+
+  .ch-check {
+    left: 6px;
+    bottom: 6px;
+    width: 26px;
+    height: 26px;
+    border-radius: 7px;
+  }
+
+  .ch-check input {
+    width: 15px;
+    height: 15px;
   }
 
   .ch-badge {
-    left: 8px;
-    top: 8px;
-    font-size: 10px;
-    padding: 3px 8px;
+    left: 5px;
+    top: 5px;
+    right: auto;
+    max-width: calc(100% - 28px);
+    font-size: 8px;
+    padding: 2px 5px;
+    letter-spacing: 0;
+  }
+
+  .ch-corner {
+    border-width: 0 34px 34px 0;
+  }
+
+  .ch-corner svg {
+    top: 4px;
+    right: -30px;
+    width: 10px;
+    height: 10px;
   }
 
   .ch-card-body {
-    padding: 10px 12px 12px;
-    gap: 3px;
+    padding: 6px 6px 8px;
+    gap: 1px;
   }
 
   .ch-card-body h3 {
-    font-size: 15px;
+    font-size: 11px;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .ch-meta {
+    font-size: 9px;
     line-height: 1.25;
   }
 
-  .ch-meta,
   .ch-customer,
   .ch-email,
   .ch-date-line {
-    font-size: 12px;
-    line-height: 1.35;
+    display: none;
   }
 
   .ch-card-actions {
-    margin-top: 8px;
-    gap: 6px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    margin-top: 4px;
+    gap: 4px;
   }
 
-  .ch-card-actions .ch-btn {
-    min-height: 36px;
-    padding: 6px 10px;
-    font-size: 12px;
+  .ch-card-actions .ch-approve,
+  .ch-card-actions .ch-reject,
+  .ch-card-actions .ch-restore {
+    display: inline-flex !important;
+    visibility: visible !important;
+    width: 100%;
+    min-height: 30px;
+    padding: 4px 2px;
+    font-size: 9px;
+    line-height: 1.1;
+  }
+
+  .ch-card-actions .ch-restore {
+    grid-column: 1 / -1;
+  }
+
+  .ch-card-actions .ch-open {
+    grid-column: 1 / -1;
+    min-height: 28px;
+    padding: 4px 6px;
+    font-size: 10px;
   }
 
   .ch-modal {
