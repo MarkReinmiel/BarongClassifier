@@ -1,8 +1,13 @@
 ﻿{% extends "base.html" %}
 {% block title %}Classify Textile | {{ app_name }}{% endblock %}
 {% block head %}
+<<<<<<< HEAD
 <link rel="stylesheet" href="{{ url_for('static', filename='css/classifier.css') }}?v=33">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/camera.css') }}?v=6">
+=======
+<link rel="stylesheet" href="{{ url_for('static', filename='css/classifier.css') }}?v=34">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/camera.css') }}?v=4">
+>>>>>>> 44456e46b98025a60265df6537caa08694a1e440
 {% endblock %}
 {% block content %}
 {# Classify page tour — launches after dashboard main tour requires Classify click #}
@@ -171,22 +176,14 @@
     {% if recent %}
     <div class="classify-latest-row">
       {% for row in recent %}
-      {% set key = row.textile_key or '' %}
-      {% if 'jusi' in key %}
-        {% set thumb = url_for('static', filename='images/textiles/jusi.png') %}
-      {% elif 'cocoon' in key %}
-        {% set thumb = url_for('static', filename='images/textiles/cocoon.jpg') %}
-      {% elif 'pina' in key or 'seda' in key %}
-        {% set thumb = url_for('static', filename='images/textiles/pina.png') %}
-      {% else %}
-        {% set thumb = url_for('static', filename='images/barong.jpg') %}
-      {% endif %}
+      {% set photo = row.image_url or row.image_path or none %}
+      {% set photo = photo if photo and photo.startswith('http') else none %}
       <a class="classify-latest-card" href="{{ url_for('history.history_page') }}">
         <div class="classify-latest-thumb" aria-hidden="true">
-          {% if row.image_path and row.image_path.startswith('https://') %}
-          <img src="{{ row.image_path }}" alt="" loading="lazy">
+          {% if photo %}
+          <img src="{{ photo }}" alt="" loading="lazy">
           {% else %}
-          <img src="{{ thumb }}" alt="" loading="lazy">
+          <span class="classify-latest-fallback">{{ (row.label or '?')[:1]|upper }}</span>
           {% endif %}
         </div>
         <div class="classify-latest-copy">

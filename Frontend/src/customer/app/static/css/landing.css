@@ -25,7 +25,7 @@
   display:flex;
   align-items:center;
   gap:10px;
-  margin:14px 0 18px;
+  margin:8px 0 12px;
   max-width:220px;
 }
 .lp-rule::before{
@@ -119,10 +119,11 @@
   color:var(--lp-gold);
 }
 
-.lp-cta .lp-rule{margin:16px auto 14px}
+.lp-cta .lp-rule{margin:10px auto 10px}
 .lp-about-copy .lp-rule,
 .lp-fabrics > .lp-rule,
-.lp-how > .lp-rule{margin-top:12px;margin-bottom:20px}
+.lp-how > .lp-rule,
+.lp-contact > .lp-rule{margin-top:8px;margin-bottom:12px}
 .lp-section-title{margin-bottom:0}
 
 *,
@@ -265,11 +266,11 @@ body {
 /* Floating hero — Owner layout style, Customer navy/plum palette only */
 .lp-hero {
   display: grid;
-  gap: 28px;
+  gap: 20px;
   width: calc(100% - (2 * var(--lp-gutter)));
   max-width: 100%;
-  margin: 20px auto 28px;
-  padding: clamp(40px, 5.5vw, 72px) clamp(24px, 3.5vw, 48px);
+  margin: 12px auto 14px;
+  padding: clamp(24px, 3.5vw, 40px) clamp(20px, 3vw, 40px);
   border-radius: 28px;
   border: 2px solid rgba(20, 28, 40, 0.55);
   background: var(--nav);
@@ -378,7 +379,7 @@ body {
   width: 100%;
   max-width: none;
   margin: 0;
-  padding: clamp(48px, 6vw, 72px) var(--lp-gutter);
+  padding: clamp(20px, 3vw, 32px) var(--lp-gutter);
 }
 
 .lp-about {
@@ -390,6 +391,11 @@ body {
   font-size: clamp(26px, 4vw, 38px);
   max-width: 18ch;
   margin-bottom: 14px;
+}
+
+.lp-about-copy > p:not(.lp-kicker) {
+  font-size: clamp(17px, 2.2vw, 20px);
+  line-height: 1.65;
 }
 
 .lp-about-copy p + p {
@@ -492,8 +498,8 @@ body {
 .lp-cta {
   width: calc(100% - (2 * var(--lp-gutter)));
   max-width: 100%;
-  margin: 12px auto 40px;
-  padding: 36px var(--lp-gutter);
+  margin: 8px auto 20px;
+  padding: 24px var(--lp-gutter);
   border-radius: 24px;
   text-align: center;
   background: var(--soft);
@@ -502,15 +508,17 @@ body {
 }
 
 .lp-contact-lead {
-  margin: 0 0 18px;
+  margin: 0 0 12px;
   max-width: 54ch;
+  font-size: clamp(17px, 2.2vw, 20px);
+  line-height: 1.65;
   color: var(--ink-soft, #5c5348);
 }
 
 .lp-contact-card {
   display: grid;
-  gap: 18px;
-  padding: 20px;
+  gap: 14px;
+  padding: 16px;
   border-radius: 18px;
   border: 1px solid var(--line, #d0b9a4);
   background: var(--surface, #f7f0e8);
@@ -598,7 +606,7 @@ body {
 }
 
 .lp-foot {
-  padding: 36px var(--lp-gutter) calc(28px + env(safe-area-inset-bottom));
+  padding: 22px var(--lp-gutter) calc(18px + env(safe-area-inset-bottom));
   text-align: center;
   background: var(--nav);
   color: var(--nav-muted);
@@ -611,7 +619,7 @@ body {
 }
 
 .lp-mark--footer {
-  margin: 0 auto 22px;
+  margin: 0 auto 14px;
 }
 
 .lp-mark--footer .lp-mark-logo {
@@ -676,15 +684,15 @@ body {
   }
 
   .lp-cta {
-    margin: 20px auto 56px;
-    padding: 48px 40px;
+    margin: 10px auto 24px;
+    padding: 28px 32px;
   }
 
   .lp-contact-card {
     grid-template-columns: 1.2fr 0.8fr;
     align-items: start;
-    gap: 24px;
-    padding: 28px;
+    gap: 18px;
+    padding: 20px;
   }
 }
 
@@ -698,7 +706,7 @@ body {
   }
 
   .lp-hero {
-    margin: 16px auto 24px;
+    margin: 10px auto 12px;
     border-radius: 20px;
   }
 }

@@ -9,6 +9,10 @@
   data-launch="{{ '1' if launch_tour|default(false) else '0' }}"
 ></div>
 
+{% if request.args.get('from_login') == '1' or request.args.get('from_google') == '1' %}
+  {% include "_page_skeleton.html" %}
+{% endif %}
+
 <div class="dashboard">
 
   <section class="dashboard-hero reveal">
@@ -202,8 +206,9 @@
           {% for row in stats.recent %}
           <div class="float-row">
             <div class="float-thumb" aria-hidden="true">
-              {% if row.image_path and row.image_path.startswith('https://') %}
-              <img src="{{ row.image_path }}" alt="" loading="lazy">
+              {% set photo = row.image_url or row.image_path or '' %}
+              {% if photo.startswith('http') %}
+              <img src="{{ photo }}" alt="" loading="lazy">
               {% else %}
               <span class="float-thumb-fallback">{{ (row.label or '?')[:1]|upper }}</span>
               {% endif %}
@@ -235,6 +240,31 @@
 
 </div>
 {% endblock %}
+{% block head %}
+  {% if request.args.get('from_login') == '1' or request.args.get('from_google') == '1' %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/page-skeleton.css') }}?v=2">
+  {% endif %}
+{% endblock %}
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/dashboard.js') }}?v=16"></script>
+{% if request.args.get('from_login') == '1' or request.args.get('from_google') == '1' %}
+<script>
+(function () {
+  var skel = document.getElementById("pageSkeleton");
+  if (!skel) return;
+  window.setTimeout(function () {
+    skel.classList.add("is-done");
+    window.setTimeout(function () {
+      if (skel.parentNode) skel.parentNode.removeChild(skel);
+      try {
+        var url = new URL(window.location.href);
+        url.searchParams.delete("from_login");
+        url.searchParams.delete("from_google");
+        window.history.replaceState({}, "", url.pathname + url.search + url.hash);
+      } catch (e) {}
+    }, 280);
+  }, 1100);
+})();
+</script>
+{% endif %}
 {% endblock %}

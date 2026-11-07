@@ -105,7 +105,12 @@ def dashboard_stats(user: CustomerUser) -> dict:
                 "label": row.display_name or row.predicted_label,
                 "confidence": float(row.confidence or row.confidence_score or 0),
                 "image_name": row.image_name or row.file_name or "image",
-                "image_path": (row.image_path or row.image_reference or "") or "",
+                "image_path": getattr(row, "image_url", None)
+                or (row.image_path or row.image_reference or "")
+                or "",
+                "image_url": getattr(row, "image_url", None)
+                or (row.image_path or row.image_reference or "")
+                or "",
                 "textile_key": (row.predicted_label or row.display_name or "")
                 .strip()
                 .lower()
