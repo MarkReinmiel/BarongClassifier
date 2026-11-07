@@ -290,6 +290,21 @@ body:has(.dashboard){
   align-content:stretch;
 }
 .how-section .steps--grid .step{min-height:0;height:100%}
+/* How it works graphics only — match reference icon size; no panel/font/margin changes */
+.how-section .how-step-icon{
+  flex:0 0 auto;
+  width:96px;
+  height:96px;
+  border-radius:14px;
+  background:var(--surface);
+  display:grid;
+  place-items:center;
+}
+.how-section .how-step-icon svg{
+  width:84px;
+  height:84px;
+  display:block;
+}
 .step{
   padding:clamp(12px,1.4vw,16px) clamp(12px,1.5vw,16px);
   min-height:0;

@@ -160,10 +160,14 @@ def change_password_view():
 def users():
     user = current_user()
     rows = list_directory_users()
+    active_count = sum(1 for row in rows if row.get("is_active"))
     response = render_template(
         "users.html",
         user=user,
         users=rows,
+        users_total=len(rows),
+        users_active=active_count,
+        users_inactive=max(0, len(rows) - active_count),
         active="users",
     )
     return no_store(response)
