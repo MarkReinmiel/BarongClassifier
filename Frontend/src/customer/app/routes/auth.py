@@ -15,11 +15,12 @@ from flask import (
 from flask_wtf.csrf import generate_csrf
 
 from app.extensions import csrf, db
-from app.models import CustomerUser, utcnow
+from app.models import CustomerUser, PendingSignup, utcnow
 from app.services import auth_service
 from app.services.auth_service import AuthError
 from app.services.turnstile_service import TurnstileError, turnstile_active, verify_turnstile
 from app.utils.security import client_label, current_user, login_required, mask_email, no_store
+from app.utils.validators import normalize_email
 
 bp = Blueprint("auth", __name__, url_prefix="/auth")
 
@@ -78,11 +79,13 @@ def register():
         flash(message, "error")
         return render_template("auth/register.html", email=email), 400
 
-    if user.email_verified or not current_app.config.get("EMAIL_VERIFICATION_ENABLED", True):
+    # Verified CustomerUser (email checks disabled) → finish login.
+    if isinstance(user, CustomerUser):
         return _complete_login(user)
 
+    # PendingSignup — no customer.users / public.users row yet.
     session.clear()
-    session["pending_user_id"] = str(user.id)
+    session["pending_signup_id"] = str(user.id)
     session["pending_purpose"] = "registration"
     session.modified = True
     if wants_json or request.is_json:
@@ -129,10 +132,20 @@ def login():
         user = auth_service.authenticate(email, password)
     except AuthError as error:
         if error.status_code == 403 and "Verify your email" in str(error):
-            found = CustomerUser.query.filter_by(email=email.strip().lower()).first()
-            if found:
+            normalized = normalize_email(email)
+            pending = PendingSignup.query.filter_by(email=normalized).first()
+            found = CustomerUser.query.filter_by(email=normalized).first()
+            session.clear()
+            session["pending_purpose"] = "registration"
+            if pending:
+                session["pending_signup_id"] = str(pending.id)
+                try:
+                    auth_service.resend_pending_signup_code(pending)
+                except AuthError:
+                    pass
+            elif found:
+                # Legacy unfinished row — keep verify path until purged/migrated.
                 session["pending_user_id"] = str(found.id)
-                session["pending_purpose"] = "registration"
                 try:
                     auth_service.issue_and_send_code(found, "registration")
                 except AuthError:
@@ -260,6 +273,15 @@ def _complete_login(user: CustomerUser, set_device: bool = False, remember: bool
 
 @bp.route("/verify-email", methods=["GET"])
 def verify_email():
+    pending = _pending_signup()
+    if pending:
+        wait = auth_service.pending_signup_resend_wait_seconds(pending)
+        return render_template(
+            "auth/verify_email.html",
+            email_hint=mask_email(pending.email),
+            resend_after_seconds=wait,
+            purpose="registration",
+        )
     user = _pending_user("registration")
     if not user:
         flash("Sign up or sign in again to verify your email.", "error")
@@ -322,6 +344,17 @@ def verify_human():
 @bp.route("/verification-status", methods=["GET"])
 def verification_status():
     purpose = request.args.get("purpose") or session.get("pending_purpose") or "registration"
+    if purpose == "registration":
+        pending = _pending_signup()
+        if pending:
+            wait = auth_service.pending_signup_resend_wait_seconds(pending)
+            return jsonify(
+                {
+                    "resend_after_seconds": wait,
+                    "expires_in_seconds": current_app.config["EMAIL_VERIFICATION_EXPIRE_MINUTES"] * 60,
+                    "email_hint": mask_email(pending.email),
+                }
+            )
     user = _pending_user(purpose)
     if not user:
         return jsonify({"error": "Verification session expired."}), 401
@@ -340,6 +373,25 @@ def verify_code():
     payload = request.get_json(silent=True) or {}
     purpose = payload.get("purpose") or session.get("pending_purpose") or "registration"
     code = payload.get("code") or request.form.get("code", "")
+
+    if purpose == "registration":
+        pending = _pending_signup()
+        if pending:
+            try:
+                auth_service.verify_pending_signup(pending, code)
+            except AuthError as error:
+                return _json_error(error)
+            session.pop("pending_signup_id", None)
+            session.pop("pending_user_id", None)
+            session.pop("pending_purpose", None)
+            return jsonify(
+                {
+                    "verified": True,
+                    "message": "Email verified successfully.",
+                    "login_url": url_for("auth.login"),
+                }
+            )
+
     user = _pending_user(purpose)
     if not user:
         return jsonify({"error": "Verification session expired."}), 401
@@ -375,6 +427,7 @@ def verify_code():
         return response
 
     session.pop("pending_user_id", None)
+    session.pop("pending_signup_id", None)
     session.pop("pending_purpose", None)
     return jsonify(
         {
@@ -389,6 +442,20 @@ def verify_code():
 def resend_code():
     payload = request.get_json(silent=True) or {}
     purpose = payload.get("purpose") or session.get("pending_purpose") or "registration"
+    if purpose == "registration":
+        pending = _pending_signup()
+        if pending:
+            try:
+                result = auth_service.resend_pending_signup_code(pending)
+            except AuthError as error:
+                return _json_error(error)
+            return jsonify(
+                {
+                    "message": "A new code was sent.",
+                    "resend_after_seconds": result["resend_after_seconds"],
+                    "resend_available_at": result["resend_available_at"],
+                }
+            )
     user = _pending_user(purpose)
     if not user:
         return jsonify({"error": "Verification session expired."}), 401
@@ -446,6 +513,15 @@ def logout():
 @bp.route("/csrf-token", methods=["GET"])
 def csrf_token():
     return jsonify({"csrf_token": generate_csrf()})
+
+
+def _pending_signup() -> PendingSignup | None:
+    signup_id = session.get("pending_signup_id")
+    if not signup_id:
+        return None
+    if session.get("pending_purpose") not in {None, "registration"}:
+        return None
+    return PendingSignup.query.filter_by(id=signup_id).first()
 
 
 def _pending_user(purpose: str) -> CustomerUser | None:
