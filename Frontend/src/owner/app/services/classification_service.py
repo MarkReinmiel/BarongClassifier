@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import base64
-import io
 import logging
 import math
 import uuid
@@ -11,7 +10,6 @@ from pathlib import Path
 
 import httpx
 from flask import current_app
-from PIL import Image
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.extensions import db
@@ -38,21 +36,48 @@ def validate_confidence(value) -> float:
 
 
 def prepare_image_bytes(file_storage) -> bytes:
+    """Validate upload/camera bytes and return standardized WebP (Phase 2)."""
+    import sys
+
+    here = Path(__file__).resolve()
+    for candidate in here.parents:
+        if (candidate / "shared" / "image_processing").is_dir():
+            root = str(candidate)
+            if root not in sys.path:
+                sys.path.insert(0, root)
+            break
+    else:
+        raise ClassificationError("Shared image processing module is not available.", 500)
+
+    from shared.image_processing import ImageProcessingError, WebPSettings, convert_to_webp
+
     filename = (getattr(file_storage, "filename", "") or "").lower()
     suffix = "." + filename.rsplit(".", 1)[-1] if "." in filename else ""
-    allowed = {".jpg", ".jpeg", ".jpe", ".png", ".webp"}
-    if suffix not in allowed:
-        raise ClassificationError("Use a JPG, JPEG, JPE, PNG, or WEBP image.")
+    allowed = {".jpg", ".jpeg", ".jpe", ".png", ".bmp", ".webp"}
+    if suffix and suffix not in allowed:
+        raise ClassificationError("Use a JPG, JPEG, JPE, PNG, BMP, or WEBP image.")
 
     raw = file_storage.read()
-    max_bytes = current_app.config.get("MAX_CONTENT_LENGTH") or 10 * 1024 * 1024
+    max_bytes = int(
+        current_app.config.get("IMAGE_MAX_UPLOAD_BYTES")
+        or current_app.config.get("MAX_CONTENT_LENGTH")
+        or (15 * 1024 * 1024)
+    )
     if len(raw) > max_bytes:
         raise ClassificationError("That image is too large.")
 
-    image = Image.open(io.BytesIO(raw)).convert("RGB")
-    buffer = io.BytesIO()
-    image.save(buffer, format="JPEG", quality=90)
-    return buffer.getvalue()
+    settings = WebPSettings(
+        quality=int(current_app.config.get("IMAGE_WEBP_QUALITY") or 90),
+        method=int(current_app.config.get("IMAGE_WEBP_METHOD") or 6),
+        lossless=bool(current_app.config.get("IMAGE_WEBP_LOSSLESS") or False),
+        max_upload_bytes=max_bytes,
+        max_width=int(current_app.config.get("IMAGE_MAX_WIDTH") or 6000),
+        max_height=int(current_app.config.get("IMAGE_MAX_HEIGHT") or 6000),
+    )
+    try:
+        return convert_to_webp(raw, settings=settings).content
+    except ImageProcessingError as error:
+        raise ClassificationError(str(error)) from error
 
 
 def _model_file() -> Path | None:

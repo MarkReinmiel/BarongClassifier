@@ -4,7 +4,7 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/shared.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/topnav.css') }}?v=16">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/classify.css') }}?v=16">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/result.css') }}?v=3">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/result.css') }}?v=4">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-app.css') }}?v=9">
 {% endblock %}
 {% block body %}
@@ -81,7 +81,7 @@
 {% endblock %}
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/navbar.js') }}"></script>
-<script src="{{ url_for('static', filename='js/result-image-actions.js') }}?v=1"></script>
+<script src="{{ url_for('static', filename='js/result-image-actions.js') }}?v=2"></script>
 <script>
 document.getElementById("viewImageButton")?.addEventListener("click", () => {
   document.getElementById("imageModal").hidden = false;

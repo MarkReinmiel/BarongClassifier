@@ -135,7 +135,19 @@ class Config:
         if item.strip()
     )
 
-    MAX_CONTENT_LENGTH = int(float(_first("MAX_UPLOAD_SIZE_MB", default="10")) * 1024 * 1024)
+    _upload_mb = float(_first("IMAGE_MAX_UPLOAD_MB", "MAX_UPLOAD_SIZE_MB", default="15"))
+    MAX_CONTENT_LENGTH = int(_upload_mb * 1024 * 1024)
+    IMAGE_MAX_UPLOAD_BYTES = MAX_CONTENT_LENGTH
+    IMAGE_STORAGE_FORMAT = (_first("IMAGE_STORAGE_FORMAT", default="WEBP") or "WEBP").upper()
+    IMAGE_WEBP_QUALITY = int(_first("IMAGE_WEBP_QUALITY", default="90"))
+    IMAGE_WEBP_METHOD = int(_first("IMAGE_WEBP_METHOD", default="6"))
+    IMAGE_WEBP_LOSSLESS = _first("IMAGE_WEBP_LOSSLESS", default="false").lower() in {
+        "1",
+        "true",
+        "yes",
+    }
+    IMAGE_MAX_WIDTH = int(_first("IMAGE_MAX_WIDTH", default="6000"))
+    IMAGE_MAX_HEIGHT = int(_first("IMAGE_MAX_HEIGHT", default="6000"))
     MODEL_PATH = _first("MODEL_PATH", default="models/barong_model.keras")
     VARIANT_MODEL_PATH = _first("VARIANT_MODEL_PATH", default="models/barong_pina_variant.keras")
     RELEVANCE_GATE_ENABLED = _first("RELEVANCE_GATE_ENABLED", default="false").lower() in {

@@ -69,6 +69,7 @@ def upload_classification_image(
     )
 
     # Single Media Library folder: barong/classifications/
+    # Phase 2 uploads are WebP bytes from prepare_image_bytes.
     public_id = f"barong/classifications/{classification_id}_{_safe_name(filename)}"
     if "." in public_id.rsplit("/", 1)[-1]:
         public_id = public_id.rsplit(".", 1)[0]
@@ -79,6 +80,7 @@ def upload_classification_image(
             public_id=public_id,
             resource_type="image",
             overwrite=True,
+            format="webp",
         )
     except Exception as error:
         # Sanitize: never include credentials; Cloudinary messages are usually safe.

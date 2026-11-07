@@ -613,13 +613,23 @@ body.modal-open {
     }
 
     .result-image-actions {
+        display: flex !important;
         flex-direction: column;
+        visibility: visible !important;
     }
 
     .view-image-button,
-    .result-file-btn {
+    .result-file-btn,
+    .result-file-btn--save,
+    .result-file-btn--download {
+        display: block !important;
+        visibility: visible !important;
         width: 100%;
         min-height: 48px;
+    }
+
+    .result-file-hint {
+        display: block !important;
     }
 
     .classifier-label {

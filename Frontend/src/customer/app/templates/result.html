@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Classification Result | {{ app_name }}{% endblock %}
 {% block head %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/result.css') }}?v=6">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/result.css') }}?v=7">
 {% endblock %}
 {% block content %}
 {% set photo = result.image_path if result.image_path and result.image_path.startswith('https://') else none %}
@@ -85,7 +85,7 @@
 {% endblock %}
 {% block scripts %}
 {{ super() }}
-<script src="{{ url_for('static', filename='js/result-image-actions.js') }}?v=1"></script>
+<script src="{{ url_for('static', filename='js/result-image-actions.js') }}?v=2"></script>
 <script>
 document.getElementById("viewImageButton")?.addEventListener("click", () => {
   const modal = document.getElementById("imageModal");

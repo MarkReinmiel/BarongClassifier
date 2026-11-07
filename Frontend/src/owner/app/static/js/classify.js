@@ -7,7 +7,10 @@
   var analyze = document.getElementById("analyze");
   var form = document.getElementById("classifyForm");
   var loading = document.getElementById("classifyLoading");
+  var previewActions = document.getElementById("previewActions");
+  var saveImageBtn = document.getElementById("saveImage");
   var url = null;
+  var currentFile = null;
   var submitting = false;
 
   if (!fileInput || !prev || !analyze || !form) return;
@@ -21,6 +24,7 @@
   function clearFile() {
     if (url) URL.revokeObjectURL(url);
     url = null;
+    currentFile = null;
     prev.removeAttribute("src");
     prev.alt = "";
     prev.hidden = true;
@@ -28,6 +32,7 @@
     if (prompt) prompt.style.display = "";
     analyze.disabled = true;
     if (clearBtn) clearBtn.hidden = true;
+    if (previewActions) previewActions.hidden = true;
     fileInput.value = "";
     if (camInput) camInput.value = "";
   }
@@ -35,6 +40,7 @@
   function setFile(file) {
     if (!file) return;
     if (url) URL.revokeObjectURL(url);
+    currentFile = file;
     url = URL.createObjectURL(file);
     prev.src = url;
     prev.alt = "Selected textile preview";
@@ -43,6 +49,7 @@
     if (prompt) prompt.style.display = "none";
     analyze.disabled = false;
     if (clearBtn) clearBtn.hidden = false;
+    if (previewActions) previewActions.hidden = false;
 
     try {
       var transfer = new DataTransfer();
@@ -53,9 +60,102 @@
     }
   }
 
+  function blobToWebp(blob) {
+    if (blob && blob.type === "image/webp") {
+      return Promise.resolve(blob);
+    }
+    return new Promise(function (resolve, reject) {
+      var img = new Image();
+      var objectUrl = URL.createObjectURL(blob);
+      img.onload = function () {
+        var canvas = document.createElement("canvas");
+        canvas.width = img.naturalWidth || img.width || 1;
+        canvas.height = img.naturalHeight || img.height || 1;
+        canvas.getContext("2d").drawImage(img, 0, 0);
+        URL.revokeObjectURL(objectUrl);
+        canvas.toBlob(
+          function (out) {
+            if (out) resolve(out);
+            else reject(new Error("Could not encode WebP."));
+          },
+          "image/webp",
+          0.9
+        );
+      };
+      img.onerror = function () {
+        URL.revokeObjectURL(objectUrl);
+        reject(new Error("Could not read the photo."));
+      };
+      img.src = objectUrl;
+    });
+  }
+
+  function downloadBlob(blob, filename) {
+    var href = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = href;
+    a.download = filename;
+    a.rel = "noopener";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(function () {
+      URL.revokeObjectURL(href);
+    }, 1500);
+  }
+
+  async function savePreviewAsWebp() {
+    var source = currentFile || (fileInput.files && fileInput.files[0]);
+    if (!source) throw new Error("Capture or choose a photo first.");
+    var webp = await blobToWebp(source);
+    var filename = "barong-capture-" + Date.now() + ".webp";
+    try {
+      if (window.showSaveFilePicker) {
+        var handle = await window.showSaveFilePicker({
+          suggestedName: filename,
+          types: [
+            {
+              description: "WebP image",
+              accept: { "image/webp": [".webp"] },
+            },
+          ],
+        });
+        var writable = await handle.createWritable();
+        await writable.write(webp);
+        await writable.close();
+        return;
+      }
+    } catch (err) {
+      if (err && err.name === "AbortError") return;
+    }
+    try {
+      var shareFile = new File([webp], filename, { type: "image/webp" });
+      if (navigator.canShare && navigator.canShare({ files: [shareFile] })) {
+        await navigator.share({ files: [shareFile], title: "BarongClassifier photo" });
+        return;
+      }
+    } catch (err2) {
+      if (err2 && err2.name === "AbortError") return;
+    }
+    downloadBlob(webp, filename);
+  }
+
   clearFile();
 
   if (clearBtn) clearBtn.onclick = clearFile;
+  if (saveImageBtn) {
+    saveImageBtn.addEventListener("click", function () {
+      saveImageBtn.disabled = true;
+      Promise.resolve(savePreviewAsWebp())
+        .catch(function (err) {
+          console.error(err);
+          window.alert((err && err.message) || "Could not save the photo.");
+        })
+        .finally(function () {
+          saveImageBtn.disabled = false;
+        });
+    });
+  }
   fileInput.addEventListener("change", function (event) {
     setFile(event.target.files && event.target.files[0]);
   });
