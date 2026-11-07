@@ -41,32 +41,15 @@
      when that area is opened for the first time (see bindTriggers).
      ------------------------------------------------------------------ */
   const SECTION_STEPS = {
+    /* Dashboard: only Classify is interactive — one click → /classify */
     main: [
-      {
-        target: '[data-tour="textile-types"]',
-        title: "Explore textile types",
-        body: "Compare Piña, Jusi, and Cocoon — the three fabrics this classifier can identify.",
-        mode: "auto",
-      },
-      {
-        target: '[data-tour="history"]',
-        title: "Check your history",
-        body: "Every saved classification is stored here so you can review results later.",
-        mode: "auto",
-      },
-      {
-        target: '[data-tour="how-it-works"]',
-        title: "How it works",
-        body: "A short four-step overview of capture → analyze → result on your home page.",
-        mode: "auto",
-      },
       {
         target: '[data-tour="classify"]',
         title: "Classify a textile",
-        body: "Ready to try it? Open Classify Textile to upload or capture a Barong photo.",
-        mode: "demo-then-user",
-        userPrompt: "Click Classify Textile to open the classifier.",
+        body: "Click Classify Textile to open the classifier.",
+        mode: "user-navigate",
         allowNavigate: true,
+        navigateTo: "/classify",
       },
     ],
     classify: [
@@ -83,11 +66,11 @@
         mode: "auto",
       },
       {
-        target: '[data-tour="classify-gallery"], #galBtn',
-        title: "Upload from gallery",
-        body: "Pick a clear JPG, PNG, or WEBP photo of the fabric from your device.",
+        target: '[data-tour="classify-gallery"], #chooseSourceBtn, #galBtn',
+        title: "Choose an image",
+        body: "On mobile, pick Gallery or Live Camera. On desktop, upload a photo from your files.",
         mode: "demo-then-user",
-        userPrompt: "Click Upload from Gallery to choose a photo (or continue after picking).",
+        userPrompt: "Tap Choose image (or Upload from Gallery) to continue.",
         allowNavigate: false,
         allowNative: true,
       },
@@ -162,14 +145,27 @@
     return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
   }
 
+  function isElementVisible(el) {
+    if (!el || el.hidden) return false;
+    if (el.getAttribute && el.getAttribute("aria-hidden") === "true") return false;
+    const style = window.getComputedStyle(el);
+    if (!style || style.display === "none" || style.visibility === "hidden") return false;
+    return el.getClientRects().length > 0;
+  }
+
   function resolveTarget(selector) {
     if (!selector) return null;
     const parts = String(selector).split(",");
+    let fallback = null;
     for (let i = 0; i < parts.length; i++) {
-      const el = document.querySelector(parts[i].trim());
-      if (el) return el;
+      const nodes = document.querySelectorAll(parts[i].trim());
+      for (let j = 0; j < nodes.length; j++) {
+        const el = nodes[j];
+        if (isElementVisible(el)) return el;
+        if (!fallback) fallback = el;
+      }
     }
-    return null;
+    return fallback;
   }
 
   /* ===================== State manager ===================== */
@@ -227,7 +223,7 @@
       }
     },
 
-    persist: function (section) {
+    persist: function (section, skipped) {
       this.markLocal(section);
       if (!this.completeUrl) return Promise.resolve();
       return fetch(this.completeUrl, {
@@ -237,7 +233,7 @@
           "X-CSRFToken": csrfToken(),
           "X-Requested-With": "XMLHttpRequest",
         },
-        body: JSON.stringify({ section: section, skipped: false }),
+        body: JSON.stringify({ section: section, skipped: !!skipped }),
         credentials: "same-origin",
       }).catch(function () {});
     },
@@ -261,11 +257,14 @@
     let onBlockClick = null;
     let onKeyDown = null;
     let onUserClick = null;
+    let blockEventTypes = [];
     let moveRaf = 0;
     let timers = [];
     let cursorPos = { x: window.innerWidth * 0.5, y: window.innerHeight * 0.55 };
     let running = false;
     let inputLocked = true;
+    let skipBtn = null;
+    let onSkipClick = null;
 
     function clearTimers() {
       timers.forEach(window.clearTimeout);
@@ -307,7 +306,7 @@
           /* ignore */
         }
       }
-      /* Keep a soft shield, but punch a hole by raising the live target */
+      /* Keep the dim shield interactive so only the hit-proxy is clickable */
       if (block) block.style.pointerEvents = "auto";
     }
 
@@ -321,15 +320,21 @@
       block = document.createElement("div");
       block.className = "tour-block";
       onBlockClick = function (event) {
-        if (!inputLocked && liveTarget && liveTarget.contains(event.target)) return;
+        /* Swallow every background interaction — only .tour-hit-proxy may act */
         event.preventDefault();
         event.stopPropagation();
       };
-      ["click", "mousedown", "mouseup", "pointerdown", "pointerup", "contextmenu"].forEach(
-        function (type) {
-          block.addEventListener(type, onBlockClick, true);
-        }
-      );
+      blockEventTypes = [
+        "click",
+        "mousedown",
+        "mouseup",
+        "pointerdown",
+        "pointerup",
+        "contextmenu",
+      ];
+      blockEventTypes.forEach(function (type) {
+        block.addEventListener(type, onBlockClick, true);
+      });
       block.addEventListener("touchstart", onBlockClick, { capture: true, passive: false });
       block.addEventListener("wheel", onBlockClick, { capture: true, passive: false });
 
@@ -349,37 +354,103 @@
         arrowsHost.appendChild(node);
       });
 
-      tip = document.createElement("div");
-      tip.className = "tour-tip";
-      tip.innerHTML =
-        '<h3 class="tour-tip-title"></h3>' +
-        '<p class="tour-tip-body"></p>' +
-        '<span class="tour-tip-step"></span>' +
-        '<span class="tour-tip-nudge"></span>';
-
       cursorEl = null;
       rippleEl = null;
 
-      /* Fixed hit target above the dim layer — page z-index traps can't block it */
+      /* Description card with Skip inside */
+      tip = document.createElement("div");
+      tip.className = "tour-tip";
+      tip.setAttribute("role", "status");
+      tip.innerHTML =
+        '<p class="tour-tip-step"></p>' +
+        '<h3 class="tour-tip-title"></h3>' +
+        '<p class="tour-tip-body"></p>' +
+        '<p class="tour-tip-nudge" hidden></p>' +
+        '<div class="tour-tip-actions">' +
+        '<button type="button" class="tour-skip" aria-label="Skip tutorial">Skip</button>' +
+        "</div>";
+      skipBtn = tip.querySelector(".tour-skip");
+      onSkipClick = function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+        skipTour();
+      };
+      skipBtn.addEventListener("click", onSkipClick);
+
+      /* Sole highlight hit target while the tour is open */
       hitProxy = document.createElement("button");
       hitProxy.type = "button";
       hitProxy.className = "tour-hit-proxy";
-      hitProxy.setAttribute("aria-label", "Continue tour");
+      hitProxy.setAttribute("aria-label", "Classify Textile");
       hitProxy.hidden = true;
 
       root.appendChild(block);
       root.appendChild(spotlight);
       root.appendChild(arrowsHost);
-      root.appendChild(tip);
       root.appendChild(hitProxy);
+      root.appendChild(tip);
+
       document.body.appendChild(root);
 
       onKeyDown = function (event) {
-        if (!inputLocked && (event.key === "Enter" || event.key === " ")) return;
+        if (event.key === "Escape" || event.key === "Esc") {
+          event.preventDefault();
+          event.stopPropagation();
+          skipTour();
+          return;
+        }
+        if (
+          !inputLocked &&
+          hitProxy &&
+          !hitProxy.hidden &&
+          (event.key === "Enter" || event.key === " ")
+        ) {
+          event.preventDefault();
+          hitProxy.click();
+          return;
+        }
         event.preventDefault();
         event.stopPropagation();
       };
       document.addEventListener("keydown", onKeyDown, true);
+    }
+
+    function updateTip(step) {
+      if (!tip || !step) return;
+      const stepEl = tip.querySelector(".tour-tip-step");
+      const titleEl = tip.querySelector(".tour-tip-title");
+      const bodyEl = tip.querySelector(".tour-tip-body");
+      const nudgeEl = tip.querySelector(".tour-tip-nudge");
+      if (stepEl) stepEl.textContent = "Step " + (index + 1) + " of " + list.length;
+      if (titleEl) titleEl.textContent = step.title || "Guided tour";
+      if (bodyEl) bodyEl.textContent = step.body || "";
+      if (nudgeEl) {
+        const nudge = step.userPrompt || "";
+        nudgeEl.textContent = nudge;
+        nudgeEl.hidden = !nudge;
+      }
+      tip.hidden = false;
+    }
+
+    function placeTip(rect) {
+      if (!tip || tip.hidden) return;
+      const gap = 14;
+      const tipWidth = Math.min(300, window.innerWidth - 32);
+      tip.style.width = tipWidth + "px";
+      tip.style.visibility = "hidden";
+      tip.style.left = "0px";
+      tip.style.top = "0px";
+      const tipHeight = tip.offsetHeight || 140;
+      let left = rect.left + rect.width / 2 - tipWidth / 2;
+      left = Math.max(16, Math.min(left, window.innerWidth - tipWidth - 16));
+      let top = rect.bottom + gap;
+      if (top + tipHeight > window.innerHeight - 16) {
+        top = rect.top - tipHeight - gap;
+      }
+      if (top < 16) top = 16;
+      tip.style.left = left + "px";
+      tip.style.top = top + "px";
+      tip.style.visibility = "";
     }
 
     function placeChrome(rect) {
@@ -391,50 +462,33 @@
       spotlight.style.left = left + "px";
       spotlight.style.width = width + "px";
       spotlight.style.height = height + "px";
-      arrowsHost.style.top = top + "px";
-      arrowsHost.style.left = left + "px";
-      arrowsHost.style.width = width + "px";
-      arrowsHost.style.height = height + "px";
-      Array.prototype.forEach.call(arrowsHost.children, function (node) {
-        node.style.animation = "none";
-        void node.offsetWidth;
-        node.style.animation = "";
-      });
+      if (arrowsHost) {
+        arrowsHost.style.top = top + "px";
+        arrowsHost.style.left = left + "px";
+        arrowsHost.style.width = width + "px";
+        arrowsHost.style.height = height + "px";
+        Array.prototype.forEach.call(arrowsHost.children, function (node) {
+          node.style.animation = "none";
+          void node.offsetWidth;
+          node.style.animation = "";
+        });
+      }
       if (hitProxy && !hitProxy.hidden) {
         hitProxy.style.top = top + "px";
         hitProxy.style.left = left + "px";
         hitProxy.style.width = width + "px";
         hitProxy.style.height = height + "px";
       }
-      if (tip) {
-        const tipH = tip.offsetHeight || 110;
-        const tipW = Math.min(300, window.innerWidth - 32);
-        let tipTop = rect.bottom + 56;
-        let tipLeft = rect.left;
-        if (tipTop + tipH > window.innerHeight - 12) {
-          tipTop = Math.max(12, rect.top - tipH - 56);
-        }
-        if (tipLeft + tipW > window.innerWidth - 12) {
-          tipLeft = window.innerWidth - tipW - 12;
-        }
-        tip.style.top = Math.max(12, tipTop) + "px";
-        tip.style.left = Math.max(12, tipLeft) + "px";
-      }
-    }
-
-    function setTip(step, nudge) {
-      if (!tip) return;
-      tip.querySelector(".tour-tip-title").textContent = step.title || "";
-      tip.querySelector(".tour-tip-body").textContent = step.body || "";
-      tip.querySelector(".tour-tip-step").textContent =
-        "Step " + (index + 1) + " of " + list.length;
-      tip.querySelector(".tour-tip-nudge").textContent = nudge || "";
+      placeTip({ top: top, left: left, width: width, height: height, bottom: top + height });
     }
 
     function clearLiveTarget() {
       if (hitProxy) {
         hitProxy.hidden = true;
-        if (onUserClick) hitProxy.removeEventListener("click", onUserClick);
+        if (onUserClick) {
+          hitProxy.removeEventListener("click", onUserClick);
+          hitProxy.onclick = null;
+        }
       }
       if (liveTarget) {
         liveTarget.classList.remove(
@@ -442,6 +496,7 @@
           "tour-target-user",
           "tour-target-pressed"
         );
+        /* Target is visual-only; never leave a tour click listener on the page node */
         if (onUserClick) liveTarget.removeEventListener("click", onUserClick, true);
       }
       onUserClick = null;
@@ -465,18 +520,47 @@
       document.body.classList.remove("tour-active", "tour-user-phase", "tour-locked");
       window.removeEventListener("resize", onResize);
       window.removeEventListener("scroll", onResize, true);
-      if (onKeyDown) document.removeEventListener("keydown", onKeyDown, true);
+      if (onKeyDown) {
+        document.removeEventListener("keydown", onKeyDown, true);
+        onKeyDown = null;
+      }
+      if (skipBtn && onSkipClick) {
+        skipBtn.removeEventListener("click", onSkipClick);
+        onSkipClick = null;
+      }
+      skipBtn = null;
+      if (block && onBlockClick) {
+        blockEventTypes.forEach(function (type) {
+          block.removeEventListener(type, onBlockClick, true);
+        });
+        block.removeEventListener("touchstart", onBlockClick, true);
+        block.removeEventListener("wheel", onBlockClick, true);
+        onBlockClick = null;
+      }
       if (root && root.parentNode) root.parentNode.removeChild(root);
       root = null;
+      block = null;
+      spotlight = null;
+      arrowsHost = null;
+      hitProxy = null;
+      tip = null;
       activeRunner = null;
     }
 
-    /** Persist section, then go to the link (dashboard → Classify page). */
-    function completeAndNavigate(href) {
+    function skipTour() {
+      if (!running) return;
       running = false;
       teardownChrome();
+      TourState.persist(sectionId, true);
+    }
+
+    /** Persist section, then go to Classify Textile (/classify). */
+    function completeAndNavigate(href) {
+      running = false;
+      const target = href || "/classify";
+      teardownChrome();
       const go = function () {
-        window.location.assign(href);
+        window.location.assign(target);
       };
       const saved = TourState.persist(sectionId);
       if (saved && typeof saved.finally === "function") saved.finally(go);
@@ -484,22 +568,23 @@
     }
 
     /**
-     * Interactive highlight — user must click the glowing control.
-     * allowNavigate: leave for the target href after saving progress
-     * allowNative: let the real control handle the click (file picker, etc.)
+     * Interactive highlight — ONLY the hit-proxy over the target is clickable.
+     * allowNavigate / user-navigate: one click → /classify (or step.navigateTo / href)
+     * allowNative: forward to the real control (file picker, etc.)
      */
     function armUserPhase(step, el, rect) {
       releaseInputLock();
       document.body.classList.add("tour-user-phase");
-      setTip(step, step.userPrompt || "Click the highlighted control to continue.");
+      updateTip(step);
       liveTarget = el;
       liveTarget.classList.add("tour-target-live", "tour-target-user");
 
       onUserClick = function (event) {
-        if (step.allowNavigate) {
-          event.preventDefault();
-          event.stopPropagation();
+        event.preventDefault();
+        event.stopPropagation();
+        if (step.allowNavigate || step.mode === "user-navigate") {
           const href =
+            step.navigateTo ||
             el.getAttribute("href") ||
             (el.href ? String(el.href) : "") ||
             "/classify";
@@ -510,29 +595,22 @@
         }
 
         if (step.allowNative) {
-          /* File picker / native control — forward proxy clicks to the real element */
-          const fromProxy = hitProxy && event.currentTarget === hitProxy;
-          if (fromProxy) {
-            event.preventDefault();
-            event.stopPropagation();
-          }
           document.body.classList.remove("tour-user-phase");
           if (hitProxy) hitProxy.hidden = true;
-          if (fromProxy) {
-            try {
-              el.click();
-            } catch (err) {
-              /* ignore */
-            }
+          try {
+            el.click();
+          } catch (err) {
+            /* ignore */
           }
           later(320, function () {
-            if (running) advanceOrFinish();
+            if (!running) return;
+            /* Classify: end tour so the source sheet / file picker stays usable */
+            if (sectionId === "classify") finish();
+            else advanceOrFinish();
           });
           return;
         }
 
-        event.preventDefault();
-        event.stopPropagation();
         if (step.openProfile) {
           try {
             el.click();
@@ -546,18 +624,22 @@
       };
 
       hitProxy.hidden = false;
+      hitProxy.setAttribute(
+        "aria-label",
+        step.title || step.userPrompt || "Continue tour"
+      );
       hitProxy.addEventListener("click", onUserClick);
       placeChrome(rect);
-      liveTarget.addEventListener("click", onUserClick, true);
+      /* Do not bind clicks on the page element — hit-proxy alone handles input */
     }
 
     function beginSpotlightStep(step, el, afterPlace) {
       requestInputLock();
+      updateTip(step);
       el.scrollIntoView({ block: "center", behavior: "smooth" });
       later(SCROLL_SETTLE_MS, function () {
         if (!running) return;
         const rect = el.getBoundingClientRect();
-        setTip(step, "");
         placeChrome(rect);
         liveTarget = el;
         liveTarget.classList.add("tour-target-live");
@@ -583,6 +665,14 @@
       });
     }
 
+    /** Immediate interactive highlight (dashboard Classify). */
+    function runUserNavigateStep(step, el) {
+      beginSpotlightStep(step, el, function (rect) {
+        if (!running) return;
+        armUserPhase(step, el, el.getBoundingClientRect() || rect);
+      });
+    }
+
     function runStep(i) {
       clearTimers();
       clearLiveTarget();
@@ -593,7 +683,8 @@
         if (index + 1 < list.length) return runStep(index + 1);
         return finish();
       }
-      if (step.mode === "demo-then-user") runDemoThenUserStep(step, el);
+      if (step.mode === "user-navigate") runUserNavigateStep(step, el);
+      else if (step.mode === "demo-then-user") runDemoThenUserStep(step, el);
       else runAutoStep(step, el);
     }
 
@@ -605,13 +696,13 @@
     function finish() {
       running = false;
       teardownChrome();
-      TourState.persist(sectionId);
+      TourState.persist(sectionId, false);
     }
 
     function start() {
       if (activeRunner) return;
       running = true;
-      activeRunner = { sectionId: sectionId, stop: finish };
+      activeRunner = { sectionId: sectionId, stop: finish, skip: skipTour };
       buildDom();
       document.body.classList.add("tour-active");
       window.addEventListener("resize", onResize);
@@ -620,7 +711,7 @@
       runStep(0);
     }
 
-    return { start, finish };
+    return { start: start, finish: finish, skip: skipTour };
   }
 
   let activeRunner = null;

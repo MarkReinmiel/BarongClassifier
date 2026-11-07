@@ -6,9 +6,20 @@
   var prompt = document.getElementById("prompt");
   var analyze = document.getElementById("analyze");
   var form = document.getElementById("classifyForm");
+  var drop = document.getElementById("drop");
+  var chooseSourceBtn = document.getElementById("chooseSourceBtn");
+  var sourceSheet = document.getElementById("sourceSheet");
+  var sourceGallery = document.getElementById("sourceGallery");
+  var sourceCamera = document.getElementById("sourceCamera");
+  var openCamera = document.getElementById("openCamera");
   var url = null;
+  var lastFocus = null;
 
   if (!fileInput || !prev || !analyze || !form) return;
+
+  function isMobileView() {
+    return window.matchMedia("(max-width: 899px)").matches;
+  }
 
   function clearFile() {
     if (url) URL.revokeObjectURL(url);
@@ -42,6 +53,72 @@
     }
   }
 
+  function openGalleryPicker() {
+    closeSourceSheet();
+    try {
+      fileInput.click();
+    } catch (err) {
+      /* ignore */
+    }
+  }
+
+  function openLiveCamera() {
+    closeSourceSheet();
+    if (openCamera) {
+      try {
+        openCamera.click();
+        return;
+      } catch (err) {
+        /* fall through */
+      }
+    }
+    // Native capture fallback when WebRTC trigger is unavailable.
+    if (camInput) {
+      try {
+        camInput.click();
+      } catch (err2) {
+        /* ignore */
+      }
+    }
+  }
+
+  function openSourceSheet() {
+    if (!sourceSheet) {
+      openGalleryPicker();
+      return;
+    }
+    lastFocus = document.activeElement;
+    sourceSheet.hidden = false;
+    sourceSheet.setAttribute("aria-hidden", "false");
+    document.body.classList.add("source-sheet-open");
+    var first = sourceGallery || sourceSheet.querySelector("button");
+    if (first && typeof first.focus === "function") first.focus();
+  }
+
+  function closeSourceSheet() {
+    if (!sourceSheet || sourceSheet.hidden) return;
+    sourceSheet.hidden = true;
+    sourceSheet.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("source-sheet-open");
+    if (lastFocus && typeof lastFocus.focus === "function") {
+      try {
+        lastFocus.focus();
+      } catch (err) {
+        /* ignore */
+      }
+    }
+    lastFocus = null;
+  }
+
+  function beginChooseImage(event) {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    if (isMobileView()) openSourceSheet();
+    else openGalleryPicker();
+  }
+
   if (clearBtn) clearBtn.onclick = clearFile;
   fileInput.addEventListener("change", function (event) {
     setFile(event.target.files && event.target.files[0]);
@@ -49,6 +126,47 @@
   if (camInput) {
     camInput.addEventListener("change", function (event) {
       setFile(event.target.files && event.target.files[0]);
+    });
+  }
+
+  if (chooseSourceBtn) {
+    chooseSourceBtn.addEventListener("click", beginChooseImage);
+  }
+
+  if (drop) {
+    drop.addEventListener("click", function (event) {
+      // Ignore clicks on the clear control inside the preview card.
+      if (event.target && event.target.closest && event.target.closest("#clearBtn")) return;
+      if (prev && !prev.hidden) return;
+      beginChooseImage(event);
+    });
+    drop.addEventListener("keydown", function (event) {
+      if (event.key === "Enter" || event.key === " ") beginChooseImage(event);
+    });
+    if (!drop.hasAttribute("tabindex")) drop.setAttribute("tabindex", "0");
+    if (!drop.getAttribute("role")) drop.setAttribute("role", "button");
+    drop.setAttribute("aria-label", "Choose an image to classify");
+  }
+
+  if (sourceGallery) {
+    sourceGallery.addEventListener("click", function () {
+      openGalleryPicker();
+    });
+  }
+  if (sourceCamera) {
+    sourceCamera.addEventListener("click", function () {
+      openLiveCamera();
+    });
+  }
+  if (sourceSheet) {
+    sourceSheet.querySelectorAll("[data-source-dismiss]").forEach(function (node) {
+      node.addEventListener("click", closeSourceSheet);
+    });
+    document.addEventListener("keydown", function (event) {
+      if (event.key === "Escape" && sourceSheet && !sourceSheet.hidden) {
+        event.preventDefault();
+        closeSourceSheet();
+      }
     });
   }
 
@@ -72,4 +190,12 @@
     analyze.disabled = true;
     analyze.innerHTML = '<span class="spin"></span> Analyzing…';
   });
+
+  window.BarongClassify = {
+    openGalleryPicker: openGalleryPicker,
+    openLiveCamera: openLiveCamera,
+    openSourceSheet: openSourceSheet,
+    closeSourceSheet: closeSourceSheet,
+    isMobileView: isMobileView,
+  };
 })();

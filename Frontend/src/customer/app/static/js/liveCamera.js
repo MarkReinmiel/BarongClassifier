@@ -221,14 +221,32 @@
     );
   }
 
-  async function startCamera() {
-    showCameraNotice("");
-    if (!navigator.mediaDevices || typeof navigator.mediaDevices.getUserMedia !== "function") {
+  function fallbackNativeCapture() {
+    var camInput = document.getElementById("fileCam");
+    if (!camInput) {
       showCameraNotice(
         window.isSecureContext
           ? "Camera access is unavailable in this browser."
           : HTTPS_MESSAGE
       );
+      return;
+    }
+    showCameraNotice("");
+    try {
+      camInput.click();
+    } catch (err) {
+      showCameraNotice(
+        window.isSecureContext
+          ? "Camera access is unavailable in this browser."
+          : HTTPS_MESSAGE
+      );
+    }
+  }
+
+  async function startCamera() {
+    showCameraNotice("");
+    if (!navigator.mediaDevices || typeof navigator.mediaDevices.getUserMedia !== "function") {
+      fallbackNativeCapture();
       return;
     }
     openCamera.disabled = true;
@@ -243,6 +261,20 @@
       });
     } catch (error) {
       openCamera.disabled = false;
+      // Prefer native capture attribute when WebRTC is blocked / unavailable.
+      if (
+        error &&
+        (error.name === "NotAllowedError" ||
+          error.name === "PermissionDeniedError" ||
+          error.name === "NotFoundError" ||
+          error.name === "DevicesNotFoundError" ||
+          error.name === "SecurityError" ||
+          !window.isSecureContext)
+      ) {
+        fallbackNativeCapture();
+        if (!window.isSecureContext) showCameraNotice(HTTPS_MESSAGE);
+        return;
+      }
       showCameraNotice(cameraErrorMessage(error));
       return;
     }
