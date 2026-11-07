@@ -1,0 +1,764 @@
+{
+  "summary": {
+    "sample_size": 24,
+    "source": "C:\\Users\\louis\\OneDrive\\Documents\\GitHub\\BarongClassifier\\ml\\data\\main_classifier",
+    "presets": [
+      {
+        "name": "q85",
+        "quality": 85,
+        "lossless": false
+      },
+      {
+        "name": "q90",
+        "quality": 90,
+        "lossless": false
+      },
+      {
+        "name": "q95",
+        "quality": 95,
+        "lossless": false
+      },
+      {
+        "name": "lossless",
+        "quality": 100,
+        "lossless": true
+      }
+    ],
+    "mean_bytes": {
+      "q85": 341448.6,
+      "q90": 448455.9,
+      "q95": 662406.2,
+      "lossless": 2517653.8
+    },
+    "mean_ratio": {
+      "q85": 0.2185,
+      "q90": 0.2843,
+      "q95": 0.4144,
+      "lossless": 1.4225
+    },
+    "label_agreement": null,
+    "note": "Storage/size benchmark only unless --predict. Does not retrain or change production weights."
+  },
+  "rows": [
+    {
+      "path": "pina\\244c60e81eb5_IMG_20260916_130507.jpg",
+      "original_bytes": 2665084,
+      "variants": {
+        "q85": {
+          "bytes": 461272,
+          "ratio_vs_original": 0.1731,
+          "width": 4096,
+          "height": 3072
+        },
+        "q90": {
+          "bytes": 603944,
+          "ratio_vs_original": 0.2266,
+          "width": 4096,
+          "height": 3072
+        },
+        "q95": {
+          "bytes": 879298,
+          "ratio_vs_original": 0.3299,
+          "width": 4096,
+          "height": 3072
+        },
+        "lossless": {
+          "bytes": 3170186,
+          "ratio_vs_original": 1.1895,
+          "width": 4096,
+          "height": 3072
+        }
+      }
+    },
+    {
+      "path": "cocoon\\53df85ef5e16_IMG_20260916_125841.jpg",
+      "original_bytes": 2433069,
+      "variants": {
+        "q85": {
+          "bytes": 417316,
+          "ratio_vs_original": 0.1715,
+          "width": 3072,
+          "height": 4096
+        },
+        "q90": {
+          "bytes": 560902,
+          "ratio_vs_original": 0.2305,
+          "width": 3072,
+          "height": 4096
+        },
+        "q95": {
+          "bytes": 857728,
+          "ratio_vs_original": 0.3525,
+          "width": 3072,
+          "height": 4096
+        },
+        "lossless": {
+          "bytes": 3544346,
+          "ratio_vs_original": 1.4567,
+          "width": 3072,
+          "height": 4096
+        }
+      }
+    },
+    {
+      "path": "cocoon\\2366ed7c26d5_IMG_20260916_130104_bal1.jpg",
+      "original_bytes": 2489493,
+      "variants": {
+        "q85": {
+          "bytes": 449666,
+          "ratio_vs_original": 0.1806,
+          "width": 3072,
+          "height": 4096
+        },
+        "q90": {
+          "bytes": 577516,
+          "ratio_vs_original": 0.232,
+          "width": 3072,
+          "height": 4096
+        },
+        "q95": {
+          "bytes": 852348,
+          "ratio_vs_original": 0.3424,
+          "width": 3072,
+          "height": 4096
+        },
+        "lossless": {
+          "bytes": 3223834,
+          "ratio_vs_original": 1.295,
+          "width": 3072,
+          "height": 4096
+        }
+      }
+    },
+    {
+      "path": "pina\\80daf65d83ea_IMG_0756_bal1.jpg",
+      "original_bytes": 533095,
+      "variants": {
+        "q85": {
+          "bytes": 179014,
+          "ratio_vs_original": 0.3358,
+          "width": 1238,
+          "height": 1621
+        },
+        "q90": {
+          "bytes": 228374,
+          "ratio_vs_original": 0.4284,
+          "width": 1238,
+          "height": 1621
+        },
+        "q95": {
+          "bytes": 328566,
+          "ratio_vs_original": 0.6163,
+          "width": 1238,
+          "height": 1621
+        },
+        "lossless": {
+          "bytes": 819638,
+          "ratio_vs_original": 1.5375,
+          "width": 1238,
+          "height": 1621
+        }
+      }
+    },
+    {
+      "path": "cocoon\\ed3fed98d627_IMG_20260916_125940_bal1.jpg",
+      "original_bytes": 2368790,
+      "variants": {
+        "q85": {
+          "bytes": 405164,
+          "ratio_vs_original": 0.171,
+          "width": 3072,
+          "height": 4096
+        },
+        "q90": {
+          "bytes": 551764,
+          "ratio_vs_original": 0.2329,
+          "width": 3072,
+          "height": 4096
+        },
+        "q95": {
+          "bytes": 859450,
+          "ratio_vs_original": 0.3628,
+          "width": 3072,
+          "height": 4096
+        },
+        "lossless": {
+          "bytes": 3810890,
+          "ratio_vs_original": 1.6088,
+          "width": 3072,
+          "height": 4096
+        }
+      }
+    },
+    {
+      "path": "cocoon\\cd978eee9b86_IMG_20260916_130059_bal1.jpg",
+      "original_bytes": 2329828,
+      "variants": {
+        "q85": {
+          "bytes": 401432,
+          "ratio_vs_original": 0.1723,
+          "width": 3072,
+          "height": 4096
+        },
+        "q90": {
+          "bytes": 520868,
+          "ratio_vs_original": 0.2236,
+          "width": 3072,
+          "height": 4096
+        },
+        "q95": {
+          "bytes": 725296,
+          "ratio_vs_original": 0.3113,
+          "width": 3072,
+          "height": 4096
+        },
+        "lossless": {
+          "bytes": 2987382,
+          "ratio_vs_original": 1.2822,
+          "width": 3072,
+          "height": 4096
+        }
+      }
+    },
+    {
+      "path": "cocoon\\bf25e4366742_IMG_0692.jpg",
+      "original_bytes": 355257,
+      "variants": {
+        "q85": {
+          "bytes": 90050,
+          "ratio_vs_original": 0.2535,
+          "width": 1238,
+          "height": 1621
+        },
+        "q90": {
+          "bytes": 114582,
+          "ratio_vs_original": 0.3225,
+          "width": 1238,
+          "height": 1621
+        },
+        "q95": {
+          "bytes": 166366,
+          "ratio_vs_original": 0.4683,
+          "width": 1238,
+          "height": 1621
+        },
+        "lossless": {
+          "bytes": 510036,
+          "ratio_vs_original": 1.4357,
+          "width": 1238,
+          "height": 1621
+        }
+      }
+    },
+    {
+      "path": "cocoon\\766797a2506c_IMG_0690_bal1.jpg",
+      "original_bytes": 490646,
+      "variants": {
+        "q85": {
+          "bytes": 156698,
+          "ratio_vs_original": 0.3194,
+          "width": 1238,
+          "height": 1621
+        },
+        "q90": {
+          "bytes": 206374,
+          "ratio_vs_original": 0.4206,
+          "width": 1238,
+          "height": 1621
+        },
+        "q95": {
+          "bytes": 301266,
+          "ratio_vs_original": 0.614,
+          "width": 1238,
+          "height": 1621
+        },
+        "lossless": {
+          "bytes": 752512,
+          "ratio_vs_original": 1.5337,
+          "width": 1238,
+          "height": 1621
+        }
+      }
+    },
+    {
+      "path": "pina\\800ff0fe481e_IMG_20260916_131027.jpg",
+      "original_bytes": 2177921,
+      "variants": {
+        "q85": {
+          "bytes": 342230,
+          "ratio_vs_original": 0.1571,
+          "width": 3072,
+          "height": 4096
+        },
+        "q90": {
+          "bytes": 447006,
+          "ratio_vs_original": 0.2052,
+          "width": 3072,
+          "height": 4096
+        },
+        "q95": {
+          "bytes": 628216,
+          "ratio_vs_original": 0.2884,
+          "width": 3072,
+          "height": 4096
+        },
+        "lossless": {
+          "bytes": 2686696,
+          "ratio_vs_original": 1.2336,
+          "width": 3072,
+          "height": 4096
+        }
+      }
+    },
+    {
+      "path": "cocoon\\5067f3ab5770_IMG_0703_bal2.jpg",
+      "original_bytes": 495657,
+      "variants": {
+        "q85": {
+          "bytes": 161220,
+          "ratio_vs_original": 0.3253,
+          "width": 1238,
+          "height": 1621
+        },
+        "q90": {
+          "bytes": 204210,
+          "ratio_vs_original": 0.412,
+          "width": 1238,
+          "height": 1621
+        },
+        "q95": {
+          "bytes": 279790,
+          "ratio_vs_original": 0.5645,
+          "width": 1238,
+          "height": 1621
+        },
+        "lossless": {
+          "bytes": 671002,
+          "ratio_vs_original": 1.3538,
+          "width": 1238,
+          "height": 1621
+        }
+      }
+    },
+    {
+      "path": "pina\\42fb599bc698_IMG_20260916_130533.jpg",
+      "original_bytes": 2605574,
+      "variants": {
+        "q85": {
+          "bytes": 442702,
+          "ratio_vs_original": 0.1699,
+          "width": 4096,
+          "height": 3072
+        },
+        "q90": {
+          "bytes": 583512,
+          "ratio_vs_original": 0.2239,
+          "width": 4096,
+          "height": 3072
+        },
+        "q95": {
+          "bytes": 840878,
+          "ratio_vs_original": 0.3227,
+          "width": 4096,
+          "height": 3072
+        },
+        "lossless": {
+          "bytes": 3072280,
+          "ratio_vs_original": 1.1791,
+          "width": 4096,
+          "height": 3072
+        }
+      }
+    },
+    {
+      "path": "pina\\80daf65d83ea_IMG_0756.jpg",
+      "original_bytes": 533095,
+      "variants": {
+        "q85": {
+          "bytes": 179014,
+          "ratio_vs_original": 0.3358,
+          "width": 1238,
+          "height": 1621
+        },
+        "q90": {
+          "bytes": 228374,
+          "ratio_vs_original": 0.4284,
+          "width": 1238,
+          "height": 1621
+        },
+        "q95": {
+          "bytes": 328566,
+          "ratio_vs_original": 0.6163,
+          "width": 1238,
+          "height": 1621
+        },
+        "lossless": {
+          "bytes": 819638,
+          "ratio_vs_original": 1.5375,
+          "width": 1238,
+          "height": 1621
+        }
+      }
+    },
+    {
+      "path": "jusi\\dab1ea14cbc8_IMG_20260916_125438_2.jpg",
+      "original_bytes": 2511641,
+      "variants": {
+        "q85": {
+          "bytes": 446820,
+          "ratio_vs_original": 0.1779,
+          "width": 4096,
+          "height": 3072
+        },
+        "q90": {
+          "bytes": 561048,
+          "ratio_vs_original": 0.2234,
+          "width": 4096,
+          "height": 3072
+        },
+        "q95": {
+          "bytes": 811680,
+          "ratio_vs_original": 0.3232,
+          "width": 4096,
+          "height": 3072
+        },
+        "lossless": {
+          "bytes": 2926104,
+          "ratio_vs_original": 1.165,
+          "width": 4096,
+          "height": 3072
+        }
+      }
+    },
+    {
+      "path": "cocoon\\46085ac5c8a3_IMG_20260916_125937_bal2.jpg",
+      "original_bytes": 2361994,
+      "variants": {
+        "q85": {
+          "bytes": 396362,
+          "ratio_vs_original": 0.1678,
+          "width": 3072,
+          "height": 4096
+        },
+        "q90": {
+          "bytes": 548060,
+          "ratio_vs_original": 0.232,
+          "width": 3072,
+          "height": 4096
+        },
+        "q95": {
+          "bytes": 847422,
+          "ratio_vs_original": 0.3588,
+          "width": 3072,
+          "height": 4096
+        },
+        "lossless": {
+          "bytes": 3658652,
+          "ratio_vs_original": 1.549,
+          "width": 3072,
+          "height": 4096
+        }
+      }
+    },
+    {
+      "path": "pina\\00d544299e5b_camera-capture-1792390208424.jpg",
+      "original_bytes": 219441,
+      "variants": {
+        "q85": {
+          "bytes": 78924,
+          "ratio_vs_original": 0.3597,
+          "width": 1238,
+          "height": 1651
+        },
+        "q90": {
+          "bytes": 100340,
+          "ratio_vs_original": 0.4573,
+          "width": 1238,
+          "height": 1651
+        },
+        "q95": {
+          "bytes": 138628,
+          "ratio_vs_original": 0.6317,
+          "width": 1238,
+          "height": 1651
+        },
+        "lossless": {
+          "bytes": 500588,
+          "ratio_vs_original": 2.2812,
+          "width": 1238,
+          "height": 1651
+        }
+      }
+    },
+    {
+      "path": "jusi\\5f65cbaef6c8_camera-capture-1792389186865_bal2.jpg",
+      "original_bytes": 339428,
+      "variants": {
+        "q85": {
+          "bytes": 131112,
+          "ratio_vs_original": 0.3863,
+          "width": 1238,
+          "height": 1651
+        },
+        "q90": {
+          "bytes": 167132,
+          "ratio_vs_original": 0.4924,
+          "width": 1238,
+          "height": 1651
+        },
+        "q95": {
+          "bytes": 238444,
+          "ratio_vs_original": 0.7025,
+          "width": 1238,
+          "height": 1651
+        },
+        "lossless": {
+          "bytes": 599680,
+          "ratio_vs_original": 1.7667,
+          "width": 1238,
+          "height": 1651
+        }
+      }
+    },
+    {
+      "path": "cocoon\\2615468ab60d_IMG_20260916_125918.jpg",
+      "original_bytes": 2581517,
+      "variants": {
+        "q85": {
+          "bytes": 464782,
+          "ratio_vs_original": 0.18,
+          "width": 3072,
+          "height": 4096
+        },
+        "q90": {
+          "bytes": 608944,
+          "ratio_vs_original": 0.2359,
+          "width": 3072,
+          "height": 4096
+        },
+        "q95": {
+          "bytes": 898594,
+          "ratio_vs_original": 0.3481,
+          "width": 3072,
+          "height": 4096
+        },
+        "lossless": {
+          "bytes": 3620272,
+          "ratio_vs_original": 1.4024,
+          "width": 3072,
+          "height": 4096
+        }
+      }
+    },
+    {
+      "path": "cocoon\\24e80416e1f5_IMG_20260916_125823_1_bal2.jpg",
+      "original_bytes": 2341009,
+      "variants": {
+        "q85": {
+          "bytes": 387910,
+          "ratio_vs_original": 0.1657,
+          "width": 3072,
+          "height": 4096
+        },
+        "q90": {
+          "bytes": 529288,
+          "ratio_vs_original": 0.2261,
+          "width": 3072,
+          "height": 4096
+        },
+        "q95": {
+          "bytes": 822818,
+          "ratio_vs_original": 0.3515,
+          "width": 3072,
+          "height": 4096
+        },
+        "lossless": {
+          "bytes": 3387736,
+          "ratio_vs_original": 1.4471,
+          "width": 3072,
+          "height": 4096
+        }
+      }
+    },
+    {
+      "path": "cocoon\\47f3fb9fe141_IMG_20260916_130125_bal2.jpg",
+      "original_bytes": 2511656,
+      "variants": {
+        "q85": {
+          "bytes": 427188,
+          "ratio_vs_original": 0.1701,
+          "width": 3072,
+          "height": 4096
+        },
+        "q90": {
+          "bytes": 554982,
+          "ratio_vs_original": 0.221,
+          "width": 3072,
+          "height": 4096
+        },
+        "q95": {
+          "bytes": 841650,
+          "ratio_vs_original": 0.3351,
+          "width": 3072,
+          "height": 4096
+        },
+        "lossless": {
+          "bytes": 3185798,
+          "ratio_vs_original": 1.2684,
+          "width": 3072,
+          "height": 4096
+        }
+      }
+    },
+    {
+      "path": "cocoon\\bb12ad1f9c2e_IMG_20260916_125912_bal1.jpg",
+      "original_bytes": 2513526,
+      "variants": {
+        "q85": {
+          "bytes": 442406,
+          "ratio_vs_original": 0.176,
+          "width": 3072,
+          "height": 4096
+        },
+        "q90": {
+          "bytes": 591036,
+          "ratio_vs_original": 0.2351,
+          "width": 3072,
+          "height": 4096
+        },
+        "q95": {
+          "bytes": 889450,
+          "ratio_vs_original": 0.3539,
+          "width": 3072,
+          "height": 4096
+        },
+        "lossless": {
+          "bytes": 3728182,
+          "ratio_vs_original": 1.4832,
+          "width": 3072,
+          "height": 4096
+        }
+      }
+    },
+    {
+      "path": "cocoon\\c461ce428e61_IMG_20260916_125820_1_bal1.jpg",
+      "original_bytes": 2364228,
+      "variants": {
+        "q85": {
+          "bytes": 397732,
+          "ratio_vs_original": 0.1682,
+          "width": 3072,
+          "height": 4096
+        },
+        "q90": {
+          "bytes": 536972,
+          "ratio_vs_original": 0.2271,
+          "width": 3072,
+          "height": 4096
+        },
+        "q95": {
+          "bytes": 839930,
+          "ratio_vs_original": 0.3553,
+          "width": 3072,
+          "height": 4096
+        },
+        "lossless": {
+          "bytes": 3375854,
+          "ratio_vs_original": 1.4279,
+          "width": 3072,
+          "height": 4096
+        }
+      }
+    },
+    {
+      "path": "jusi\\bdb0d83dfb24_IMG_20260916_125434_1.jpg",
+      "original_bytes": 2596056,
+      "variants": {
+        "q85": {
+          "bytes": 478266,
+          "ratio_vs_original": 0.1842,
+          "width": 4096,
+          "height": 3072
+        },
+        "q90": {
+          "bytes": 618930,
+          "ratio_vs_original": 0.2384,
+          "width": 4096,
+          "height": 3072
+        },
+        "q95": {
+          "bytes": 856734,
+          "ratio_vs_original": 0.33,
+          "width": 4096,
+          "height": 3072
+        },
+        "lossless": {
+          "bytes": 2974270,
+          "ratio_vs_original": 1.1457,
+          "width": 4096,
+          "height": 3072
+        }
+      }
+    },
+    {
+      "path": "pina\\08469506da74_IMG_20260916_130944.jpg",
+      "original_bytes": 2509643,
+      "variants": {
+        "q85": {
+          "bytes": 407820,
+          "ratio_vs_original": 0.1625,
+          "width": 3072,
+          "height": 4096
+        },
+        "q90": {
+          "bytes": 541268,
+          "ratio_vs_original": 0.2157,
+          "width": 3072,
+          "height": 4096
+        },
+        "q95": {
+          "bytes": 812282,
+          "ratio_vs_original": 0.3237,
+          "width": 3072,
+          "height": 4096
+        },
+        "lossless": {
+          "bytes": 3174280,
+          "ratio_vs_original": 1.2648,
+          "width": 3072,
+          "height": 4096
+        }
+      }
+    },
+    {
+      "path": "cocoon\\2366ed7c26d5_IMG_20260916_130104_bal3.jpg",
+      "original_bytes": 2489493,
+      "variants": {
+        "q85": {
+          "bytes": 449666,
+          "ratio_vs_original": 0.1806,
+          "width": 3072,
+          "height": 4096
+        },
+        "q90": {
+          "bytes": 577516,
+          "ratio_vs_original": 0.232,
+          "width": 3072,
+          "height": 4096
+        },
+        "q95": {
+          "bytes": 852348,
+          "ratio_vs_original": 0.3424,
+          "width": 3072,
+          "height": 4096
+        },
+        "lossless": {
+          "bytes": 3223834,
+          "ratio_vs_original": 1.295,
+          "width": 3072,
+          "height": 4096
+        }
+      }
+    }
+  ]
+}

@@ -10,6 +10,11 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# Monorepo shared libs (WebP image processing, etc.)
+_REPO_ROOT = Path(__file__).resolve().parents[3]
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
+
 from app import create_app
 
 app = create_app()

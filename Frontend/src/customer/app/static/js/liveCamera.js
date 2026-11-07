@@ -349,15 +349,15 @@
           showCameraNotice("Photo could not be captured.");
           return;
         }
-        var capturedFile = new File([blob], "camera-capture-" + Date.now() + ".jpg", {
-          type: "image/jpeg",
+        var capturedFile = new File([blob], "camera-capture-" + Date.now() + ".webp", {
+          type: "image/webp",
         });
         stopCamera();
         showCameraNotice("");
         applyCapturedFile(capturedFile);
       },
-      "image/jpeg",
-      0.92
+      "image/webp",
+      0.9
     );
   });
 

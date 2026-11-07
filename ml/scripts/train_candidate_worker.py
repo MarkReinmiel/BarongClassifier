@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 import os
+import shutil
 import sys
 import traceback
 from datetime import datetime, timezone
@@ -15,9 +16,34 @@ from pathlib import Path
 
 REPO_ROOT = Path(os.environ.get("REPO_ROOT") or Path(__file__).resolve().parents[2])
 sys.path.insert(0, str(REPO_ROOT / "ml" / "scripts"))
+SNAPSHOT_ROOT = REPO_ROOT / "ml" / "data" / "snapshots"
 
 # Reuse the existing main trainer helpers.
 import train_main_classifier as trainer  # noqa: E402
+
+
+def _prune_revision_snapshots(plan: dict | None) -> None:
+    """Delete stable + legacy timestamped snapshot folders for this revision slot."""
+    if not plan:
+        return
+    try:
+        major = int(plan.get("major_version"))
+        revision = int(plan.get("revision_number"))
+    except (TypeError, ValueError):
+        snap = plan.get("snapshot_dir")
+        if snap:
+            path = Path(snap)
+            if path.is_dir():
+                shutil.rmtree(path, ignore_errors=True)
+                print(f"Pruned snapshot {path}", flush=True)
+        return
+    if not SNAPSHOT_ROOT.is_dir():
+        return
+    base = f"ds_{major}_{revision}"
+    for path in list(SNAPSHOT_ROOT.iterdir()):
+        if path.is_dir() and (path.name == base or path.name.startswith(f"{base}_")):
+            shutil.rmtree(path, ignore_errors=True)
+            print(f"Pruned snapshot {path}", flush=True)
 
 
 def _db_execute(sql: str, params: dict | None = None) -> None:
@@ -82,6 +108,7 @@ def main() -> int:
         print("ARTIFACT_DIR required", flush=True)
         return 2
     artifact_dir.mkdir(parents=True, exist_ok=True)
+    plan: dict | None = None
 
     try:
         update_job(status="running", pct=5, message="Preparing revision dataset")
@@ -263,11 +290,15 @@ def main() -> int:
             f"(acc={acc:.3f}, min={min_acc:.3f})",
             flush=True,
         )
+        # Failed eval: drop the large snapshot; keras metrics stay for history/retry.
+        if not passed:
+            _prune_revision_snapshots(plan)
         return 0
     except Exception as error:
         traceback.print_exc()
         update_job(status="failed", message="Training failed", error=str(error))
         update_version(status="failed")
+        _prune_revision_snapshots(plan)
         return 1
 
 

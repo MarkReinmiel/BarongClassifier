@@ -2,7 +2,7 @@
 {% block title %}Classify Textile | {{ app_name }}{% endblock %}
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/classifier.css') }}?v=33">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/camera.css') }}?v=2">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/camera.css') }}?v=4">
 {% endblock %}
 {% block content %}
 {# Classify page tour — launches after dashboard main tour requires Classify click #}
@@ -29,9 +29,12 @@
         <div id="prompt" class="classify-prompt">
           <img src="{{ url_for('static', filename='images/barongcognition_logo.png') }}" alt="">
           <h3>Choose an image</h3>
-          <p class="sm">JPG, PNG, or WEBP</p>
+          <p class="sm">JPG, PNG, BMP, or WEBP</p>
         </div>
         <img id="prev" alt="" hidden>
+      </div>
+      <div class="preview-actions" id="previewActions" hidden>
+        <button type="button" id="saveImage" class="result-file-btn result-file-btn--save">Save Photo (WebP)</button>
       </div>
     </section>
 
@@ -147,7 +150,7 @@
         </div>
       </div>
 
-      <input type="file" name="file" id="fileGal" accept="image/png,image/jpeg,image/jpg,image/jpe,image/webp,.jpg,.jpeg,.jpe,.png,.webp" class="sr-file">
+      <input type="file" name="file" id="fileGal" accept="image/png,image/jpeg,image/jpg,image/jpe,image/bmp,image/webp,.jpg,.jpeg,.jpe,.png,.bmp,.webp" class="sr-file">
       {# Native camera capture fallback (used if Live Camera WebRTC is unavailable) #}
       <input type="file" id="fileCam" accept="image/*" capture="environment" class="sr-file">
       <button class="btn p classify-analyze" id="analyze" type="submit" disabled data-tour="classify-analyze">
@@ -202,7 +205,7 @@
 </div>
 {% endblock %}
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/classifier.js') }}?v=8"></script>
+<script src="{{ url_for('static', filename='js/classifier.js') }}?v=9"></script>
 <script src="{{ url_for('static', filename='js/cameraGuidance.js') }}?v=7"></script>
-<script src="{{ url_for('static', filename='js/liveCamera.js') }}?v=3"></script>
+<script src="{{ url_for('static', filename='js/liveCamera.js') }}?v=4"></script>
 {% endblock %}

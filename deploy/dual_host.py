@@ -37,6 +37,10 @@ CUSTOMER_ROOT = REPO_ROOT / "Frontend" / "src" / "customer"
 OWNER_ROOT = REPO_ROOT / "Frontend" / "src" / "owner"
 OWNER_PATH_PREFIX = (os.getenv("OWNER_PATH_PREFIX") or "/owner").rstrip("/") or "/owner"
 
+# Shared libs (e.g. shared.image_processing) live at repo root.
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
 CUSTOMER_PREFIX = "_dual_customer"
 OWNER_PREFIX = "_dual_owner"
 

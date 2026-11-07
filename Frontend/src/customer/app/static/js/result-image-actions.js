@@ -1,7 +1,5 @@
 /**
- * Result page image actions:
- * - Save: choose a location (File System Access API), else share sheet, else download.
- * - Download: immediate browser download (Downloads / Gallery on many phones).
+ * Result page image actions — always save/download as WebP.
  */
 (function () {
   function imageEl() {
@@ -21,46 +19,42 @@
       .trim()
       .replace(/[\\/:*?"<>|]+/g, "")
       .replace(/\s+/g, "_")
+      .replace(/\.(jpe?g|png|webp|bmp)$/i, "")
       .slice(0, 60) || "textile";
-    if (!/\.(jpe?g|png|webp)$/i.test(base)) base += ".jpg";
-    return base;
+    return base + ".webp";
   }
 
-  function mimeFromName(name) {
-    var lower = String(name).toLowerCase();
-    if (lower.endsWith(".png")) return "image/png";
-    if (lower.endsWith(".webp")) return "image/webp";
-    return "image/jpeg";
-  }
-
-  async function blobFromImage(img) {
+  async function blobAsWebp(img) {
     if (!img || !img.src) throw new Error("No image to save.");
     var src = img.src;
+    var sourceBlob = null;
     if (src.indexOf("data:") === 0) {
-      var res = await fetch(src);
-      return res.blob();
+      sourceBlob = await (await fetch(src)).blob();
+    } else {
+      try {
+        var remote = await fetch(src, { mode: "cors" });
+        if (!remote.ok) throw new Error("fetch failed");
+        sourceBlob = await remote.blob();
+      } catch (err) {
+        sourceBlob = null;
+      }
     }
-    try {
-      var remote = await fetch(src, { mode: "cors" });
-      if (!remote.ok) throw new Error("fetch failed");
-      return remote.blob();
-    } catch (err) {
-      var canvas = document.createElement("canvas");
-      canvas.width = img.naturalWidth || img.width || 1;
-      canvas.height = img.naturalHeight || img.height || 1;
-      var ctx = canvas.getContext("2d");
-      ctx.drawImage(img, 0, 0);
-      return await new Promise(function (resolve, reject) {
-        canvas.toBlob(
-          function (blob) {
-            if (blob) resolve(blob);
-            else reject(new Error("Could not encode image."));
-          },
-          "image/jpeg",
-          0.92
-        );
-      });
-    }
+    if (sourceBlob && sourceBlob.type === "image/webp") return sourceBlob;
+
+    var canvas = document.createElement("canvas");
+    canvas.width = img.naturalWidth || img.width || 1;
+    canvas.height = img.naturalHeight || img.height || 1;
+    canvas.getContext("2d").drawImage(img, 0, 0);
+    return await new Promise(function (resolve, reject) {
+      canvas.toBlob(
+        function (blob) {
+          if (blob) resolve(blob);
+          else reject(new Error("Could not encode WebP."));
+        },
+        "image/webp",
+        0.9
+      );
+    });
   }
 
   function triggerAnchorDownload(blob, filename) {
@@ -83,12 +77,8 @@
       suggestedName: filename,
       types: [
         {
-          description: "Image",
-          accept: {
-            "image/jpeg": [".jpg", ".jpeg"],
-            "image/png": [".png"],
-            "image/webp": [".webp"],
-          },
+          description: "WebP image",
+          accept: { "image/webp": [".webp"] },
         },
       ],
     });
@@ -99,9 +89,7 @@
   }
 
   async function saveWithShare(blob, filename) {
-    var file = new File([blob], filename, {
-      type: blob.type || mimeFromName(filename),
-    });
+    var file = new File([blob], filename, { type: "image/webp" });
     if (!navigator.canShare || !navigator.canShare({ files: [file] })) {
       return false;
     }
@@ -115,14 +103,14 @@
   async function onDownload() {
     var img = imageEl();
     var filename = suggestedName();
-    var blob = await blobFromImage(img);
+    var blob = await blobAsWebp(img);
     triggerAnchorDownload(blob, filename);
   }
 
   async function onSave() {
     var img = imageEl();
     var filename = suggestedName();
-    var blob = await blobFromImage(img);
+    var blob = await blobAsWebp(img);
     try {
       if (await saveWithPicker(blob, filename)) return;
     } catch (err) {
