@@ -515,7 +515,8 @@
     grid-template-columns: 1fr !important;
     width: min(100%, 480px);
     gap: 20px;
-    padding: 88px 16px 48px;
+    min-height: 0;
+    padding: 16px 16px calc(28px + env(safe-area-inset-bottom, 0px));
   }
 
   .auth-body--home .auth-split-brand {
@@ -528,7 +529,7 @@
 
   .auth-shell--hero {
     position: relative;
-    padding: 40px 16px 88px;
+    padding: 28px 16px calc(28px + env(safe-area-inset-bottom, 0px));
     overflow: hidden;
     background: var(--nav);
   }

@@ -8,11 +8,12 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}?v=40">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}?v=52">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-ui.css') }}?v=15">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}?v=56">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-ui.css') }}?v=18">
+  <style>body{padding-top:0 !important}</style>
 </head>
 <body class="auth-body auth-body--home">
-  <a class="auth-back" href="{{ url_for('main.index') }}"><span class="auth-back-arrow" aria-hidden="true"></span> Back to home</a>
+  <a class="auth-back" href="{{ url_for('main.index') }}">← Back to Home</a>
 
   <div class="auth-split auth-split--open">
     <section class="auth-split-brand" aria-label="Barongcognition">

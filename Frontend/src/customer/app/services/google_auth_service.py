@@ -72,15 +72,19 @@ def fetch_supabase_user(access_token: str) -> dict:
     return payload
 
 
-ACCOUNT_EXISTS_MSG = "An account with that email already exists. Please sign in instead."
+def _is_explicitly_disabled(*, is_active, status: str | None) -> bool:
+    """Match Owner manage-users: only block when clearly deactivated (null is_active = active)."""
+    if is_active is False:
+        return True
+    return (status or "").strip().lower() == "disabled"
 
 
 def upsert_google_customer(access_token: str, *, intent: str = "login") -> CustomerUser:
     """Create or load a Customer portal user from a verified Google/Supabase session.
 
-    intent=register → if the email already has a portal account, raise AuthError(409)
-    so Create account can show the usual “already exists” message.
-    intent=login → existing accounts are signed in normally.
+    Existing portal accounts are always signed in (login or register entry point).
+    New Google emails create a customer account and continue into onboarding.
+    ``intent`` is kept for callers/logging only — it no longer blocks existing users.
     """
     intent = (intent or "login").strip().lower()
     if intent not in {"login", "register"}:
@@ -101,41 +105,52 @@ def upsert_google_customer(access_token: str, *, intent: str = "login") -> Custo
     )[:120]
 
     directory = find_public_user_by_email(email)
-    if directory:
-        if directory.get("is_active") is False or directory.get("status") == "disabled":
-            raise AuthError("This account is disabled.", 403)
-        directory_role = (directory.get("role") or "").strip().lower()
-        if is_owner_role(directory_role):
-            raise AuthError(
-                "This is an Owner account. Please sign in on the Owner portal, not the Customer site.",
-                403,
-            )
-
     user = CustomerUser.query.filter_by(email=email).first()
+
+    # Prefer the customer portal row for Customer Google login; fall back to directory.
+    role = (user.role if user else None) or ((directory or {}).get("role") if directory else None)
+    if is_owner_role(role):
+        raise AuthError(
+            "This is an Owner account. Please sign in on the Owner portal, not the Customer site.",
+            403,
+        )
+
+    portal_disabled = bool(
+        user
+        and _is_explicitly_disabled(is_active=user.is_active, status=user.status)
+    )
+    directory_disabled = bool(
+        directory
+        and _is_explicitly_disabled(
+            is_active=directory.get("is_active"),
+            status=directory.get("status"),
+        )
+    )
+    # If either side shows active, allow sign-in and heal the stale disabled flag.
+    if user and portal_disabled and not directory_disabled:
+        user.is_active = True
+        user.status = "active"
+        user.updated_at = utcnow()
+        db.session.commit()
+        portal_disabled = False
+    if portal_disabled or (directory_disabled and not user):
+        raise AuthError("This account is disabled.", 403)
+
     if user:
-        if is_owner_role(user.role):
-            raise AuthError(
-                "This is an Owner account. Please sign in on the Owner portal, not the Customer site.",
-                403,
-            )
-        if not user.is_active or user.status == "disabled":
-            raise AuthError("This account is disabled.", 403)
-        if intent == "register":
-            raise AuthError(ACCOUNT_EXISTS_MSG, 409)
-        # Google already verified the mailbox.
+        # Existing account → sign in (regardless of login vs register entry point).
         if not user.email_verified:
             user.email_verified = True
             if user.status == "pending_verification":
                 user.status = "active"
             user.updated_at = utcnow()
             db.session.commit()
+        elif user.status == "pending_verification":
+            user.status = "active"
+            user.updated_at = utcnow()
+            db.session.commit()
         return user
 
-    # Email already reserved in the shared directory (password signup, etc.).
-    if directory and intent == "register":
-        raise AuthError(ACCOUNT_EXISTS_MSG, 409)
-
-    # New Google customer — no password login unless they set one later.
+    # No portal account yet → create one from the verified Google profile.
     user = CustomerUser(
         email=email,
         password_hash=generate_password_hash(secrets.token_urlsafe(48), method="scrypt"),
