@@ -26,6 +26,8 @@ DISPLAY = {
     "uncertain": "Uncertain",
     "poor_image_quality": "Poor Image Quality",
 }
+# Pending cards below this confidence (0–1) are auto-rejected. 79% → reject.
+AUTO_REJECT_MIN_CONFIDENCE = 0.80
 
 
 class ReviewError(Exception):
@@ -58,6 +60,139 @@ def _normalize_verified(label: str | None) -> str:
     return key
 
 
+def auto_reject_ineligible_pending() -> int:
+    """Move pending cards with no photo or confidence under 80% to Rejected.
+
+    Returns the number of rows newly rejected (best-effort; 0 on failure/tests).
+    """
+    if current_app.config.get("TESTING"):
+        return 0
+    min_conf = float(AUTO_REJECT_MIN_CONFIDENCE)
+    try:
+        result = db.session.execute(
+            text(
+                """
+                with eligible as (
+                  select
+                    c.id as classification_id,
+                    c.user_id::text as customer_user_id,
+                    case
+                      when c.image_path like 'https://%' then c.image_path
+                      when c.image_reference like 'https://%' then c.image_reference
+                      else null
+                    end as image_url,
+                    coalesce(c.predicted_label, c.display_name, '') as predicted_label,
+                    c.confidence::float as predicted_confidence,
+                    case
+                      when coalesce(c.image_path, '') not like 'https://%'
+                       and coalesce(c.image_reference, '') not like 'https://%'
+                        then 'Auto-rejected: no photo'
+                      else 'Auto-rejected: confidence below 80%'
+                    end as rejection_reason,
+                    case
+                      when coalesce(c.image_path, '') not like 'https://%'
+                       and coalesce(c.image_reference, '') not like 'https://%'
+                        then 'System auto-reject (missing Cloudinary image).'
+                      else 'System auto-reject (model confidence under 80%).'
+                    end as notes
+                  from public.classifications c
+                  left join public.classification_reviews r
+                    on r.classification_id = c.id
+                  where (r.id is null or r.review_status = 'pending_review')
+                    and (
+                      (
+                        coalesce(c.image_path, '') not like 'https://%'
+                        and coalesce(c.image_reference, '') not like 'https://%'
+                      )
+                      or (
+                        case
+                          when c.confidence is null then 0
+                          when c.confidence > 1 then c.confidence / 100.0
+                          else c.confidence
+                        end
+                      ) < :min_confidence
+                    )
+                ),
+                upserted as (
+                  insert into public.classification_reviews (
+                    classification_id,
+                    customer_user_id,
+                    image_url,
+                    predicted_label,
+                    predicted_confidence,
+                    verified_label,
+                    review_status,
+                    rejection_reason,
+                    reviewed_by,
+                    reviewed_at,
+                    notes,
+                    updated_at
+                  )
+                  select
+                    e.classification_id,
+                    e.customer_user_id,
+                    e.image_url,
+                    e.predicted_label,
+                    e.predicted_confidence,
+                    null,
+                    'rejected',
+                    e.rejection_reason,
+                    null,
+                    timezone('utc', now()),
+                    e.notes,
+                    timezone('utc', now())
+                  from eligible e
+                  on conflict (classification_id) do update set
+                    image_url = excluded.image_url,
+                    predicted_label = excluded.predicted_label,
+                    predicted_confidence = excluded.predicted_confidence,
+                    verified_label = null,
+                    review_status = 'rejected',
+                    rejection_reason = excluded.rejection_reason,
+                    reviewed_by = null,
+                    reviewed_at = excluded.reviewed_at,
+                    notes = excluded.notes,
+                    updated_at = timezone('utc', now())
+                  where public.classification_reviews.review_status in (
+                    'pending_review'
+                  )
+                  returning
+                    classification_id,
+                    id as review_id,
+                    rejection_reason
+                )
+                insert into public.classification_review_events (
+                  classification_id,
+                  review_id,
+                  action,
+                  previous_status,
+                  new_status,
+                  verified_label,
+                  rejection_reason,
+                  actor_user_id
+                )
+                select
+                  u.classification_id,
+                  u.review_id,
+                  'auto_reject',
+                  'pending_review',
+                  'rejected',
+                  null,
+                  u.rejection_reason,
+                  null
+                from upserted u
+                """
+            ),
+            {"min_confidence": min_conf},
+        )
+        db.session.commit()
+        return int(result.rowcount or 0)
+    except SQLAlchemyError:
+        db.session.rollback()
+        current_app.logger.exception("auto_reject_ineligible_pending failed")
+        return 0
+
+
 def contribution_counts() -> dict[str, int]:
     empty = {
         "pending_review": 0,
@@ -71,6 +206,7 @@ def contribution_counts() -> dict[str, int]:
     if current_app.config.get("TESTING"):
         return empty
     try:
+        auto_reject_ineligible_pending()
         total = db.session.execute(
             text("select count(*)::int from public.classifications")
         ).scalar() or 0
@@ -204,6 +340,12 @@ def list_customer_classifications(
             params["review_status"] = status_key
 
     order = "c.created_at asc nulls last" if sort == "oldest" else "c.created_at desc nulls last"
+    # Approved panel: not-in-dataset first, already-in-pool last.
+    if status_key == "approved_panel":
+        order = (
+            "case when coalesce(r.review_status, '') = 'added_to_dataset' then 1 else 0 end asc, "
+            + order
+        )
     where_sql = " and ".join(clauses)
 
     try:
