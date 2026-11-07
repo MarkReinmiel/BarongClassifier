@@ -515,10 +515,24 @@
         gap: 8px;
     }
 
-    #previewActions,
+    #previewActions:not([hidden]) {
+        display: flex !important;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        gap: 8px;
+        width: 100%;
+    }
+
+    #previewActions .view-image-button,
+    #previewActions .result-file-btn,
+    #viewPreviewBtn,
     #saveImage,
-    #saveImage:not([hidden]) {
-        display: none !important;
+    #downloadPreviewBtn {
+        display: inline-flex !important;
+        visibility: visible !important;
+        flex: 1 1 0;
+        width: auto !important;
+        min-width: 0;
     }
 
     .history-filter {

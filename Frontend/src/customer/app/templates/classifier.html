@@ -36,7 +36,13 @@
         <img id="prev" alt="" hidden>
       </div>
       <div class="preview-actions" id="previewActions" hidden>
-        <button type="button" id="saveImage" class="result-file-btn result-file-btn--save">Save Photo (WebP)</button>
+        <button type="button" id="viewPreviewBtn" class="view-image-button">View Image</button>
+        <button type="button" id="saveImage" class="result-file-btn result-file-btn--save">Save Image</button>
+        <button type="button" id="downloadPreviewBtn" class="result-file-btn result-file-btn--download">Download</button>
+      </div>
+      <div id="previewImageModal" class="image-modal" hidden role="dialog" aria-modal="true" aria-label="Enlarged textile image">
+        <button type="button" id="closePreviewImageModal" class="close-image-modal" aria-label="Close enlarged image">×</button>
+        <img id="fullPreviewImage" src="" alt="Selected textile image" class="modal-image">
       </div>
     </section>
 
@@ -207,7 +213,7 @@
 </div>
 {% endblock %}
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/classifier.js') }}?v=9"></script>
+<script src="{{ url_for('static', filename='js/classifier.js') }}?v=10"></script>
 <script src="{{ url_for('static', filename='js/cameraGuidance.js') }}?v=7"></script>
 <script src="{{ url_for('static', filename='js/liveCamera.js') }}?v=5"></script>
 {% endblock %}
