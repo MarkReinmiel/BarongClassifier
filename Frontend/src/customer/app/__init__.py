@@ -77,7 +77,8 @@ def create_app(config_object: type[Config] = Config) -> Flask:
         return render_template("errors/413.html"), 413
 
     @flask_app.errorhandler(500)
-    def server_error(_error):
+    def server_error(error):
+        logger.exception("Internal server error: %s", error)
         try:
             db.session.rollback()
         except Exception:
