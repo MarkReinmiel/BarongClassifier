@@ -468,18 +468,31 @@ main.shell:has(.classifier-page) {
 
   .result-image-actions {
     display: flex !important;
-    flex-direction: column;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    justify-content: stretch;
+    gap: 8px;
     visibility: visible !important;
+    width: 100%;
   }
 
   .view-image-button,
   .result-file-btn,
   .result-file-btn--save,
   .result-file-btn--download {
-    display: block !important;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
     visibility: visible !important;
-    width: 100%;
-    min-height: 48px;
+    flex: 1 1 0;
+    width: auto;
+    min-width: 0;
+    min-height: 44px;
+    padding: 10px 8px;
+    font-size: 12px;
+    white-space: nowrap;
+    text-align: center;
   }
 
   .result-file-hint {
@@ -516,4 +529,169 @@ main.shell:has(.classifier-page) {
     top: 14px;
     right: 16px;
   }
+
+  .result-type-row {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .why-btn {
+    display: inline-flex !important;
+    visibility: visible !important;
+    min-height: 34px;
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+
+  .why-modal {
+    width: calc(100vw - 24px);
+    max-width: none;
+  }
+
+  .why-modal-head h2 {
+    font-size: 18px;
+  }
+}
+
+.result-hierarchy-message.unidentified_textile {
+  border-color: #c9b07a;
+  background: #f8f1e2;
+  color: #6a5428;
+}
+
+/* Unidentified Textile — Why? control */
+.result-type-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.why-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--ink2);
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.why-btn:hover {
+  border-color: var(--accent);
+  color: var(--deep);
+  background: rgba(200, 70, 48, 0.06);
+}
+
+.why-btn-ico {
+  font-style: normal;
+  font-size: 13px;
+  line-height: 1;
+}
+
+.why-modal {
+  width: min(440px, calc(100vw - 24px));
+  max-height: calc(100dvh - 24px);
+  border: 0;
+  border-radius: 16px;
+  padding: 0;
+  background: var(--surface, #fffdf8);
+  box-shadow: 0 24px 56px rgba(20, 28, 40, 0.28);
+}
+
+.why-modal::backdrop {
+  background: rgba(20, 28, 40, 0.55);
+}
+
+.why-modal-inner {
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100dvh - 24px);
+}
+
+.why-modal-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 16px 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.why-modal-head h2 {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: 20px;
+  color: var(--ink);
+  line-height: 1.25;
+}
+
+.why-modal-close {
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--soft);
+  color: var(--ink);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  flex: none;
+}
+
+.why-modal-body {
+  padding: 14px 16px;
+  overflow: auto;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ink);
+}
+
+.why-modal-body p {
+  margin: 0 0 10px;
+}
+
+.why-modal-sub {
+  font-weight: 700;
+  margin-top: 4px !important;
+}
+
+.why-modal-body ul {
+  margin: 0 0 12px;
+  padding-left: 1.2em;
+}
+
+.why-modal-body li {
+  margin: 0 0 6px;
+  color: var(--ink2);
+}
+
+.why-modal-close-msg {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.why-modal-foot {
+  padding: 12px 16px 16px;
+  border-top: 1px solid var(--line);
+}
+
+.why-modal-done {
+  width: 100%;
+  min-height: 44px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
 }

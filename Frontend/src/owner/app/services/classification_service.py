@@ -207,8 +207,12 @@ def classify_upload(user: OwnerUser, file_storage) -> dict:
     if not user or not user.id:
         raise ClassificationError("Sign in again.", 401)
 
-    name = getattr(file_storage, "filename", None) or "upload.jpg"
+    from shared.image_processing import as_webp_filename
+
+    original_name = getattr(file_storage, "filename", None) or "upload.jpg"
     content = prepare_image_bytes(file_storage)
+    # Bytes are WebP; persist WebP name in history / DB / Cloudinary public_id.
+    name = as_webp_filename(original_name)
 
     model = None
     model_path = _model_file()
@@ -248,7 +252,7 @@ def classify_upload(user: OwnerUser, file_storage) -> dict:
         logger.info("relevance_gate_skipped RELEVANCE_GATE_ENABLED=false")
 
     image_b64 = base64.b64encode(content).decode("ascii")
-    image_data_url = f"data:image/jpeg;base64,{image_b64}"
+    image_data_url = f"data:image/webp;base64,{image_b64}"
 
     if gate is not None and not gate.accept_textile:
         label_text = "undefined_textile"
@@ -286,31 +290,50 @@ def classify_upload(user: OwnerUser, file_storage) -> dict:
     label, confidence = result
     confidence = validate_confidence(confidence)
     label_text = str(label).strip()
-    display = {
+    predicted_display = {
         "pina": "Piña",
         "piña": "Piña",
         "jusi": "Jusi",
         "cocoon": "Cocoon",
     }.get(label_text.lower(), label_text)
 
+    from shared.confidence_identification import apply_confidence_identification
+
+    identified = apply_confidence_identification(
+        predicted_label=label_text,
+        predicted_display=predicted_display,
+        confidence=confidence,
+    )
+
     _row_id, image_url = _persist_classification(
         user=user,
         name=name,
         content=content,
-        label_text=label_text,
-        display=display,
+        label_text=identified["predicted_class"]
+        if identified["predicted_class"] in {"pina", "jusi", "cocoon"}
+        else label_text,
+        display=identified["display_name"],
         confidence=confidence,
     )
 
     payload = {
-        "label": display,
+        "label": identified["label"],
         "confidence": confidence,
         "image_name": name,
         "created_at": utcnow().isoformat(),
         "image_data_url": image_data_url,
         "image_path": image_url,
+        "predicted_class": identified["predicted_class"],
+        "predicted_display": identified["predicted_display"],
+        "displayed_class": identified["displayed_class"],
+        "is_identified": identified["is_identified"],
+        "confidence_threshold": identified["confidence_threshold"],
     }
-    payload.update(_hierarchical_result(display, confidence, image_bytes=content))
+    payload.update(_hierarchical_result(predicted_display, confidence, image_bytes=content))
+    payload["status"] = identified["status"]
+    payload["message"] = identified["message"]
+    payload["main_class_label"] = identified["main_class_label"]
+    payload["label"] = identified["label"]
     if gate is not None and gate.status == status_classified:
         payload["gate"] = gate.details
     return payload

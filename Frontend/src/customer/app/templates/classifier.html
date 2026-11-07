@@ -1,8 +1,10 @@
 ﻿{% extends "base.html" %}
 {% block title %}Classify Textile | {{ app_name }}{% endblock %}
 {% block head %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/classifier.css') }}?v=33">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/classifier.css') }}?v=34">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/camera.css') }}?v=6">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/camera.css') }}?v=4">
+>>>>>>> 44456e46b98025a60265df6537caa08694a1e440
 {% endblock %}
 {% block content %}
 {# Classify page tour — launches after dashboard main tour requires Classify click #}
@@ -207,5 +209,5 @@
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/classifier.js') }}?v=9"></script>
 <script src="{{ url_for('static', filename='js/cameraGuidance.js') }}?v=7"></script>
-<script src="{{ url_for('static', filename='js/liveCamera.js') }}?v=4"></script>
+<script src="{{ url_for('static', filename='js/liveCamera.js') }}?v=5"></script>
 {% endblock %}

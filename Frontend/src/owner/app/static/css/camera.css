@@ -355,6 +355,14 @@
     cursor: wait;
 }
 
+/* Mobile live-camera / classify preview: no Save WebP control */
+@media (max-width: 899px) {
+    #previewActions,
+    #saveImage {
+        display: none !important;
+    }
+}
+
 .camera-zoom {
     display: flex;
 
@@ -514,6 +522,113 @@
   .capture-button {
     min-height: 60px;
     font-size: 18px;
+  }
+
+  /* Immersive live camera: tuck nav away, center preview + controls */
+  body.camera-live-open {
+    padding-top: env(safe-area-inset-top, 0px) !important;
+    overflow: hidden;
+  }
+
+  body.camera-live-open .top {
+    transform: translateY(calc(-100% - 12px));
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 0.28s ease, opacity 0.2s ease;
+  }
+
+  body.camera-live-open .nav,
+  body.camera-live-open .nav.hide-desktop,
+  body.camera-live-open .bottom-nav,
+  body.camera-live-open .mobile-bottom-nav {
+    transform: translateY(calc(100% + 24px));
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 0.28s ease, opacity 0.2s ease;
+  }
+
+  body.camera-live-open main.classify-shell,
+  body.camera-live-open .classify-shell {
+    padding: calc(8px + env(safe-area-inset-top, 0px)) 10px
+      calc(10px + env(safe-area-inset-bottom, 0px)) !important;
+    min-height: 100dvh;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0;
+  }
+
+  body.camera-live-open .classify-header,
+  body.camera-live-open .classify-analyze,
+  body.camera-live-open .classify-sources {
+    display: none !important;
+  }
+
+  body.camera-live-open .classify-layout.camera-open {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: stretch;
+    gap: 10px;
+    margin: 0;
+    min-height: 0;
+  }
+
+  body.camera-live-open .classify-side {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+  }
+
+  body.camera-live-open .camera-panel {
+    order: 0;
+    width: min(100%, 440px);
+    margin: 0 auto;
+    padding: 10px;
+    border-radius: 16px;
+    box-shadow: 0 16px 40px rgba(20, 28, 40, 0.18);
+  }
+
+  body.camera-live-open .camera-frame {
+    aspect-ratio: 3 / 4;
+    max-height: min(58dvh, 560px);
+    margin: 0 auto;
+  }
+
+  body.camera-live-open .camera-checklist {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 4px 8px;
+    margin: 6px 0 4px;
+    font-size: 12px;
+  }
+
+  body.camera-live-open .camera-zoom-note {
+    display: none;
+  }
+
+  body.camera-live-open .camera-guidance-headline {
+    min-height: 44px;
+    font-size: 14px;
+  }
+
+  body.camera-live-open .camera-actions {
+    margin-top: 8px;
+    gap: 8px;
+  }
+
+  body.camera-live-open .capture-button,
+  body.camera-live-open .camera-actions .remove-button {
+    min-height: 52px;
+    font-size: 16px;
+  }
+
+  body.camera-live-open #cameraNotice:not([hidden]) {
+    width: min(100%, 440px);
+    margin: 0 auto 8px;
   }
 }
 @media (min-width: 901px) {

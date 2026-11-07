@@ -486,28 +486,35 @@
     opacity: 0.55;
   }
 
-  /* —— History —— */
+  /* —— History (compact phone layout; card rows live in history.css) —— */
+  .history-page {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 6px 12px calc(92px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .history-page-header {
+    margin-bottom: 10px;
+  }
+
+  .history-page-header .eyebrow {
+    font-size: 10px;
+    letter-spacing: 0.14em;
+  }
+
   .history-page-header h2 {
-    font-size: 28px;
+    font-size: 22px;
   }
 
   .history-panel {
-    border-radius: 20px;
+    border-radius: 16px;
     background: var(--surface);
-    padding: 14px;
+    padding: 12px 10px 10px;
   }
 
   .history-toolbar {
-    gap: 10px;
-  }
-
-  .history-table {
-    font-size: 13px;
-  }
-
-  .history-table th,
-  .history-table td {
-    padding: 10px 8px;
+    gap: 8px;
   }
 
   /* —— Auth (login / register) —— */

@@ -515,8 +515,10 @@
         gap: 8px;
     }
 
+    #previewActions,
+    #saveImage,
     #saveImage:not([hidden]) {
-        display: block;
+        display: none !important;
     }
 
     .history-filter {
@@ -776,13 +778,27 @@
         width: 100%;
     }
 
-    .view-image-button,
     .backbutton {
         width: auto;
     }
 
-    .view-image-button {
+    .result-image-actions {
+        display: flex !important;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        gap: 8px;
         width: 100%;
+    }
+
+    .result-image-actions .view-image-button,
+    .result-image-actions .result-file-btn {
+        flex: 1 1 0;
+        width: auto !important;
+        min-width: 0;
+        min-height: 44px;
+        padding: 10px 8px;
+        font-size: 12px;
+        white-space: nowrap;
     }
 }
 

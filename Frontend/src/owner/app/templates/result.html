@@ -4,11 +4,21 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/shared.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/topnav.css') }}?v=16">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/classify.css') }}?v=16">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/result.css') }}?v=4">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-app.css') }}?v=9">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/result.css') }}?v=6">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-app.css') }}?v=11">
 {% endblock %}
 {% block body %}
 {% include "_nav.html" %}
+{% set status = result.status or 'classified' %}
+{% set status_labels = {
+  'classified': 'Classified',
+  'unidentified_textile': 'Unidentified Textile',
+  'undefined_textile': 'Undefined Textile',
+  'uncertain': 'Uncertain',
+  'poor_image_quality': 'Poor Image Quality'
+} %}
+{% set is_unidentified = status == 'unidentified_textile' or result.is_identified == false %}
+{% set is_rejected = status in ['unidentified_textile', 'undefined_textile', 'uncertain', 'poor_image_quality'] or is_unidentified %}
 <main class="classifier-page">
   <section class="classifier-header reveal">
     <a href="{{ url_for('classify.classify_page') }}" class="backbutton">&larr; Back to Classify</a>
@@ -40,21 +50,21 @@
     <div class="result-details-panel">
       <h2>Classification Details</h2>
       <div class="result-details">
-        {% set status = result.status or 'classified' %}
-        {% set status_labels = {
-          'classified': 'Classified',
-          'undefined_textile': 'Undefined Textile',
-          'uncertain': 'Uncertain',
-          'poor_image_quality': 'Poor Image Quality'
-        } %}
-        {% set is_rejected = status in ['undefined_textile', 'uncertain', 'poor_image_quality'] %}
         <div class="detail-item">
           <span class="detail-label">{% if is_rejected %}Result{% else %}Predicted Textile Type{% endif %}</span>
-          <strong id="predictedType">{{ result.label }}</strong>
+          <div class="result-type-row">
+            <strong id="predictedType">{{ result.label }}</strong>
+            {% if is_unidentified %}
+            <button type="button" id="whyUnidentifiedBtn" class="why-btn" aria-haspopup="dialog" aria-controls="whyUnidentifiedModal">
+              <span class="why-btn-ico" aria-hidden="true">ⓘ</span>
+              Why?
+            </button>
+            {% endif %}
+          </div>
         </div>
         <div class="detail-item">
           <span class="detail-label">{% if is_rejected %}Score{% else %}Model Confidence{% endif %}</span>
-          <strong id="confidence" class="num">{{ '%.1f'|format(result.confidence * 100) }}%</strong>
+          <strong id="confidence" class="num">{{ '%.1f'|format((result.confidence or 0) * 100) }}%</strong>
         </div>
         {% if result.message %}
         <div class="detail-item detail-item-wide">
@@ -70,6 +80,12 @@
           <span class="detail-label">Classification Status</span>
           <strong id="classificationStatus">{{ status_labels.get(status, status) }}</strong>
         </div>
+        {% if is_unidentified and result.predicted_display %}
+        <div class="detail-item">
+          <span class="detail-label">Model top class (internal)</span>
+          <strong>{{ result.predicted_display }}</strong>
+        </div>
+        {% endif %}
       </div>
       <div class="result-actions" style="margin-top:20px;display:flex;gap:12px;flex-wrap:wrap">
         <a class="classify-button" href="{{ url_for('classify.classify_page') }}">{% if is_rejected %}Try again{% else %}Classify another{% endif %}</a>
@@ -78,6 +94,35 @@
     </div>
   </section>
 </main>
+
+{% if is_unidentified %}
+<dialog id="whyUnidentifiedModal" class="why-modal" aria-labelledby="whyUnidentifiedTitle">
+  <div class="why-modal-inner">
+    <header class="why-modal-head">
+      <h2 id="whyUnidentifiedTitle">Why is my textile unidentified?</h2>
+      <button type="button" class="why-modal-close" data-why-close aria-label="Close">×</button>
+    </header>
+    <div class="why-modal-body">
+      <p>The system could not confidently identify the textile type from the submitted image.</p>
+      <p class="why-modal-sub">Suggestions:</p>
+      <ul>
+        <li>Try capturing another photo from a different angle.</li>
+        <li>Make sure the fabric is clearly visible.</li>
+        <li>Use sufficient and even lighting.</li>
+        <li>Keep the camera focused on the textile.</li>
+        <li>Avoid excessive shadows and blurry images.</li>
+        <li>Capture a closer view of the fabric's weave and texture.</li>
+        <li>Avoid including unnecessary background objects.</li>
+        <li>Spread out the textile so its surface is visible.</li>
+      </ul>
+      <p class="why-modal-close-msg">Please try again with another photo for a clearer classification result.</p>
+    </div>
+    <footer class="why-modal-foot">
+      <button type="button" class="why-modal-done" data-why-close>Close</button>
+    </footer>
+  </div>
+</dialog>
+{% endif %}
 {% endblock %}
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/navbar.js') }}"></script>
@@ -92,5 +137,27 @@ document.getElementById("closeImageModal")?.addEventListener("click", () => {
 document.getElementById("imageModal")?.addEventListener("click", (event) => {
   if (event.target.id === "imageModal") event.currentTarget.hidden = true;
 });
+
+(function () {
+  const whyBtn = document.getElementById("whyUnidentifiedBtn");
+  const whyModal = document.getElementById("whyUnidentifiedModal");
+  if (!whyBtn || !whyModal) return;
+  whyBtn.addEventListener("click", () => {
+    if (typeof whyModal.showModal === "function") whyModal.showModal();
+    else whyModal.setAttribute("open", "");
+  });
+  whyModal.querySelectorAll("[data-why-close]").forEach((el) => {
+    el.addEventListener("click", () => {
+      if (typeof whyModal.close === "function") whyModal.close();
+      else whyModal.removeAttribute("open");
+    });
+  });
+  whyModal.addEventListener("click", (event) => {
+    if (event.target === whyModal) {
+      if (typeof whyModal.close === "function") whyModal.close();
+      else whyModal.removeAttribute("open");
+    }
+  });
+})();
 </script>
 {% endblock %}

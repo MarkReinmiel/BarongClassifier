@@ -1,6 +1,8 @@
-from flask import Blueprint, render_template, request
+from flask import Blueprint, flash, jsonify, redirect, render_template, request, url_for
 
 from app.services.history_service import (
+    HistoryError,
+    delete_for_user,
     format_history_when_parts,
     list_for_user,
     stats_for_user,
@@ -76,4 +78,33 @@ def history_page():
         filters_active=bool(selected_type or date_preset or (per_page != 10)),
         launch_history_tour=section_needs_tour(user, "history"),
         tour_progress=get_tour_progress(user),
+    )
+
+
+@bp.post("/history/<classification_id>/delete")
+@nickname_required
+def delete_history_item(classification_id: str):
+    user = current_user()
+    wants_json = (
+        "application/json" in (request.accept_mimetypes.best or "")
+        or request.headers.get("X-Requested-With") == "XMLHttpRequest"
+    )
+    try:
+        delete_for_user(user, classification_id)
+    except HistoryError as error:
+        if wants_json:
+            return jsonify({"ok": False, "error": str(error)}), error.status_code
+        flash(str(error), "error")
+        return redirect(url_for("history.history_page"))
+    if wants_json:
+        return jsonify({"ok": True})
+    flash("Classification deleted.", "success")
+    return redirect(
+        url_for(
+            "history.history_page",
+            type=request.args.get("type") or request.form.get("type") or "",
+            date=request.args.get("date") or request.form.get("date") or "",
+            per_page=request.args.get("per_page") or request.form.get("per_page") or 10,
+            page=request.args.get("page") or request.form.get("page") or 1,
+        )
     )

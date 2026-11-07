@@ -1,7 +1,8 @@
 {% extends "base.html" %}
 {% block title %}History | {{ app_name }}{% endblock %}
 {% block head %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/history.css') }}?v=15">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/history.css') }}?v=17">
+<meta name="csrf-token" content="{{ csrf_token() }}">
 {% endblock %}
 {% block content %}
 <div
@@ -82,6 +83,7 @@
             <th>Textile</th>
             <th>Date</th>
             <th>Confidence</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -96,21 +98,24 @@
           {% else %}
             {% set thumb = url_for('static', filename='images/barong.jpg') %}
           {% endif %}
+          {% set photo = row.image_path if row.image_path and row.image_path.startswith('https://') else (row.image_reference if row.image_reference and row.image_reference.startswith('https://') else none) %}
+          {% set preview = photo or thumb %}
           {% set conf = row.confidence if row.confidence is not none else 0 %}
           {% set conf_pct = (conf * 100) if conf <= 1.5 else conf %}
           {% set bar_w = 100 if conf_pct > 100 else (0 if conf_pct < 0 else conf_pct) %}
-          <tr>
+          <tr data-history-row data-id="{{ row.id }}">
             <td>
               <div class="history-textile-cell">
-                <div class="history-thumb" aria-hidden="true">
-                  {% if row.image_path and row.image_path.startswith('https://') %}
-                  <img src="{{ row.image_path }}" alt="" loading="lazy">
-                  {% elif row.image_reference and row.image_reference.startswith('https://') %}
-                  <img src="{{ row.image_reference }}" alt="" loading="lazy">
-                  {% else %}
-                  <img src="{{ thumb }}" alt="" loading="lazy">
-                  {% endif %}
-                </div>
+                <button
+                  type="button"
+                  class="history-thumb history-thumb-btn"
+                  data-history-preview
+                  data-preview-src="{{ preview }}"
+                  data-preview-label="{{ row.display_name or row.predicted_label }}"
+                  aria-label="Preview classified image"
+                >
+                  <img src="{{ preview }}" alt="" loading="lazy">
+                </button>
                 <div class="history-textile-copy">
                   <span class="history-textile">{{ row.display_name or row.predicted_label }}</span>
                   {% if row.image_name %}
@@ -137,6 +142,24 @@
                   <span class="history-conf-fill" style="width: {{ '%.0f'|format(bar_w) }}%"></span>
                 </div>
                 <span class="history-conf-pct">{{ '%.0f'|format(conf_pct) }}%</span>
+              </div>
+            </td>
+            <td>
+              <div class="history-row-actions">
+                <button
+                  type="button"
+                  class="history-action-btn history-action-btn--preview"
+                  data-history-preview
+                  data-preview-src="{{ preview }}"
+                  data-preview-label="{{ row.display_name or row.predicted_label }}"
+                >Preview</button>
+                <button
+                  type="button"
+                  class="history-action-btn history-action-btn--delete"
+                  data-history-delete
+                  data-delete-url="{{ url_for('history.delete_history_item', classification_id=row.id) }}"
+                  data-delete-label="{{ row.display_name or row.predicted_label }}"
+                >Delete</button>
               </div>
             </td>
           </tr>
@@ -176,4 +199,36 @@
     {% endif %}
   </section>
 </div>
+
+<dialog id="historyPreviewModal" class="history-preview-modal" aria-labelledby="historyPreviewTitle">
+  <div class="history-preview-inner">
+    <header class="history-preview-head">
+      <h2 id="historyPreviewTitle">Classification preview</h2>
+      <button type="button" class="history-preview-close" data-preview-close aria-label="Close">×</button>
+    </header>
+    <div class="history-preview-body">
+      <img id="historyPreviewImage" src="" alt="Classified textile preview">
+    </div>
+  </div>
+</dialog>
+
+<dialog id="historyDeleteModal" class="history-delete-modal" aria-labelledby="historyDeleteTitle">
+  <div class="history-delete-inner">
+    <header class="history-delete-head">
+      <h2 id="historyDeleteTitle">Delete classification?</h2>
+      <button type="button" class="history-preview-close" data-delete-cancel aria-label="Close">×</button>
+    </header>
+    <div class="history-delete-body">
+      <p>This removes <strong id="historyDeleteLabel">this classification</strong> from your history. This cannot be undone.</p>
+    </div>
+    <footer class="history-delete-foot">
+      <button type="button" class="history-action-btn" data-delete-cancel>Cancel</button>
+      <button type="button" class="history-action-btn history-action-btn--delete" id="historyDeleteConfirm">Delete</button>
+    </footer>
+  </div>
+</dialog>
+{% endblock %}
+{% block scripts %}
+{{ super() }}
+<script src="{{ url_for('static', filename='js/history.js') }}?v=1"></script>
 {% endblock %}

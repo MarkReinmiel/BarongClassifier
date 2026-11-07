@@ -801,6 +801,7 @@ def list_recent_classifications(
             text(
                 f"""
                 select
+                  c.id::text as id,
                   coalesce(c.display_name, c.predicted_label) as predicted_label,
                   c.confidence::float as confidence,
                   coalesce(c.file_name, c.image_reference, c.image_path) as image_name,
@@ -831,3 +832,30 @@ def list_recent_classifications(
     except SQLAlchemyError:
         db.session.rollback()
         return empty
+
+
+def delete_classification(classification_id: str) -> None:
+    """Owner history: delete any classification row by id."""
+    row_id = str(classification_id or "").strip()
+    if not row_id:
+        raise UsersError("Missing classification id.")
+    try:
+        result = db.session.execute(
+            text(
+                """
+                delete from public.classifications
+                where id = cast(:id as uuid)
+                returning id
+                """
+            ),
+            {"id": row_id},
+        ).first()
+        if result is None:
+            db.session.rollback()
+            raise UsersError("That classification was not found.")
+        db.session.commit()
+    except UsersError:
+        raise
+    except SQLAlchemyError as error:
+        db.session.rollback()
+        raise UsersError("Could not delete that classification.") from error
