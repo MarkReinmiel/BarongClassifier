@@ -152,7 +152,7 @@ main.shell:has(.classifier-page) {
 
 .result-image-actions {
   margin-top: 18px;
-  display: flex;
+  display: none;
   flex-wrap: wrap;
   gap: 10px;
 }
@@ -209,6 +209,7 @@ main.shell:has(.classifier-page) {
 }
 
 .result-file-hint {
+  display: none;
   margin: 10px 0 0;
   font-size: 12px;
   line-height: 1.4;

@@ -306,7 +306,8 @@
 }
 
 .preview-actions {
-    display: flex;
+    /* Desktop: hide View / Save / Download — mobile media query enables them */
+    display: none;
     flex-direction: row;
     flex-wrap: nowrap;
     align-items: stretch;

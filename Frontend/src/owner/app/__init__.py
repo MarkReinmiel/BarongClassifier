@@ -61,7 +61,8 @@ def create_app(config_object: type[Config] = Config) -> Flask:
         return render_template("errors/404.html"), 404
 
     @flask_app.errorhandler(500)
-    def server_error(_error):
+    def server_error(error):
+        logger.exception("Internal server error: %s", error)
         return render_template("errors/500.html"), 500
 
     @flask_app.context_processor
