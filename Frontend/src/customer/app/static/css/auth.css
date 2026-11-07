@@ -433,6 +433,48 @@
 .auth-card--panel .auth-submit:active{
   transform:translateY(1px);
 }
+.auth-or{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin:16px 0 12px;
+  color:var(--panel-muted, #8a8070);
+  font-size:12px;
+  font-weight:600;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+.auth-or::before,
+.auth-or::after{
+  content:"";
+  flex:1;
+  height:1px;
+  background:rgba(255,255,255,.18);
+}
+.auth-card--panel .auth-or{color:var(--panel-muted, #8a8070)}
+.auth-google{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  width:100%;
+  min-height:48px;
+  border-radius:999px;
+  border:1.5px solid rgba(255,255,255,.22);
+  background:rgba(255,255,255,.08);
+  color:#f3efe6;
+  font-weight:700;
+  text-decoration:none;
+}
+.auth-card--panel .auth-google{
+  border-color:rgba(255,255,255,.22);
+  background:rgba(255,255,255,.1);
+  color:#fbf9f4;
+}
+.auth-google:hover{
+  background:rgba(255,255,255,.16);
+}
+.auth-google-icon{display:inline-flex;width:18px;height:18px}
 .auth-card--hero .auth-card-heading{color:var(--ink)}
 .auth-card--hero .lead,
 .auth-card--hero .lbl,

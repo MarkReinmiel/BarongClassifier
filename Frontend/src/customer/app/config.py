@@ -86,11 +86,19 @@ class Config:
     DB_PASSWORD = _first("DB_PASSWORD")
     DB_SSLMODE = _first("DB_SSLMODE", default="require")
     DB_POOL_MODE = _first("DB_POOL_MODE", default="session")
-    SUPABASE_URL = _first("SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_URL")
+    SUPABASE_URL = _first("SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_URL").rstrip("/")
     SUPABASE_PUBLISHABLE_KEY = _first(
         "SUPABASE_PUBLISHABLE_KEY",
         "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY",
     )
+    # Continue with Google via Supabase Auth (Google provider + Client ID/Secret in dashboard).
+    _google_flag = _first("GOOGLE_OAUTH_ENABLED", default="").lower()
+    if _google_flag in {"1", "true", "yes"}:
+        GOOGLE_OAUTH_ENABLED = True
+    elif _google_flag in {"0", "false", "no"}:
+        GOOGLE_OAUTH_ENABLED = False
+    else:
+        GOOGLE_OAUTH_ENABLED = bool(SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY)
 
     SQLALCHEMY_DATABASE_URI = _build_database_uri()
     SQLALCHEMY_TRACK_MODIFICATIONS = False
