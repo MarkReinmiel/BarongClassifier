@@ -7,8 +7,13 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+<<<<<<< Updated upstream
   <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}?v=42">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}?v=51">
+=======
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}?v=43">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}?v=44">
+>>>>>>> Stashed changes
   <link rel="stylesheet" href="{{ url_for('static', filename='css/classifier.css') }}?v=32">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/responsive.css') }}?v=14">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/motion.css') }}?v=5">
@@ -80,14 +85,30 @@
         <a class="profile-link" href="{{ url_for('classifier.classify_page') }}">Classify Textile</a>
         <a class="profile-link" href="{{ url_for('main.textile_types') }}">Textile Types</a>
         <a class="profile-link" href="{{ url_for('history.history_page') }}">History</a>
-        <form method="post" action="{{ url_for('auth.logout') }}">
+        <form method="post" action="{{ url_for('auth.logout') }}" id="logoutForm">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-          <button class="profile-logout" type="submit">Log out</button>
+          <button class="profile-logout" type="button" id="logoutConfirmOpen">Log out</button>
         </form>
       </div>
     </div>
     {% endif %}
   </header>
+
+  {% if current_user %}
+  <dialog class="logout-confirm" id="logoutConfirmDialog" aria-labelledby="logoutConfirmTitle">
+    <form method="dialog" class="logout-confirm-inner">
+      <header class="logout-confirm-head">
+        <h2 id="logoutConfirmTitle">Log out?</h2>
+        <button type="submit" class="logout-confirm-close" value="cancel" aria-label="Close">×</button>
+      </header>
+      <p class="logout-confirm-body">You will need to sign in again to classify textiles and view your history.</p>
+      <div class="logout-confirm-foot">
+        <button type="submit" class="logout-confirm-btn logout-confirm-btn--ghost" value="cancel">Cancel</button>
+        <button type="button" class="logout-confirm-btn logout-confirm-btn--danger" id="logoutConfirmOk">Log out</button>
+      </div>
+    </form>
+  </dialog>
+  {% endif %}
 
   <main class="shell">
     {% with messages = get_flashed_messages(with_categories=true) %}
@@ -141,7 +162,7 @@
   {% endif %}
 
   <script src="{{ url_for('static', filename='js/motion.js') }}?v=5"></script>
-  <script src="{{ url_for('static', filename='js/main.js') }}?v=12"></script>
+  <script src="{{ url_for('static', filename='js/main.js') }}?v=13"></script>
   {% block scripts %}{% endblock %}
 </body>
 </html>

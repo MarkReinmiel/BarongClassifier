@@ -109,14 +109,30 @@
       <a class="profile-link" href="{{ url_for('dashboard.about') }}">About</a>
       <a class="profile-link" href="{{ url_for('dashboard.account') }}">Account settings</a>
       <a class="profile-link" href="{{ url_for('dashboard.users') }}">User management</a>
-      <form method="post" action="{{ url_for('auth.logout') }}">
+      <form method="post" action="{{ url_for('auth.logout') }}" id="logoutForm">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <button class="profile-logout" type="submit">Log out</button>
+        <button class="profile-logout" type="button" id="logoutConfirmOpen">Log out</button>
       </form>
     </div>
   </div>
   {% endif %}
 </header>
+
+{% if current_user %}
+<dialog class="logout-confirm" id="logoutConfirmDialog" aria-labelledby="logoutConfirmTitle">
+  <form method="dialog" class="logout-confirm-inner">
+    <header class="logout-confirm-head">
+      <h2 id="logoutConfirmTitle">Log out?</h2>
+      <button type="submit" class="logout-confirm-close" value="cancel" aria-label="Close">×</button>
+    </header>
+    <p class="logout-confirm-body">You will need to sign in again to use the Owner portal.</p>
+    <div class="logout-confirm-foot">
+      <button type="submit" class="logout-confirm-btn logout-confirm-btn--ghost" value="cancel">Cancel</button>
+      <button type="button" class="logout-confirm-btn logout-confirm-btn--danger" id="logoutConfirmOk">Log out</button>
+    </div>
+  </form>
+</dialog>
+{% endif %}
 
 {% if current_user %}
 <nav class="nav hide-desktop" aria-label="Main">

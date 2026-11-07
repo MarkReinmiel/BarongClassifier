@@ -71,4 +71,20 @@ document.querySelectorAll("form[data-loading]").forEach((form) => {
       setModelsOpen(false);
     }
   });
+
+  const logoutForm = document.getElementById("logoutForm");
+  const logoutOpen = document.getElementById("logoutConfirmOpen");
+  const logoutDialog = document.getElementById("logoutConfirmDialog");
+  const logoutOk = document.getElementById("logoutConfirmOk");
+
+  logoutOpen?.addEventListener("click", function (event) {
+    event.preventDefault();
+    event.stopPropagation();
+    setProfileOpen(false);
+    if (logoutDialog?.showModal) logoutDialog.showModal();
+  });
+
+  logoutOk?.addEventListener("click", function () {
+    if (logoutForm) logoutForm.submit();
+  });
 })();

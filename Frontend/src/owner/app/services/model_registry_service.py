@@ -244,6 +244,114 @@ def _reset_artifact_dir(path: Path) -> None:
 TRAINABLE_CLASSES = ("cocoon", "jusi", "pina")
 MASTER_DATASET = REPO_ROOT / "ml" / "data" / "main_classifier"
 SNAPSHOT_ROOT = REPO_ROOT / "ml" / "data" / "snapshots"
+# Candidate statuses that still need their training snapshot on disk.
+_SNAPSHOT_KEEP_STATUSES = frozenset(
+    {
+        "queued",
+        "training",
+        "pending_evaluation",
+        "evaluation_passed",
+        "approved_for_deployment",
+    }
+)
+
+
+def _stable_snapshot_id(major: int, revision: int) -> str:
+    """One snapshot folder per revision slot so retries overwrite instead of stacking."""
+    return f"ds_{int(major)}_{int(revision)}"
+
+
+def _snapshot_dirs_for_revision(major: int, revision: int) -> list[Path]:
+    """Stable dir plus any legacy timestamped / _alt folders for the same slot."""
+    if not SNAPSHOT_ROOT.is_dir():
+        return []
+    base = _stable_snapshot_id(major, revision)
+    return sorted(
+        p
+        for p in SNAPSHOT_ROOT.iterdir()
+        if p.is_dir() and (p.name == base or p.name.startswith(f"{base}_"))
+    )
+
+
+def _delete_snapshots_for_revision(major: int, revision: int) -> list[str]:
+    deleted: list[str] = []
+    for path in _snapshot_dirs_for_revision(major, revision):
+        shutil.rmtree(path, ignore_errors=True)
+        deleted.append(path.name)
+        current_app.logger.info("Pruned dataset snapshot %s", path)
+    return deleted
+
+
+def _kept_snapshot_revision_keys() -> set[tuple[int, int]]:
+    """Revisions whose snapshots must stay: production, previous production, active candidate."""
+    kept: set[tuple[int, int]] = set()
+    try:
+        rows = db.session.execute(
+            text(
+                """
+                select
+                  coalesce(major_version, version_number, 1)::int as major_version,
+                  coalesce(revision_number, 1)::int as revision_number,
+                  is_production,
+                  status,
+                  (deployed_at is not null) as was_deployed,
+                  deployed_at
+                from public.model_versions
+                """
+            )
+        ).mappings().all()
+    except SQLAlchemyError:
+        db.session.rollback()
+        return kept
+
+    production = None
+    previous = None
+    for row in rows:
+        key = (int(row["major_version"]), int(row["revision_number"]))
+        if row["is_production"]:
+            production = key
+            kept.add(key)
+        if row["status"] in _SNAPSHOT_KEEP_STATUSES and not row["is_production"]:
+            kept.add(key)
+    # Previous production = newest deployed non-production by deployed_at.
+    deployed = [
+        r
+        for r in rows
+        if r["was_deployed"] and not r["is_production"]
+    ]
+    deployed.sort(key=lambda r: r["deployed_at"] or "", reverse=True)
+    if deployed:
+        previous = (
+            int(deployed[0]["major_version"]),
+            int(deployed[0]["revision_number"]),
+        )
+        kept.add(previous)
+    if production:
+        kept.add(production)
+    return kept
+
+
+def prune_orphaned_snapshots() -> dict[str, Any]:
+    """Delete snapshot folders not needed for production, previous prod, or active candidate."""
+    if not SNAPSHOT_ROOT.is_dir():
+        return {"deleted": [], "kept_revisions": []}
+    kept = _kept_snapshot_revision_keys()
+    kept_prefixes = {_stable_snapshot_id(m, r) for m, r in kept}
+    deleted: list[str] = []
+    for path in list(SNAPSHOT_ROOT.iterdir()):
+        if not path.is_dir():
+            continue
+        name = path.name
+        retain = any(name == prefix or name.startswith(f"{prefix}_") for prefix in kept_prefixes)
+        if retain:
+            continue
+        shutil.rmtree(path, ignore_errors=True)
+        deleted.append(name)
+        current_app.logger.info("Pruned orphan dataset snapshot %s", path)
+    return {
+        "deleted": deleted,
+        "kept_revisions": [f"v{m}.{r}" for m, r in sorted(kept)],
+    }
 
 
 def _normalize_train_label(raw: str | None) -> str | None:
@@ -340,7 +448,8 @@ def _build_dataset_snapshot(
         prev_summary = json.loads(prev_summary or "{}")
     prev_contrib = int(prev_summary.get("trainable_contribution_count") or 0)
     newly_added = max(0, len(contributions) - prev_contrib)
-    snapshot_id = f"ds_{major}_{revision}_{_utc_now().strftime('%Y%m%d_%H%M%S')}"
+    # Stable per revision: retries overwrite the same folder (no ds_* timestamp piles).
+    snapshot_id = _stable_snapshot_id(major, revision)
     by_class: dict[str, int] = {c: 0 for c in TRAINABLE_CLASSES}
     for item in contributions:
         by_class[item["label"]] = by_class.get(item["label"], 0) + 1
@@ -364,9 +473,9 @@ def _build_dataset_snapshot(
         ),
         "contributions": contributions,
         "note": (
-            "Immutable revision snapshot = original folder dataset + all Owner-approved "
-            "customer images with a textile class. Rejected / pending / undefined excluded. "
-            "Duplicates skipped by content hash."
+            "Revision snapshot = original folder dataset + Owner-approved trainable images. "
+            "Same revision slot overwrites this snapshot on retry. "
+            "Rejected / cancelled / failed runs prune their snapshot to save disk."
         ),
     }
 
@@ -731,7 +840,9 @@ def reconcile_stale_training_jobs() -> int:
         rows = db.session.execute(
             text(
                 """
-                select j.id::text as id, j.pid, v.id::text as version_id, v.status as version_status
+                select j.id::text as id, j.pid, v.id::text as version_id, v.status as version_status,
+                       coalesce(v.major_version, v.version_number, 1)::int as major_version,
+                       coalesce(v.revision_number, 1)::int as revision_number
                 from public.training_jobs j
                 join public.model_versions v on v.id = j.model_version_id
                 where j.status in ('queued', 'running')
@@ -739,10 +850,10 @@ def reconcile_stale_training_jobs() -> int:
             )
         ).mappings().all()
         cleared = 0
+        prune_revisions: list[tuple[int, int]] = []
         for row in rows:
             terminal = row["version_status"] in _TERMINAL_CANDIDATE_STATUSES
             dead = not _pid_is_alive(row.get("pid"))
-            prod = False
             if terminal or dead:
                 reason = (
                     f"Auto-cleared stale job; candidate status is {row['version_status']}."
@@ -762,12 +873,16 @@ def reconcile_stale_training_jobs() -> int:
                         ),
                         {"id": row["version_id"]},
                     )
+                    prune_revisions.append(
+                        (int(row["major_version"]), int(row["revision_number"]))
+                    )
                 cleared += _cancel_training_jobs_for_version(
                     row["version_id"], reason=reason
                 )
-            _ = prod
         if cleared:
             db.session.commit()
+        for major, revision in prune_revisions:
+            _delete_snapshots_for_revision(major, revision)
         return cleared
     except SQLAlchemyError:
         db.session.rollback()
@@ -1146,6 +1261,8 @@ def start_training(
             old_dir = Path(reuse_row["artifact_dir"])
             if old_dir.resolve() != artifact_dir.resolve() and old_dir.exists():
                 shutil.rmtree(old_dir, ignore_errors=True)
+        # Clear prior snapshot folders for this slot (stable + legacy timestamped).
+        _delete_snapshots_for_revision(major, revision)
         _reset_artifact_dir(artifact_dir)
         # Candidate-only path — never writes into live production keras files.
         (artifact_dir / "CANDIDATE_ONLY.txt").write_text(
@@ -1360,7 +1477,9 @@ def evaluate_candidate(actor: OwnerUser, version_id: str | None = None) -> dict[
         candidate = db.session.execute(
             text(
                 """
-                select id::text as id, version_label, status, artifact_dir, metrics_json
+                select id::text as id, version_label, status, artifact_dir, metrics_json,
+                       coalesce(major_version, version_number, 1)::int as major_version,
+                       coalesce(revision_number, 1)::int as revision_number
                 from public.model_versions
                 where id::text = :id
                 limit 1
@@ -1432,12 +1551,18 @@ def evaluate_candidate(actor: OwnerUser, version_id: str | None = None) -> dict[
         },
     )
     db.session.commit()
+    pruned: list[str] = []
+    if not passed and candidate.get("major_version") is not None:
+        pruned = _delete_snapshots_for_revision(
+            int(candidate["major_version"]), int(candidate["revision_number"])
+        )
     return {
         "ok": True,
         "passed": passed,
         "status": status,
         "metrics": metrics,
         "comparison": comparison,
+        "pruned_snapshots": pruned,
         "message": (
             f"Evaluation passed (test accuracy {accuracy:.3f})."
             if passed
@@ -1565,11 +1690,17 @@ def deploy_candidate(actor: OwnerUser, version_id: str) -> dict[str, Any]:
         owner_labels = _app_model_targets()[1][1]
         _write_pointer(row["version_label"], owner_model, owner_labels)
         _invalidate_runtime_models()
+        # Keep snapshots only for production + previous production + any active candidate.
+        orphan_prune = prune_orphaned_snapshots()
         return {
             "ok": True,
-            "message": f"Deployed {row['version_label']} to Customer and Owner. Previous production kept for rollback.",
+            "message": (
+                f"Deployed {row['version_label']} to Customer and Owner. "
+                "Previous production kept for rollback."
+            ),
             "version_label": row["version_label"],
             "targets": copied,
+            "pruned_snapshots": orphan_prune.get("deleted") or [],
         }
     except ModelRegistryError:
         db.session.rollback()
@@ -1619,7 +1750,7 @@ def reject_candidate(actor: OwnerUser, version_id: str) -> dict[str, Any]:
         raise ModelRegistryError("Candidate not found.", 404)
     if row["is_production"]:
         raise ModelRegistryError("Cannot reject the active production model.")
-    # Keep artifacts for history; stop any worker so Train Next Revision can run.
+    # Keep keras artifacts for history; prune the large dataset snapshot.
     cancelled = _cancel_training_jobs_for_version(
         version_id,
         reason="Cancelled because the Owner rejected this candidate.",
@@ -1628,11 +1759,16 @@ def reject_candidate(actor: OwnerUser, version_id: str) -> dict[str, Any]:
         text(
             """
             update public.model_versions
-            set status = 'rejected', updated_at = timezone('utc', now())
+            set status = 'rejected',
+                dataset_snapshot_id = null,
+                updated_at = timezone('utc', now())
             where id = cast(:id as uuid)
             """
         ),
         {"id": version_id},
+    )
+    pruned = _delete_snapshots_for_revision(
+        int(row["major_version"]), int(row["revision_number"])
     )
     db.session.execute(
         text(
@@ -1647,7 +1783,9 @@ def reject_candidate(actor: OwnerUser, version_id: str) -> dict[str, Any]:
         {
             "id": version_id,
             "actor": str(actor.id),
-            "details": json.dumps({"cancelled_jobs": cancelled}),
+            "details": json.dumps(
+                {"cancelled_jobs": cancelled, "pruned_snapshots": pruned}
+            ),
         },
     )
     db.session.commit()
@@ -1655,10 +1793,12 @@ def reject_candidate(actor: OwnerUser, version_id: str) -> dict[str, Any]:
     return {
         "ok": True,
         "message": (
-            f"Rejected {display}. Artifacts kept in history. "
+            f"Rejected {display}. Model weights kept for history; "
+            f"dataset snapshot pruned ({len(pruned)} folder(s)). "
             "Use Train Next Revision (or Retry Training) to train again; "
-            "the next run will include the current dataset pool, including any newly added batches."
+            "the next run will rebuild the snapshot from the current dataset pool."
         ),
+        "pruned_snapshots": pruned,
     }
 
 

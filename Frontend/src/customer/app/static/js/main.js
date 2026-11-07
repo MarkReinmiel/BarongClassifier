@@ -52,4 +52,20 @@ document.documentElement.classList.add("js");
   document.addEventListener("keydown", function (event) {
     if (event.key === "Escape") closeAllMenus();
   });
+
+  const logoutForm = document.getElementById("logoutForm");
+  const logoutOpen = document.getElementById("logoutConfirmOpen");
+  const logoutDialog = document.getElementById("logoutConfirmDialog");
+  const logoutOk = document.getElementById("logoutConfirmOk");
+
+  logoutOpen?.addEventListener("click", function (event) {
+    event.preventDefault();
+    event.stopPropagation();
+    closeAllMenus();
+    if (logoutDialog?.showModal) logoutDialog.showModal();
+  });
+
+  logoutOk?.addEventListener("click", function () {
+    if (logoutForm) logoutForm.submit();
+  });
 })();
