@@ -7,9 +7,10 @@ import pytest
 from app import create_app
 from app.config import TestConfig
 from app.extensions import db
-from app.models import CustomerUser, EmailVerification, utcnow
+from app.models import CustomerUser, EmailVerification, PendingSignup, utcnow
 from app.services import auth_service
 from app.utils.security import hash_secret
+from werkzeug.security import generate_password_hash
 
 
 @pytest.fixture()
@@ -52,13 +53,14 @@ def test_register_and_verify(client, app):
     )
     assert response.status_code in {302, 303}
     with app.app_context():
-        user = CustomerUser.query.filter_by(email="customer@example.com").one()
-        assert user.email_verified is False
+        assert CustomerUser.query.filter_by(email="customer@example.com").first() is None
+        pending = PendingSignup.query.filter_by(email="customer@example.com").one()
+        assert pending.status == "pending"
         assert app.extensions["mail_outbox"]
         code = app.extensions["mail_outbox"][-1][1]
 
     with client.session_transaction() as sess:
-        assert sess.get("pending_user_id")
+        assert sess.get("pending_signup_id")
 
     verify = client.post(
         "/auth/verify-code",
@@ -69,6 +71,8 @@ def test_register_and_verify(client, app):
     with app.app_context():
         user = CustomerUser.query.filter_by(email="customer@example.com").one()
         assert user.email_verified is True
+        assert user.status == "active"
+        assert PendingSignup.query.filter_by(email="customer@example.com").first() is None
 
 
 def test_resend_cooldown(client, app):
@@ -95,11 +99,12 @@ def test_login_missing_account_shows_error(client):
         "/auth/login",
         data={"email": "missing@example.com", "password": "secure-password-12"},
     )
-    assert response.status_code == 404
+    # Auth pages cap at 400 so hosts do not replace the body with a 5xx page.
+    assert response.status_code == 400
     assert b"No account found for that email" in response.data
 
 
-def test_register_duplicate_shows_error(client, app):
+def test_register_unverified_can_retry_without_saving_user(client, app):
     client.post(
         "/auth/register",
         data={
@@ -108,6 +113,38 @@ def test_register_duplicate_shows_error(client, app):
             "confirm_password": "secure-password-12",
         },
     )
+    with app.app_context():
+        assert CustomerUser.query.filter_by(email="dup@example.com").first() is None
+        assert PendingSignup.query.filter_by(email="dup@example.com").count() == 1
+
+    again = client.post(
+        "/auth/register",
+        data={
+            "email": "dup@example.com",
+            "password": "secure-password-99",
+            "confirm_password": "secure-password-99",
+        },
+        follow_redirects=False,
+    )
+    assert again.status_code in {302, 303}
+    with app.app_context():
+        assert CustomerUser.query.filter_by(email="dup@example.com").first() is None
+        assert PendingSignup.query.filter_by(email="dup@example.com").count() == 1
+
+
+def test_register_duplicate_verified_shows_error(client, app):
+    with app.app_context():
+        db.session.add(
+            CustomerUser(
+                email="dup@example.com",
+                password_hash=generate_password_hash("secure-password-12", method="scrypt"),
+                status="active",
+                email_verified=True,
+                nickname_completed=True,
+            )
+        )
+        db.session.commit()
+
     again = client.post(
         "/auth/register",
         data={
@@ -116,7 +153,7 @@ def test_register_duplicate_shows_error(client, app):
             "confirm_password": "secure-password-12",
         },
     )
-    assert again.status_code == 409
+    assert again.status_code == 400
     assert b"already exists" in again.data
 
 

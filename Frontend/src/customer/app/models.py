@@ -41,6 +41,27 @@ class CustomerUser(db.Model):
     last_login_at = db.Column(db.DateTime(timezone=True))
 
 
+class PendingSignup(db.Model):
+    """In-progress registration. Real customer.users row is created only after email verify."""
+
+    __tablename__ = "pending_signups"
+    __table_args__ = {"schema": "customer"}
+
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    email = db.Column(db.String(255), unique=True, nullable=False, index=True)
+    password_hash = db.Column(db.String(255), nullable=False)
+    code_hash = db.Column(db.String(128), nullable=False)
+    status = db.Column(db.String(32), nullable=False, default="pending")
+    expires_at = db.Column(db.DateTime(timezone=True), nullable=False)
+    resend_available_at = db.Column(db.DateTime(timezone=True), nullable=False)
+    attempts = db.Column(db.Integer, nullable=False, default=0)
+    locked_until = db.Column(db.DateTime(timezone=True))
+    created_at = db.Column(db.DateTime(timezone=True), nullable=False, default=utcnow)
+    updated_at = db.Column(
+        db.DateTime(timezone=True), nullable=False, default=utcnow, onupdate=utcnow
+    )
+
+
 class EmailVerification(db.Model):
     __tablename__ = "email_verifications"
     __table_args__ = {"schema": "customer"}

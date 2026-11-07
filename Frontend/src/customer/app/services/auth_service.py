@@ -8,7 +8,7 @@ from flask import current_app
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from app.extensions import db
-from app.models import CustomerUser, EmailVerification, TrustedDevice, utcnow
+from app.models import CustomerUser, EmailVerification, PendingSignup, TrustedDevice, utcnow
 from app.services.directory_service import email_exists_in_users_table, find_public_user_by_email
 from app.services.email_service import (
     EmailDeliveryError,
@@ -50,12 +50,96 @@ class AuthError(Exception):
         self.retry_after = retry_after
 
 
-def register_user(email: str, password: str, confirm: str) -> CustomerUser:
+def purge_incomplete_signups(*, email: str | None = None) -> None:
+    """Drop expired pending signups and unfinished customer rows (never verified)."""
+    now = utcnow()
+    ttl = timedelta(minutes=current_app.config["EMAIL_VERIFICATION_EXPIRE_MINUTES"])
+    stale_before = now - ttl
+
+    pending_q = PendingSignup.query.filter(
+        (PendingSignup.expires_at <= now) | (PendingSignup.created_at <= stale_before)
+    )
+    if email:
+        pending_q = pending_q.filter(PendingSignup.email == email)
+    for row in pending_q.all():
+        db.session.delete(row)
+
+    unfinished_q = CustomerUser.query.filter(
+        CustomerUser.email_verified.is_(False),
+        CustomerUser.status == "pending_verification",
+        CustomerUser.created_at <= stale_before,
+        CustomerUser.nickname_completed.is_(False),
+    )
+    if email:
+        unfinished_q = unfinished_q.filter(CustomerUser.email == email)
+    for user in unfinished_q.all():
+        EmailVerification.query.filter_by(user_id=user.id).delete(synchronize_session=False)
+        TrustedDevice.query.filter_by(user_id=user.id).delete(synchronize_session=False)
+        db.session.delete(user)
+
+
+def _delete_unfinished_customer(email: str) -> None:
+    """Remove a never-verified customer row so signup can restart cleanly."""
+    user = CustomerUser.query.filter_by(email=email).first()
+    if not user:
+        return
+    if user.email_verified or user.status not in {"pending_verification", "pending"}:
+        return
+    if user.nickname_completed:
+        return
+    EmailVerification.query.filter_by(user_id=user.id).delete(synchronize_session=False)
+    TrustedDevice.query.filter_by(user_id=user.id).delete(synchronize_session=False)
+    db.session.delete(user)
+    db.session.flush()
+
+
+def _issue_pending_signup_code(pending: PendingSignup, *, force: bool = False) -> dict:
+    now = utcnow()
+    if pending.locked_until and _aware(pending.locked_until) > now:
+        wait = int((_aware(pending.locked_until) - now).total_seconds() + 0.999)
+        raise AuthError("Too many attempts. Try again later.", 429, wait)
+    if (
+        not force
+        and _aware(pending.resend_available_at) > now
+        and _aware(pending.expires_at) > now
+        and pending.code_hash
+    ):
+        wait = int((_aware(pending.resend_available_at) - now).total_seconds() + 0.999)
+        raise AuthError("Wait before requesting another code.", 429, wait)
+
+    ttl = timedelta(minutes=current_app.config["EMAIL_VERIFICATION_EXPIRE_MINUTES"])
+    cooldown = timedelta(seconds=current_app.config["EMAIL_VERIFICATION_RESEND_COOLDOWN_SECONDS"])
+    length = current_app.config["EMAIL_VERIFICATION_CODE_LENGTH"]
+    code = generate_code(length)
+    pending.code_hash = hash_secret(f"{pending.id}:registration:{code}")
+    pending.status = "pending"
+    pending.attempts = 0
+    pending.locked_until = None
+    pending.expires_at = now + ttl
+    pending.resend_available_at = now + cooldown
+    pending.updated_at = now
+    try:
+        send_verification_email(pending.email, code, "registration")
+    except EmailDeliveryError as error:
+        db.session.rollback()
+        raise AuthError(str(error), 400) from error
+    db.session.commit()
+    return {
+        "resend_after_seconds": int(cooldown.total_seconds()),
+        "expires_in_seconds": int(ttl.total_seconds()),
+        "resend_available_at": pending.resend_available_at.isoformat(),
+    }
+
+
+def register_user(email: str, password: str, confirm: str) -> CustomerUser | PendingSignup:
+    """Start signup. Real customer.users is created only after email verification."""
     email = normalize_email(email)
     if not is_valid_email(email):
         raise AuthError("Enter a valid email address.")
     for message in password_errors(password, confirm):
         raise AuthError(message)
+
+    purge_incomplete_signups(email=email)
 
     # Supabase public.users is the shared directory — block duplicates there.
     directory = find_public_user_by_email(email)
@@ -64,26 +148,112 @@ def register_user(email: str, password: str, confirm: str) -> CustomerUser:
             "This email is registered as an Owner account. Use the Owner portal to sign in.",
             403,
         )
-    if email_exists_in_users_table(email) or CustomerUser.query.filter_by(email=email).first():
+
+    existing = CustomerUser.query.filter_by(email=email).first()
+    if existing and (existing.email_verified or existing.status not in {"pending_verification", "pending"}):
+        raise AuthError(
+            "An account with that email already exists. Please sign in instead.",
+            409,
+        )
+    if existing:
+        _delete_unfinished_customer(email)
+    elif email_exists_in_users_table(email):
+        # Directory hit without a reusable unfinished customer row.
         raise AuthError(
             "An account with that email already exists. Please sign in instead.",
             409,
         )
 
+    password_hash = generate_password_hash(password, method="scrypt")
     skip_email = not current_app.config.get("EMAIL_VERIFICATION_ENABLED", True)
+    if skip_email:
+        user = CustomerUser(
+            email=email,
+            password_hash=password_hash,
+            full_name="",
+            role="customer",
+            status="active",
+            email_verified=True,
+            nickname_completed=False,
+        )
+        db.session.add(user)
+        PendingSignup.query.filter_by(email=email).delete(synchronize_session=False)
+        db.session.commit()
+        return user
+
+    now = utcnow()
+    ttl = timedelta(minutes=current_app.config["EMAIL_VERIFICATION_EXPIRE_MINUTES"])
+    pending = PendingSignup.query.filter_by(email=email).first()
+    if pending:
+        pending.password_hash = password_hash
+        pending.updated_at = now
+    else:
+        pending = PendingSignup(
+            email=email,
+            password_hash=password_hash,
+            code_hash="",  # filled when code is issued
+            status="pending",
+            expires_at=now + ttl,
+            resend_available_at=now,
+        )
+        db.session.add(pending)
+    db.session.flush()
+    _issue_pending_signup_code(pending, force=True)
+    return pending
+
+
+def pending_signup_resend_wait_seconds(pending: PendingSignup) -> int:
+    now = utcnow()
+    available = _aware(pending.resend_available_at)
+    if not available or available <= now:
+        return 0
+    return int((available - now).total_seconds() + 0.999)
+
+
+def resend_pending_signup_code(pending: PendingSignup) -> dict:
+    return _issue_pending_signup_code(pending, force=False)
+
+
+def verify_pending_signup(pending: PendingSignup, code: str) -> CustomerUser:
+    code = (code or "").strip()
+    length = current_app.config["EMAIL_VERIFICATION_CODE_LENGTH"]
+    if len(code) != length or not code.isdigit():
+        raise AuthError(f"Enter the {length}-digit code from your email.")
+
+    now = utcnow()
+    if pending.locked_until and _aware(pending.locked_until) > now:
+        raise AuthError("Too many attempts. Try again later.", 429)
+    if _aware(pending.expires_at) <= now:
+        db.session.delete(pending)
+        db.session.commit()
+        raise AuthError("That code has expired. Sign up again to get a new one.")
+    if pending.attempts >= MAX_ATTEMPTS:
+        pending.locked_until = now + timedelta(minutes=LOCK_MINUTES)
+        pending.status = "locked"
+        db.session.commit()
+        raise AuthError("Too many attempts. Try again later.", 429)
+
+    expected = hash_secret(f"{pending.id}:registration:{code}")
+    if not hashes_match(pending.code_hash, expected):
+        pending.attempts += 1
+        if pending.attempts >= MAX_ATTEMPTS:
+            pending.locked_until = now + timedelta(minutes=LOCK_MINUTES)
+            pending.status = "locked"
+        db.session.commit()
+        raise AuthError("That code is not valid.")
+
+    # Promote to a real account only after the code succeeds.
     user = CustomerUser(
-        email=email,
-        password_hash=generate_password_hash(password, method="scrypt"),
+        email=pending.email,
+        password_hash=pending.password_hash,
         full_name="",
         role="customer",
-        status="active" if skip_email else "pending_verification",
-        email_verified=bool(skip_email),
+        status="active",
+        email_verified=True,
         nickname_completed=False,
     )
     db.session.add(user)
-    db.session.flush()
-    if not skip_email:
-        issue_and_send_code(user, "registration")
+    db.session.delete(pending)
     db.session.commit()
     return user
 
