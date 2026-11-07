@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from flask import Blueprint, flash, jsonify, redirect, render_template, request, url_for
 
-from app.services.auth_service import AuthError, change_password
+from app.services.auth_service import AuthError, change_password, update_owner_profile
 from app.services.model_analytics_service import analytics_json
 from app.services.users_service import (
     UsersError,
@@ -12,6 +12,7 @@ from app.services.users_service import (
     list_recent_classifications,
     update_user_role,
     update_user_status,
+    update_user_verified,
 )
 from app.utils.security import current_user, login_required, no_store
 
@@ -135,6 +136,25 @@ def account():
     return no_store(response)
 
 
+@bp.post("/account/profile", endpoint="update_profile")
+@login_required
+def update_profile_view():
+    user = current_user()
+    error = ""
+    try:
+        update_owner_profile(
+            user,
+            request.form.get("full_name") or "",
+            request.form.get("phone") or "",
+        )
+        flash("Profile updated.", "success")
+        return redirect(url_for("dashboard.account"))
+    except AuthError as exc:
+        error = str(exc)
+    response = render_template("account.html", user=user, active="account", error=error)
+    return no_store(response)
+
+
 @bp.post("/account/change-password", endpoint="change_password")
 @login_required
 def change_password_view():
@@ -186,16 +206,64 @@ def set_role(user_id: str):
     return redirect(url_for("dashboard.users"))
 
 
+def _wants_json() -> bool:
+    if request.args.get("format") == "json":
+        return True
+    if request.accept_mimetypes.best == "application/json":
+        return True
+    if (request.headers.get("X-Requested-With") or "").lower() == "xmlhttprequest":
+        return True
+    payload = request.get_json(silent=True)
+    return isinstance(payload, dict)
+
+
+def _parse_bool(value, *, default: bool = False) -> bool:
+    if isinstance(value, bool):
+        return value
+    if value is None:
+        return default
+    return str(value).strip().lower() in {"1", "true", "yes", "on"}
+
+
 @bp.post("/users/<user_id>/status")
 @login_required
 def set_status(user_id: str):
     actor = current_user()
-    active = (request.form.get("is_active") or "").lower() in {"1", "true", "yes", "on"}
+    payload = request.get_json(silent=True) or {}
+    raw = payload.get("is_active", request.form.get("is_active"))
+    active = _parse_bool(raw, default=False)
     try:
-        update_user_status(actor, user_id, active)
-        flash("Status updated.", "success")
+        result = update_user_status(actor, user_id, active)
     except UsersError as exc:
+        if _wants_json():
+            return jsonify({"ok": False, "error": str(exc)}), int(getattr(exc, "status_code", 400) or 400)
         flash(str(exc), "error")
+        return redirect(url_for("dashboard.users"))
+
+    if _wants_json():
+        return jsonify({"ok": True, "user": result})
+    flash("Status updated.", "success")
+    return redirect(url_for("dashboard.users"))
+
+
+@bp.post("/users/<user_id>/verified")
+@login_required
+def set_verified(user_id: str):
+    actor = current_user()
+    payload = request.get_json(silent=True) or {}
+    raw = payload.get("email_verified", request.form.get("email_verified"))
+    verified = _parse_bool(raw, default=False)
+    try:
+        result = update_user_verified(actor, user_id, verified)
+    except UsersError as exc:
+        if _wants_json():
+            return jsonify({"ok": False, "error": str(exc)}), int(getattr(exc, "status_code", 400) or 400)
+        flash(str(exc), "error")
+        return redirect(url_for("dashboard.users"))
+
+    if _wants_json():
+        return jsonify({"ok": True, "user": result})
+    flash("Verification updated.", "success")
     return redirect(url_for("dashboard.users"))
 
 

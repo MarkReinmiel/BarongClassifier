@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from datetime import datetime, timedelta, timezone
+
 from flask import current_app
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
@@ -11,12 +13,68 @@ from app.models import OwnerUser, utcnow
 from app.utils.validators import normalize_email
 
 ASSIGNABLE = frozenset({"owner", "customer"})
+INACTIVITY_DAYS = 5
 
 
 class UsersError(Exception):
     def __init__(self, message: str, status_code: int = 400):
         super().__init__(message)
         self.status_code = status_code
+
+
+def _as_utc(value: datetime | None) -> datetime | None:
+    if value is None:
+        return None
+    if value.tzinfo is None:
+        return value.replace(tzinfo=timezone.utc)
+    return value.astimezone(timezone.utc)
+
+
+def _nickname_value(*values: str | None) -> str:
+    for value in values:
+        text_value = (value or "").strip()
+        if text_value:
+            return text_value
+    return ""
+
+
+def _last_activity_at(*values: datetime | None) -> datetime | None:
+    stamped = [_as_utc(value) for value in values if value is not None]
+    if not stamped:
+        return None
+    return max(stamped)
+
+
+def _is_inactive_by_activity(last_activity: datetime | None, *, now: datetime | None = None) -> bool:
+    """True when last activity is missing or at least INACTIVITY_DAYS old."""
+    if last_activity is None:
+        return True
+    current = _as_utc(now) or datetime.now(timezone.utc)
+    return current - _as_utc(last_activity) >= timedelta(days=INACTIVITY_DAYS)
+
+
+def evaluate_user_flags(
+    *,
+    nickname: str | None,
+    last_activity: datetime | None,
+    stored_active: bool | None = None,
+    stored_verified: bool | None = None,
+) -> dict:
+    """Derive active/verified from activity + nickname only (no manual flags).
+
+    - Active: last activity newer than INACTIVITY_DAYS
+    - Verified: nickname is present (non-empty)
+    stored_* args are ignored; kept for call-site compatibility.
+    """
+    del stored_active, stored_verified
+    has_nickname = bool(_nickname_value(nickname))
+    inactive = _is_inactive_by_activity(last_activity)
+    return {
+        "is_active": not inactive,
+        "email_verified": has_nickname,
+        "has_nickname": has_nickname,
+        "inactive_by_inactivity": inactive,
+    }
 
 
 def dashboard_stats() -> dict:
@@ -83,55 +141,114 @@ def dashboard_stats() -> dict:
     return stats
 
 
+def _serialize_directory_user(row: dict) -> dict:
+    nickname = _nickname_value(row.get("nickname"), row.get("customer_nickname"))
+    # Active/inactive is driven by real login/sign-in only — not updated_at
+    # (admin/system writes). Never-logged-in accounts fall back to created_at.
+    last_activity = _last_activity_at(
+        row.get("last_login_at"),
+        row.get("customer_last_login_at"),
+        row.get("last_sign_in_at"),
+        row.get("auth_last_sign_in_at"),
+    ) or _last_activity_at(
+        row.get("public_created_at"),
+        row.get("customer_created_at"),
+        row.get("created_at"),
+    )
+    flags = evaluate_user_flags(nickname=nickname, last_activity=last_activity)
+    full_name = (row.get("full_name") or "").strip() or nickname
+    return {
+        "id": str(row.get("id")),
+        "email": row.get("email") or "",
+        "full_name": full_name,
+        "nickname": nickname,
+        "role": row.get("role") or "customer",
+        "status": "active" if flags["is_active"] else "inactive",
+        "is_active": flags["is_active"],
+        "email_verified": flags["email_verified"],
+        "has_nickname": flags["has_nickname"],
+        "source": row.get("source") or "",
+        "last_activity_at": last_activity.isoformat() if last_activity else None,
+    }
+
+
 def list_directory_users() -> list[dict]:
     if current_app.config.get("TESTING"):
-        return [
-            {
-                "id": str(u.id),
-                "email": u.email,
-                "full_name": u.full_name or u.nickname or "",
-                "role": u.role,
-                "status": u.status,
-                "is_active": bool(u.is_active),
-                "email_verified": bool(u.email_verified),
-                "source": "customer",
-            }
-            for u in OwnerUser.query.order_by(OwnerUser.created_at.desc()).all()
-        ]
+        serialized = []
+        for u in OwnerUser.query.order_by(OwnerUser.created_at.desc()).all():
+            serialized.append(
+                _serialize_directory_user(
+                    {
+                        "id": str(u.id),
+                        "email": u.email,
+                        "full_name": u.full_name or "",
+                        "nickname": u.nickname or "",
+                        "role": u.role,
+                        "status": u.status,
+                        "is_active": bool(u.is_active),
+                        "email_verified": bool(u.email_verified),
+                        "source": "customer",
+                        "last_login_at": u.last_login_at,
+                        "updated_at": u.updated_at,
+                        "created_at": u.created_at,
+                    }
+                )
+            )
+        return serialized
 
     try:
         rows = db.session.execute(
             text(
                 """
                 select
-                  id::text as id,
-                  email,
-                  coalesce(full_name, '') as full_name,
-                  role::text as role,
-                  status,
-                  coalesce(is_active, true) as is_active,
-                  coalesce(email_verified, false) as email_verified,
-                  coalesce(source, '') as source
-                from public.users
-                order by created_at desc nulls last
+                  p.id::text as id,
+                  p.email,
+                  coalesce(p.full_name, '') as full_name,
+                  coalesce(p.nickname, '') as nickname,
+                  coalesce(c.nickname, '') as customer_nickname,
+                  p.role::text as role,
+                  p.status,
+                  coalesce(p.is_active, true) as is_active,
+                  coalesce(p.email_verified, false) as email_verified,
+                  coalesce(p.source, '') as source,
+                  p.last_login_at as last_login_at,
+                  p.last_sign_in_at as last_sign_in_at,
+                  c.last_login_at as customer_last_login_at,
+                  a.last_sign_in_at as auth_last_sign_in_at,
+                  p.created_at as public_created_at,
+                  c.created_at as customer_created_at,
+                  coalesce(c.created_at, p.created_at) as created_at
+                from public.users p
+                left join customer.users c
+                  on c.id = p.id::text
+                  or lower(trim(c.email)) = lower(trim(p.email))
+                left join auth.users a
+                  on a.id = p.id
+                order by p.created_at desc nulls last
                 limit 200
                 """
             )
         ).mappings().all()
-        return [dict(r) for r in rows]
+        return [_serialize_directory_user(dict(r)) for r in rows]
     except SQLAlchemyError:
         db.session.rollback()
         return [
-            {
-                "id": str(u.id),
-                "email": u.email,
-                "full_name": u.full_name or "",
-                "role": u.role,
-                "status": u.status,
-                "is_active": bool(u.is_active),
-                "email_verified": bool(u.email_verified),
-                "source": "customer",
-            }
+            _serialize_directory_user(
+                {
+                    "id": str(u.id),
+                    "email": u.email,
+                    "full_name": u.full_name or "",
+                    "nickname": u.nickname or "",
+                    "role": u.role,
+                    "status": u.status,
+                    "is_active": bool(u.is_active),
+                    "email_verified": bool(u.email_verified),
+                    "source": "customer",
+                    "last_login_at": u.last_login_at,
+                    "updated_at": u.updated_at,
+                    "created_at": u.created_at,
+                }
+            )
             for u in OwnerUser.query.order_by(OwnerUser.created_at.desc()).limit(200).all()
         ]
 
@@ -185,7 +302,10 @@ def _apply_public_role(user_id: str, role: str) -> None:
         raise UsersError("User role was blocked by database privileges.", 503)
 
 
-def _apply_public_status(user_id: str, active: bool, status_value: str) -> None:
+def _apply_public_status(user_id: str, active: bool, status_value: str, email: str | None = None) -> None:
+    """Update directory row by id and/or email (ids can diverge across tables)."""
+    _enable_trusted_user_write()
+    normalized_email = normalize_email(email or "") if email else ""
     result = db.session.execute(
         text(
             """
@@ -193,11 +313,19 @@ def _apply_public_status(user_id: str, active: bool, status_value: str) -> None:
             set is_active = cast(:active as boolean),
                 status = :status,
                 updated_at = now()
-            where id::text = :id
-              and role::text <> 'admin'
+            where role::text <> 'admin'
+              and (
+                id::text = :id
+                or (:email <> '' and lower(trim(email)) = :email)
+              )
             """
         ),
-        {"active": active, "status": status_value, "id": str(user_id)},
+        {
+            "active": active,
+            "status": status_value,
+            "id": str(user_id),
+            "email": normalized_email,
+        },
     )
     if result.rowcount == 0:
         raise UsersError("User status could not be updated.", 404)
@@ -207,12 +335,56 @@ def _apply_public_status(user_id: str, active: bool, status_value: str) -> None:
             select coalesce(is_active, true) as is_active
             from public.users
             where id::text = :id
+               or (:email <> '' and lower(trim(email)) = :email)
+            order by case when id::text = :id then 0 else 1 end
+            limit 1
             """
         ),
-        {"id": str(user_id)},
+        {"id": str(user_id), "email": normalized_email},
     ).mappings().first()
-    if not verify or bool(verify["is_active"]) != active:
+    if not verify or bool(verify["is_active"]) != bool(active):
         raise UsersError("User status was blocked by database privileges.", 503)
+
+
+def _apply_public_verified(user_id: str, verified: bool, email: str | None = None) -> None:
+    _enable_trusted_user_write()
+    normalized_email = normalize_email(email or "") if email else ""
+    result = db.session.execute(
+        text(
+            """
+            update public.users
+            set email_verified = cast(:verified as boolean),
+                updated_at = now()
+            where role::text <> 'admin'
+              and (
+                id::text = :id
+                or (:email <> '' and lower(trim(email)) = :email)
+              )
+            """
+        ),
+        {
+            "verified": verified,
+            "id": str(user_id),
+            "email": normalized_email,
+        },
+    )
+    if result.rowcount == 0:
+        raise UsersError("Email verification could not be updated.", 404)
+    verify = db.session.execute(
+        text(
+            """
+            select coalesce(email_verified, false) as email_verified
+            from public.users
+            where id::text = :id
+               or (:email <> '' and lower(trim(email)) = :email)
+            order by case when id::text = :id then 0 else 1 end
+            limit 1
+            """
+        ),
+        {"id": str(user_id), "email": normalized_email},
+    ).mappings().first()
+    if not verify or bool(verify["email_verified"]) != bool(verified):
+        raise UsersError("Email verification was blocked by database privileges.", 503)
 
 
 def update_user_role(actor: OwnerUser, user_id: str, role: str) -> None:
@@ -262,8 +434,8 @@ def update_user_role(actor: OwnerUser, user_id: str, role: str) -> None:
         raise UsersError("User role could not be updated.", 503) from error
 
 
-def update_user_status(actor: OwnerUser, user_id: str, is_active: bool) -> None:
-    if str(actor.id) == str(user_id):
+def update_user_status(actor: OwnerUser, user_id: str, is_active: bool) -> dict:
+    if str(actor.id) == str(user_id) and not is_active:
         raise UsersError("You cannot deactivate your own Owner session here.", 403)
 
     active = bool(is_active)
@@ -277,9 +449,21 @@ def update_user_status(actor: OwnerUser, user_id: str, is_active: bool) -> None:
             raise UsersError("Admin accounts cannot be changed here.", 403)
         target.is_active = active
         target.status = status_value
+        if active:
+            target.last_login_at = utcnow()
         target.updated_at = utcnow()
         db.session.commit()
-        return
+        flags = evaluate_user_flags(
+            nickname=target.nickname,
+            last_activity=target.last_login_at or target.updated_at or target.created_at,
+        )
+        return {
+            "id": str(target.id),
+            "is_active": flags["is_active"],
+            "status": "active" if flags["is_active"] else "inactive",
+            "email_verified": flags["email_verified"],
+            "has_nickname": flags["has_nickname"],
+        }
 
     try:
         _enable_trusted_user_write()
@@ -291,22 +475,166 @@ def update_user_status(actor: OwnerUser, user_id: str, is_active: bool) -> None:
         if (directory_role or (target.role if target else "") or "").lower() == "admin":
             raise UsersError("Admin accounts cannot be changed here.", 403)
 
+        email = (target.email if target else None) or db.session.execute(
+            text("select lower(trim(email)) from public.users where id::text = :id limit 1"),
+            {"id": str(user_id)},
+        ).scalar()
+
         if target is not None:
             target.is_active = active
             target.status = status_value
+            if active:
+                target.last_login_at = utcnow()
             target.updated_at = utcnow()
             db.session.flush()
 
-        if directory_role is not None:
-            _apply_public_status(user_id, active, status_value)
-
+        try:
+            _apply_public_status(user_id, active, status_value, email=email)
+            if active:
+                _enable_trusted_user_write()
+                db.session.execute(
+                    text(
+                        """
+                        update public.users
+                        set last_login_at = now(),
+                            updated_at = now()
+                        where role::text <> 'admin'
+                          and (
+                            id::text = :id
+                            or (:email <> '' and lower(trim(email)) = :email)
+                          )
+                        """
+                    ),
+                    {
+                        "id": str(user_id),
+                        "email": normalize_email(email or "") if email else "",
+                    },
+                )
+        except UsersError:
+            # Portal-only accounts may have no public.users directory row.
+            if directory_role is not None or target is None:
+                raise
         db.session.commit()
+
+        nickname = _nickname_value(getattr(target, "nickname", None))
+        flags = evaluate_user_flags(
+            nickname=nickname,
+            last_activity=utcnow() if active else getattr(target, "last_login_at", None),
+        )
+        return {
+            "id": str(user_id),
+            "is_active": flags["is_active"],
+            "status": "active" if flags["is_active"] else "inactive",
+            "email_verified": flags["email_verified"],
+            "has_nickname": flags["has_nickname"],
+        }
     except UsersError:
         db.session.rollback()
         raise
     except SQLAlchemyError as error:
         db.session.rollback()
         raise UsersError("User status could not be updated.", 503) from error
+
+
+def update_user_verified(actor: OwnerUser, user_id: str, email_verified: bool) -> dict:
+    # Manual verified toggles are ignored; nickname presence drives verification.
+    _ = email_verified
+
+    if current_app.config.get("TESTING"):
+        target = OwnerUser.query.filter_by(id=user_id).first()
+        if not target:
+            raise UsersError("User was not found.", 404)
+        if (target.role or "").lower() == "admin":
+            raise UsersError("Admin accounts cannot be changed here.", 403)
+        nickname = _nickname_value(target.nickname)
+        target.email_verified = bool(nickname)
+        if target.email_verified and target.status == "pending_verification":
+            target.status = "active"
+        target.updated_at = utcnow()
+        db.session.commit()
+        flags = evaluate_user_flags(
+            nickname=nickname,
+            last_activity=target.last_login_at or target.updated_at or target.created_at,
+        )
+        return {
+            "id": str(target.id),
+            "is_active": flags["is_active"],
+            "status": "active" if flags["is_active"] else "inactive",
+            "email_verified": flags["email_verified"],
+            "has_nickname": flags["has_nickname"],
+        }
+
+    try:
+        _enable_trusted_user_write()
+        directory_role = _directory_role(user_id)
+        target = _find_customer_user(user_id)
+
+        if directory_role is None and target is None:
+            raise UsersError("User was not found.", 404)
+        if (directory_role or (target.role if target else "") or "").lower() == "admin":
+            raise UsersError("Admin accounts cannot be changed here.", 403)
+
+        email = (target.email if target else None) or db.session.execute(
+            text("select lower(trim(email)) from public.users where id::text = :id limit 1"),
+            {"id": str(user_id)},
+        ).scalar()
+
+        nickname = _nickname_value(
+            getattr(target, "nickname", None),
+            db.session.execute(
+                text(
+                    """
+                    select coalesce(nickname, '')
+                    from public.users
+                    where id::text = :id
+                       or (:email <> '' and lower(trim(email)) = :email)
+                    order by case when id::text = :id then 0 else 1 end
+                    limit 1
+                    """
+                ),
+                {
+                    "id": str(user_id),
+                    "email": normalize_email(email or "") if email else "",
+                },
+            ).scalar(),
+        )
+        verified = bool(nickname)
+
+        if target is not None:
+            target.email_verified = verified
+            if verified and target.status == "pending_verification":
+                target.status = "active"
+            target.updated_at = utcnow()
+            db.session.flush()
+
+        try:
+            _apply_public_verified(user_id, verified, email=email)
+        except UsersError:
+            if directory_role is not None or target is None:
+                raise
+        db.session.commit()
+
+        flags = evaluate_user_flags(
+            nickname=nickname,
+            last_activity=(
+                getattr(target, "last_login_at", None)
+                or getattr(target, "updated_at", None)
+                or getattr(target, "created_at", None)
+            ),
+        )
+        return {
+            "id": str(user_id),
+            "is_active": flags["is_active"],
+            "status": "active" if flags["is_active"] else "inactive",
+            "email_verified": flags["email_verified"],
+            "has_nickname": flags["has_nickname"],
+        }
+    except UsersError:
+        db.session.rollback()
+        raise
+    except SQLAlchemyError as error:
+        db.session.rollback()
+        raise UsersError("Email verification could not be updated.", 503) from error
 
 
 def delete_user(actor: OwnerUser, user_id: str) -> None:

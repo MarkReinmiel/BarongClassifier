@@ -3,56 +3,201 @@
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/shared.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}?v=7">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/account.css') }}?v=1">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/account.css') }}?v=4">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-app.css') }}?v=9">
 {% endblock %}
 {% block body %}
 {% include "_nav.html" %}
 <main class="dashboard account-page">
-  <section class="account-card reveal">
-    <div class="account-card-head">
-      <p class="dashboard-label">ACCOUNT</p>
-      <h1>Account settings</h1>
-      <hr class="stitch-divider" aria-hidden="true">
-      <p id="accountSummary" class="account-summary">
-        Signed in as <strong>{{ user.email }}</strong>
-        · role {{ user.role }}
-        · {{ user.status }}
-      </p>
-    </div>
+  <header class="account-page-head reveal">
+    <p class="account-eyebrow">OWNER · ACCOUNT</p>
+    <h1>Account Settings</h1>
+  </header>
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% for category, message in messages %}
-        <div class="flash {{ category }}">{{ message }}</div>
-      {% endfor %}
-    {% endwith %}
-    {% if error %}<div class="flash error">{{ error }}</div>{% endif %}
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+      <div class="flash {{ category }}">{{ message }}</div>
+    {% endfor %}
+  {% endwith %}
+  {% if error %}<div class="flash error">{{ error }}</div>{% endif %}
 
-    <form method="post" action="{{ url_for('dashboard.change_password') }}" class="account-form" data-loading>
-      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-      <div class="input-group password-field">
-        <label for="currentPassword">Current password</label>
-        <input class="field" id="currentPassword" name="current_password" type="password" autocomplete="current-password" required minlength="12">
-        <button type="button" class="password-toggle pw-toggle" data-target="currentPassword">Show</button>
+  <div class="account-columns">
+    <section class="account-panel reveal">
+      <div class="account-panel-head">
+        <span class="account-panel-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8">
+            <circle cx="12" cy="8" r="3.2"/>
+            <path d="M5.5 19c1.6-3.2 4-4.8 6.5-4.8S17 15.8 18.5 19"/>
+          </svg>
+        </span>
+        <div>
+          <h2>Profile</h2>
+          <p>How you appear in the app.</p>
+        </div>
       </div>
-      <div class="input-group password-field">
-        <label for="newPassword">New password</label>
-        <input class="field" id="newPassword" name="new_password" type="password" autocomplete="new-password" required minlength="12">
-        <button type="button" class="password-toggle pw-toggle" data-target="newPassword">Show</button>
+
+      <form method="post" action="{{ url_for('dashboard.update_profile') }}" class="account-form account-form-profile" data-loading>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="account-profile-row">
+          <div class="input-group">
+            <label for="displayName">Display name</label>
+            <input
+              class="field"
+              id="displayName"
+              name="full_name"
+              type="text"
+              maxlength="120"
+              autocomplete="name"
+              value="{{ user.full_name or user.nickname or 'Owner' }}"
+              required
+            >
+          </div>
+          <div class="input-group">
+            <label for="contactNumber">Contact number <span class="field-optional">(optional)</span></label>
+            <input
+              class="field"
+              id="contactNumber"
+              name="phone"
+              type="tel"
+              maxlength="40"
+              autocomplete="tel"
+              placeholder="+63 900 000 0000"
+              value="{{ user.phone or '' }}"
+            >
+          </div>
+        </div>
+        <div class="input-group">
+          <label for="accountEmail">Email</label>
+          <div class="field-lock-wrap">
+            <input
+              class="field"
+              id="accountEmail"
+              type="email"
+              value="{{ user.email }}"
+              readonly
+              tabindex="-1"
+            >
+            <span class="field-lock" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8">
+                <rect x="5" y="11" width="14" height="9" rx="2"/>
+                <path d="M8 11V8a4 4 0 0 1 8 0v3"/>
+              </svg>
+            </span>
+          </div>
+          <p class="field-hint">Your email can't be changed here.</p>
+        </div>
+        <div class="account-actions">
+          <button class="account-submit" type="submit">Save changes</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="account-panel reveal reveal-delay-1">
+      <div class="account-panel-head">
+        <span class="account-panel-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8">
+            <rect x="5" y="11" width="14" height="9" rx="2"/>
+            <path d="M8 11V8a4 4 0 0 1 8 0v3"/>
+          </svg>
+        </span>
+        <div>
+          <h2>Change password</h2>
+          <p>Use a strong password you don't use elsewhere.</p>
+        </div>
       </div>
-      <div class="input-group password-field">
-        <label for="confirmPassword">Confirm new password</label>
-        <input class="field" id="confirmPassword" name="confirm_password" type="password" autocomplete="new-password" required minlength="12">
-        <button type="button" class="password-toggle pw-toggle" data-target="confirmPassword">Show</button>
-      </div>
-      <button class="auth-button account-submit" type="submit">Update password</button>
-    </form>
-    <p class="account-links">
-      <a href="{{ url_for('password.forgot_password') }}">Forgot password? Reset via email</a>
-    </p>
-  </section>
+
+      <form method="post" action="{{ url_for('dashboard.change_password') }}" class="account-form account-form-password" data-loading>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="account-password-layout">
+          <div class="account-password-fields">
+            <div class="input-group password-field">
+              <label for="currentPassword">Current password</label>
+              <input class="field" id="currentPassword" name="current_password" type="password" autocomplete="current-password" required minlength="12">
+              <button type="button" class="password-toggle pw-toggle" data-target="currentPassword">Show</button>
+            </div>
+            <div class="input-group password-field">
+              <label for="newPassword">New password</label>
+              <input class="field" id="newPassword" name="new_password" type="password" autocomplete="new-password" required minlength="12">
+              <button type="button" class="password-toggle pw-toggle" data-target="newPassword">Show</button>
+            </div>
+            <div class="input-group password-field">
+              <label for="confirmPassword">Confirm new password</label>
+              <input class="field" id="confirmPassword" name="confirm_password" type="password" autocomplete="new-password" required minlength="12">
+              <button type="button" class="password-toggle pw-toggle" data-target="confirmPassword">Show</button>
+            </div>
+          </div>
+
+          <aside class="password-strength" aria-live="polite">
+            <div class="password-strength-top">
+              <strong>Password strength</strong>
+              <span id="strengthLabel">Enter a password</span>
+            </div>
+            <div class="password-strength-meter" aria-hidden="true">
+              <span id="strengthMeter" class="password-strength-fill" style="width:0%"></span>
+            </div>
+            <ul class="password-rules" id="passwordRules">
+              <li data-rule="length">8+ characters</li>
+              <li data-rule="case">Upper &amp; lower case</li>
+              <li data-rule="number">A number</li>
+              <li data-rule="symbol">A symbol</li>
+            </ul>
+          </aside>
+        </div>
+
+        <div class="account-password-footer">
+          <a class="account-forgot" href="{{ url_for('password.forgot_password') }}">Forgot password? Reset via email</a>
+          <button class="account-submit" type="submit">Update password</button>
+        </div>
+      </form>
+    </section>
+  </div>
 </main>
 {% endblock %}
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/navbar.js') }}"></script>
+<script>
+(function () {
+  var input = document.getElementById("newPassword");
+  var rules = document.getElementById("passwordRules");
+  var meter = document.getElementById("strengthMeter");
+  var label = document.getElementById("strengthLabel");
+  if (!input || !rules) return;
+
+  var items = {
+    length: rules.querySelector('[data-rule="length"]'),
+    case: rules.querySelector('[data-rule="case"]'),
+    number: rules.querySelector('[data-rule="number"]'),
+    symbol: rules.querySelector('[data-rule="symbol"]'),
+  };
+
+  function refresh() {
+    var value = input.value || "";
+    var checks = {
+      length: value.length >= 8,
+      case: /[a-z]/.test(value) && /[A-Z]/.test(value),
+      number: /\d/.test(value),
+      symbol: /[^A-Za-z0-9]/.test(value),
+    };
+    Object.keys(checks).forEach(function (key) {
+      if (items[key]) items[key].classList.toggle("is-met", !!checks[key]);
+    });
+    var met = Object.keys(checks).filter(function (key) { return checks[key]; }).length;
+    var pct = value ? (met / 4) * 100 : 0;
+    if (meter) {
+      meter.style.width = pct + "%";
+      meter.className = "password-strength-fill" + (met ? " level-" + met : "");
+    }
+    if (label) {
+      if (!value) label.textContent = "Enter a password";
+      else if (met <= 1) label.textContent = "Weak";
+      else if (met === 2) label.textContent = "Fair";
+      else if (met === 3) label.textContent = "Good";
+      else label.textContent = "Strong";
+    }
+  }
+
+  input.addEventListener("input", refresh);
+  refresh();
+})();
+</script>
 {% endblock %}

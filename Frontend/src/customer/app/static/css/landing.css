@@ -158,7 +158,8 @@ body {
 
 #about,
 #fabrics,
-#how {
+#how,
+#contact {
   scroll-margin-top: 88px;
 }
 
@@ -500,6 +501,89 @@ body {
   box-shadow: 0 12px 32px rgba(38, 53, 74, 0.08);
 }
 
+.lp-contact-lead {
+  margin: 0 0 18px;
+  max-width: 54ch;
+  color: var(--ink-soft, #5c5348);
+}
+
+.lp-contact-card {
+  display: grid;
+  gap: 18px;
+  padding: 20px;
+  border-radius: 18px;
+  border: 1px solid var(--line, #d0b9a4);
+  background: var(--surface, #f7f0e8);
+  box-shadow: 0 12px 28px rgba(38, 53, 74, 0.08);
+}
+
+.lp-contact-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-soft, #5c5348);
+}
+
+.lp-contact-email {
+  display: inline-block;
+  margin-bottom: 14px;
+  color: var(--ink, #1f2232);
+  font-size: clamp(18px, 3vw, 24px);
+  font-weight: 700;
+  text-decoration: none;
+  word-break: break-word;
+}
+
+.lp-contact-email:hover {
+  text-decoration: underline;
+}
+
+.lp-contact-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.lp-contact-copied {
+  margin: 10px 0 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent, #758e4f);
+}
+
+.lp-contact-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.lp-contact-chips a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid var(--line-strong, #b89a82);
+  background: #fff;
+  color: var(--ink, #1f2232);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.lp-contact-chips a:hover {
+  border-color: var(--accent, #758e4f);
+  color: var(--accent, #758e4f);
+}
+
+.lp-foot a {
+  color: inherit;
+  text-decoration: underline;
+}
+
 .lp-cta h2 {
   font-size: clamp(26px, 4vw, 34px);
 }
@@ -594,6 +678,13 @@ body {
   .lp-cta {
     margin: 20px auto 56px;
     padding: 48px 40px;
+  }
+
+  .lp-contact-card {
+    grid-template-columns: 1.2fr 0.8fr;
+    align-items: start;
+    gap: 24px;
+    padding: 28px;
   }
 }
 

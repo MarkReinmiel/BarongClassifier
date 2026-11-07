@@ -27,6 +27,7 @@ class OwnerUser(db.Model):
     email_verified = db.Column(db.Boolean, nullable=False, default=False)
     nickname = db.Column(db.String(40))
     nickname_completed = db.Column(db.Boolean, nullable=False, default=False)
+    phone = db.Column(db.String(40))
     is_active = db.Column(db.Boolean, nullable=False, default=True)
     created_at = db.Column(db.DateTime(timezone=True), nullable=False, default=utcnow)
     updated_at = db.Column(

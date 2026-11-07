@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,600;1,700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}?v=24">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/landing.css') }}?v=21">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/landing.css') }}?v=22">
 </head>
 <body class="landing-body">
   <header class="lp-top">
@@ -20,6 +20,7 @@
       <a href="#about">About Barong</a>
       <a href="#fabrics">Fabrics</a>
       <a href="#how">How it works</a>
+      <a href="#contact">Contact Us</a>
     </nav>
     <div class="lp-top-actions">
       <a class="lp-btn lp-btn--ghost" href="{{ url_for('auth.login') }}">Sign In</a>
@@ -121,6 +122,35 @@
       </div>
     </section>
 
+    <section class="lp-section lp-contact" id="contact">
+      <p class="lp-kicker">Contact Us</p>
+      <h2 class="lp-section-title">We’re here to help</h2>
+      <div class="lp-rule lp-rule--start" aria-hidden="true"><span></span></div>
+      <p class="lp-contact-lead">Reach the Barongcognition team for account help, fabric feedback, or partnerships.</p>
+
+      <div class="lp-contact-card">
+        <div class="lp-contact-email-block">
+          <span class="lp-contact-label">Email</span>
+          <a class="lp-contact-email" id="contactEmail" href="mailto:barongclassifier@gmail.com">barongclassifier@gmail.com</a>
+          <div class="lp-contact-actions">
+            <a class="lp-btn lp-btn--primary" href="mailto:barongclassifier@gmail.com">Send email</a>
+            <button type="button" class="lp-btn lp-btn--outline-dark" id="copyContactEmail" data-email="barongclassifier@gmail.com">Copy email</button>
+          </div>
+          <p class="lp-contact-copied" id="contactCopied" hidden>Email copied</p>
+        </div>
+
+        <div class="lp-contact-topics">
+          <span class="lp-contact-label">Quick topics</span>
+          <div class="lp-contact-chips">
+            <a href="mailto:barongclassifier@gmail.com?subject=Account%20help">Account help</a>
+            <a href="mailto:barongclassifier@gmail.com?subject=Fabric%20classification%20feedback">Fabric feedback</a>
+            <a href="mailto:barongclassifier@gmail.com?subject=Partnership%20inquiry">Partnership</a>
+            <a href="mailto:barongclassifier@gmail.com?subject=Bug%20report">Report a bug</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <section class="lp-cta">
       <h2>Ready to identify your fabric?</h2>
       <div class="lp-rule lp-rule--center" aria-hidden="true"><span></span></div>
@@ -138,7 +168,32 @@
       <div class="lp-rule lp-rule--center" aria-hidden="true"><span></span></div>
       <p class="lp-mark-sub">Barong Textile Classifier</p>
     </div>
-    <p class="lp-foot-line">Barongcognition · Preserving Heritage Through Technology</p>
+    <p class="lp-foot-line">
+      Barongcognition · Preserving Heritage Through Technology
+      · <a href="mailto:barongclassifier@gmail.com">barongclassifier@gmail.com</a>
+    </p>
   </footer>
+  <script>
+  (function () {
+    var btn = document.getElementById("copyContactEmail");
+    var note = document.getElementById("contactCopied");
+    if (!btn) return;
+    btn.addEventListener("click", function () {
+      var email = btn.getAttribute("data-email") || "barongclassifier@gmail.com";
+      var done = function () {
+        if (!note) return;
+        note.hidden = false;
+        window.setTimeout(function () { note.hidden = true; }, 1800);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(email).then(done).catch(function () {
+          window.prompt("Copy this email", email);
+        });
+      } else {
+        window.prompt("Copy this email", email);
+      }
+    });
+  })();
+  </script>
 </body>
 </html>

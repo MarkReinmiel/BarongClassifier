@@ -20,6 +20,7 @@
       <a href="#about">About Barong</a>
       <a href="#fabrics">Fabrics</a>
       <a href="#how">How it works</a>
+      <a href="#contact">Contact Us</a>
     </nav>
     <div class="lp-top-actions">
       <a class="lp-btn lp-btn--solid" href="{{ url_for('auth.login') }}">Sign In</a>
@@ -111,6 +112,34 @@
       </div>
     </section>
 
+    <section class="lp-section lp-contact" id="contact">
+      <p class="lp-kicker">Contact Us</p>
+      <h2 class="lp-section-title">We’re here to help</h2>
+      <p class="lp-contact-lead">Reach the BarongClassifier team for owner access, model feedback, or support.</p>
+
+      <div class="lp-contact-card">
+        <div class="lp-contact-email-block">
+          <span class="lp-contact-label">Email</span>
+          <a class="lp-contact-email" href="mailto:barongclassifier@gmail.com">barongclassifier@gmail.com</a>
+          <div class="lp-contact-actions">
+            <a class="lp-btn lp-btn--primary" href="mailto:barongclassifier@gmail.com">Send email</a>
+            <button type="button" class="lp-btn lp-btn--ghost-dark" id="copyContactEmail" data-email="barongclassifier@gmail.com">Copy email</button>
+          </div>
+          <p class="lp-contact-copied" id="contactCopied" hidden>Email copied</p>
+        </div>
+
+        <div class="lp-contact-topics">
+          <span class="lp-contact-label">Quick topics</span>
+          <div class="lp-contact-chips">
+            <a href="mailto:barongclassifier@gmail.com?subject=Owner%20access%20help">Owner access</a>
+            <a href="mailto:barongclassifier@gmail.com?subject=Model%20feedback">Model feedback</a>
+            <a href="mailto:barongclassifier@gmail.com?subject=Partnership%20inquiry">Partnership</a>
+            <a href="mailto:barongclassifier@gmail.com?subject=Bug%20report">Report a bug</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <section class="lp-cta">
       <h2>Ready to identify your fabric?</h2>
       <p>Sign in with your authorized Owner account to manage classification and analytics.</p>
@@ -121,7 +150,32 @@
   </main>
 
   <footer class="lp-foot">
-    <p>BarongClassifier · Preserving Heritage Through Technology</p>
+    <p>
+      BarongClassifier · Preserving Heritage Through Technology
+      · <a href="mailto:barongclassifier@gmail.com">barongclassifier@gmail.com</a>
+    </p>
   </footer>
+  <script>
+  (function () {
+    var btn = document.getElementById("copyContactEmail");
+    var note = document.getElementById("contactCopied");
+    if (!btn) return;
+    btn.addEventListener("click", function () {
+      var email = btn.getAttribute("data-email") || "barongclassifier@gmail.com";
+      var done = function () {
+        if (!note) return;
+        note.hidden = false;
+        window.setTimeout(function () { note.hidden = true; }, 1800);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(email).then(done).catch(function () {
+          window.prompt("Copy this email", email);
+        });
+      } else {
+        window.prompt("Copy this email", email);
+      }
+    });
+  })();
+  </script>
 </body>
 </html>

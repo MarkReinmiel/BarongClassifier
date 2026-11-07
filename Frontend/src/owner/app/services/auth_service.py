@@ -247,3 +247,67 @@ def change_password(user: OwnerUser, current_password: str, new_password: str, c
     except EmailDeliveryError:
         # Password already changed; confirmation email is best-effort.
         pass
+
+
+def _ensure_owner_phone_column() -> None:
+    """Add optional phone column once if older databases do not have it yet."""
+    if current_app.config.get("TESTING"):
+        return
+    from sqlalchemy import text
+    from sqlalchemy.exc import SQLAlchemyError
+
+    try:
+        db.session.execute(
+            text("alter table customer.users add column if not exists phone varchar(40)")
+        )
+        db.session.commit()
+    except SQLAlchemyError:
+        db.session.rollback()
+
+
+def update_owner_profile(user: OwnerUser, full_name: str, phone: str | None = None) -> OwnerUser:
+    display = (full_name or "").strip()
+    if not display:
+        raise AuthError("Display name is required.")
+    if len(display) > 120:
+        raise AuthError("Display name must be 120 characters or fewer.")
+
+    contact = (phone or "").strip()
+    if len(contact) > 40:
+        raise AuthError("Contact number must be 40 characters or fewer.")
+
+    _ensure_owner_phone_column()
+    user.full_name = display
+    user.phone = contact or None
+    user.updated_at = utcnow()
+
+    if not current_app.config.get("TESTING"):
+        from sqlalchemy import text
+        from sqlalchemy.exc import SQLAlchemyError
+
+        try:
+            db.session.execute(
+                text("select set_config('app.trusted_profile_write', '1', true)")
+            )
+            db.session.execute(
+                text(
+                    """
+                    update public.users
+                    set full_name = :full_name,
+                        updated_at = now()
+                    where id::text = :id
+                       or lower(trim(email)) = :email
+                    """
+                ),
+                {
+                    "full_name": display,
+                    "id": str(user.id),
+                    "email": normalize_email(user.email),
+                },
+            )
+        except SQLAlchemyError:
+            db.session.rollback()
+            raise AuthError("Profile could not be updated.", 503)
+
+    db.session.commit()
+    return user

@@ -6,6 +6,7 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}?v=7">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/history.css') }}?v=4">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-app.css') }}?v=9">
+<meta name="csrf-token" content="{{ csrf_token() }}">
 <style>
   /* Layout chrome matches dashboard; colors from owner shared palette only */
   .users-page-header{text-align:left;margin-bottom:18px}
@@ -187,6 +188,10 @@
     background:rgba(163,50,11,.12);
     color:var(--rust);
   }
+  .user-badge.verified{
+    background:rgba(51,101,138,.12);
+    color:var(--baltic);
+  }
   .user-actions{
     display:flex;
     flex-wrap:wrap;
@@ -255,15 +260,15 @@
     <div class="users-stats" aria-label="User counts">
       <div class="users-stat">
         <span>Total Users</span>
-        <strong>{{ users_total|default(users|length) }}</strong>
+        <strong id="statTotalUsers">{{ users_total|default(users|length) }}</strong>
       </div>
       <div class="users-stat">
         <span>Active</span>
-        <strong>{{ users_active|default(0) }}</strong>
+        <strong id="statActiveUsers">{{ users_active|default(0) }}</strong>
       </div>
       <div class="users-stat">
         <span>Inactive</span>
-        <strong>{{ users_inactive|default(0) }}</strong>
+        <strong id="statInactiveUsers">{{ users_inactive|default(0) }}</strong>
       </div>
     </div>
 
@@ -312,6 +317,7 @@
           data-id="{{ row.id }}"
           data-role="{{ (row.role or '')|lower }}"
           data-status="{{ 'active' if row.is_active else 'inactive' }}"
+          data-verified="{{ '1' if row.email_verified else '0' }}"
         >
           <div class="user-main">
             <div class="user-avatar" aria-hidden="true">{{ initial }}</div>
@@ -326,11 +332,9 @@
                 <span class="user-badge {{ 'active' if row.is_active else 'inactive' }}">
                   {{ 'Active' if row.is_active else 'Inactive' }}
                 </span>
-                {% if row.email_verified %}
-                <span class="user-badge role">verified</span>
-                {% else %}
-                <span class="user-badge inactive">unverified</span>
-                {% endif %}
+                <span class="user-badge {{ 'verified' if row.email_verified else 'inactive' }}">
+                  {{ 'verified' if row.email_verified else 'unverified' }}
+                </span>
               </div>
             </div>
           </div>
@@ -346,13 +350,6 @@
                   <option value="owner" {% if row.role == 'owner' %}selected{% endif %}>owner</option>
                 </select>
                 <button class="btn" type="submit">Save role</button>
-              </form>
-              <form method="post" action="{{ url_for('dashboard.set_status', user_id=row.id) }}">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <input type="hidden" name="is_active" value="{{ 'false' if row.is_active else 'true' }}">
-                <button class="btn {% if row.is_active %}soft-danger{% endif %}" type="submit">
-                  {{ 'Deactivate' if row.is_active else 'Activate' }}
-                </button>
               </form>
               <form
                 method="post"
@@ -381,7 +378,6 @@
   var clearBtn = document.getElementById("usersClearFilters");
   var countLabel = document.getElementById("usersCountLabel");
   var rows = Array.prototype.slice.call(document.querySelectorAll("#usersList .user-row"));
-  if (!rows.length) return;
 
   function applyFilters() {
     var q = ((search && search.value) || "").trim().toLowerCase();
