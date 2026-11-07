@@ -155,6 +155,171 @@ def login():
     return _begin_post_password(user, remember=remember)
 
 
+@bp.get("/google")
+def google_start():
+    """Start Continue with Google (Supabase Auth → Google → callback)."""
+    from app.services.google_auth_service import google_authorize_url, google_oauth_configured
+
+    if current_user():
+        return redirect(url_for("main.dashboard"))
+    if not google_oauth_configured():
+        flash("Google sign-in is not configured yet.", "error")
+        return redirect(url_for("auth.login"))
+    intent = (request.args.get("intent") or "login").strip().lower()
+    if intent not in {"login", "register"}:
+        intent = "login"
+    session["google_oauth_intent"] = intent
+    session.modified = True
+    redirect_to = url_for("auth.google_callback", _external=True)
+    try:
+        return redirect(google_authorize_url(redirect_to))
+    except AuthError as error:
+        flash(str(error), "error")
+        return redirect(url_for("auth.register" if intent == "register" else "auth.login"))
+
+
+@bp.get("/google/callback")
+def google_callback():
+    """Landing page after Supabase/Google — JS posts the access token to complete."""
+    from app.services.google_auth_service import ACCOUNT_EXISTS_MSG, google_oauth_configured
+
+    if current_user():
+        return redirect(url_for("main.dashboard"))
+    if not google_oauth_configured():
+        flash("Google sign-in is not configured yet.", "error")
+        return redirect(url_for("auth.login"))
+
+    intent = (session.get("google_oauth_intent") or "login").strip().lower()
+    if intent not in {"login", "register"}:
+        intent = "login"
+
+    # Supabase may bounce here with ?error=... when the Google email already
+    # exists in Auth / the directory ("Database error saving new user").
+    oauth_error = (request.args.get("error") or "").strip().lower()
+    oauth_desc = (request.args.get("error_description") or request.args.get("error_code") or "").strip()
+    if oauth_error:
+        desc_l = oauth_desc.lower()
+        if (
+            "saving new user" in desc_l
+            or "already" in desc_l
+            or "duplicate" in desc_l
+            or "unique" in desc_l
+            or oauth_error in {"server_error", "access_denied"}
+        ):
+            flash(ACCOUNT_EXISTS_MSG, "error")
+        else:
+            flash(oauth_desc.replace("+", " ") or "Google sign-in could not be completed.", "error")
+        # Always return to Create account so the message shows in the auth UI.
+        return redirect(url_for("auth.register"))
+
+    return render_template(
+        "auth/google_callback.html",
+        supabase_url=current_app.config.get("SUPABASE_URL") or "",
+        supabase_anon_key=current_app.config.get("SUPABASE_PUBLISHABLE_KEY") or "",
+        complete_url=url_for("auth.google_complete"),
+        login_url=url_for("auth.login"),
+        register_url=url_for("auth.register"),
+        intent=intent,
+        csrf_token=generate_csrf(),
+    )
+
+
+@bp.post("/google/complete")
+def google_complete():
+    """Finish Google sign-in: verify token, upsert customer user, open Flask session."""
+    from app.services.google_auth_service import upsert_google_customer
+    from app.utils.security import is_owner_role
+
+    payload = request.get_json(silent=True) or {}
+    access_token = (payload.get("access_token") or "").strip()
+    remember = bool(payload.get("remember", True))
+    intent = (
+        (payload.get("intent") or session.get("google_oauth_intent") or "login")
+        .strip()
+        .lower()
+    )
+    if intent not in {"login", "register"}:
+        intent = "login"
+    fallback = url_for("auth.register" if intent == "register" else "auth.login")
+    try:
+        user = upsert_google_customer(access_token, intent=intent)
+    except AuthError as error:
+        flash(str(error), "error")
+        # Existing email → Create account page with the flash message (not the 500 page).
+        dest = url_for("auth.register") if error.status_code == 409 else fallback
+        return jsonify({"ok": False, "error": str(error), "redirect": dest}), 200
+    except Exception:
+        current_app.logger.exception("Google sign-in complete failed.")
+        try:
+            db.session.rollback()
+        except Exception:
+            pass
+        flash("Google sign-in could not be completed. Please try again.", "error")
+        return (
+            jsonify(
+                {
+                    "ok": False,
+                    "error": "Google sign-in could not be completed.",
+                    "redirect": fallback,
+                }
+            ),
+            500,
+        )
+
+    if is_owner_role(user.role):
+        flash(
+            "This is an Owner account. Please sign in on the Owner portal, not the Customer site.",
+            "error",
+        )
+        return jsonify(
+            {
+                "ok": False,
+                "error": "This is an Owner account. Please sign in on the Owner portal.",
+                "redirect": url_for("auth.login"),
+            }
+        ), 403
+
+    # Trusted Google session — skip Turnstile / device email gate.
+    session.pop("google_oauth_intent", None)
+    session.clear()
+    session["user_id"] = str(user.id)
+    session.permanent = bool(remember)
+    session.modified = True
+    try:
+        user.last_login_at = utcnow()
+        db.session.commit()
+    except Exception:
+        current_app.logger.exception("Could not persist last_login_at after Google sign-in.")
+        try:
+            db.session.rollback()
+        except Exception:
+            pass
+
+    target = (
+        url_for("auth.nickname_setup")
+        if not user.nickname_completed
+        else url_for("main.dashboard")
+    )
+    body = jsonify({"ok": True, "redirect": target})
+    try:
+        token = auth_service.trust_device(user, client_label())
+        body.set_cookie(
+            current_app.config["DEVICE_COOKIE_NAME"],
+            token,
+            httponly=True,
+            samesite="Lax",
+            secure=bool(current_app.config.get("SESSION_COOKIE_SECURE")),
+            max_age=current_app.config["DEVICE_TRUST_DAYS"] * 86400,
+        )
+    except Exception:
+        current_app.logger.exception("Could not trust device after Google sign-in.")
+        try:
+            db.session.rollback()
+        except Exception:
+            pass
+    return body
+
+
 def _begin_post_password(user: CustomerUser, remember: bool = True):
     """After password OK: human check (if enabled), then device / complete login."""
     if turnstile_active():
