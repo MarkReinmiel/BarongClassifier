@@ -180,7 +180,7 @@ main.shell:has(.classify-shell) {
 
 .classify-sources {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: 1fr 1fr;
   gap: 10px;
 }
 
@@ -190,6 +190,19 @@ main.shell:has(.classify-shell) {
 
 .classify-source-mobile {
   display: flex !important;
+}
+
+/* Camera control: phones only (match Owner) */
+.classify-source-btn.mobile-only-camera,
+#openCamera {
+  display: flex !important;
+}
+
+@media (min-width: 900px) {
+  .classify-source-btn.mobile-only-camera,
+  #openCamera {
+    display: none !important;
+  }
 }
 
 .classify-source-btn--desktop {
@@ -277,6 +290,11 @@ main.shell:has(.classify-shell) {
   }
 
   .classify-source-mobile {
+    display: none !important;
+  }
+
+  .classify-source-btn.mobile-only-camera,
+  #openCamera {
     display: none !important;
   }
 
@@ -442,30 +460,34 @@ input[type="file"].sr-file,
   display: none !important;
 }
 
-#openCamera.sr-file {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  border: 0;
-}
-
 @media (max-width: 899px) {
-  .classify-source-btn.mobile-only,
-  #camBtn {
-    display: none !important;
-  }
-
   .classify-source-btn--desktop,
   .classify-source-desktop {
     display: none !important;
   }
 
-  .classify-source-mobile {
+  .classify-source-mobile,
+  .classify-source-btn.mobile-only-camera,
+  #openCamera {
     display: flex !important;
+    /* Keep customer cream/terracotta look — do not use Owner olive/tan */
+    background: #fff;
+    color: var(--deep);
+    border-color: var(--accent);
+  }
+
+  .classify-source-mobile:hover,
+  .classify-source-btn.mobile-only-camera:hover,
+  #openCamera:hover,
+  .classify-source-mobile:focus-visible,
+  #openCamera:focus-visible {
+    background: rgba(200, 70, 48, 0.06);
+    color: var(--deep);
+    border-color: var(--accent);
+  }
+
+  .classify-sources {
+    grid-template-columns: 1fr 1fr;
   }
 
   .classify-side-copy {
@@ -632,8 +654,15 @@ button.classify-source-btn {
   border-style: dashed;
 }
 
-.classify-source-btn:hover {
+.classify-source-btn:hover,
+.classify-source-btn:focus-visible,
+button.classify-source-btn:hover,
+button.classify-source-btn:focus-visible,
+#openCamera:hover,
+#openCamera:focus-visible {
   background: rgba(200, 70, 48, 0.06);
+  color: var(--deep);
+  border-color: var(--accent);
   transform: translateY(-1px);
 }
 

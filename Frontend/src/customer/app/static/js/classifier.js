@@ -229,8 +229,8 @@
       event.preventDefault();
       event.stopPropagation();
     }
-    if (isMobileView()) openSourceSheet();
-    else openGalleryPicker();
+    // Gallery / Camera are separate mobile buttons; empty preview opens gallery.
+    openGalleryPicker();
   }
 
   if (clearBtn) clearBtn.onclick = clearFile;
