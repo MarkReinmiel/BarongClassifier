@@ -4,7 +4,7 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/shared.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/topnav.css') }}?v=16">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/history.css') }}?v=6">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/customer-history.css') }}?v=9">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/customer-history.css') }}?v=10">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-app.css') }}?v=9">
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <meta name="review-api-base" content="{{ request.script_root }}/api/classifications">
@@ -17,7 +17,7 @@
     <p class="eyebrow">OWNER REVIEW</p>
     <h1>Customer Classification History</h1>
     <hr class="stitch-divider" aria-hidden="true">
-    <p class="page-description">Batch-review customer photos into Pending, Approved, or Rejected. Approval marks suitability only — it does not assign Piña / Jusi / Cocoon or retrain the live model.</p>
+    <p class="page-description">Batch-review customer photos into Pending, Approved, or Rejected. Cards with no photo or under 80% confidence are auto-rejected. Approval marks suitability only — it does not assign Piña / Jusi / Cocoon or retrain the live model.</p>
   </section>
 
   <nav class="ch-tabs" aria-label="Review panels">
@@ -53,13 +53,22 @@
           {% else %}Pending review{% endif %}
         </h3>
         <p class="history-panel-sub">
-          {% if panel == 'approved' %}Suitable images for the unlabeled dataset pool. Class labeling is a separate step.
+          {% if panel == 'approved' %}Approved photos not yet in the dataset pool appear first. Items already in the pool are listed last.
           {% elif panel == 'rejected' %}Excluded from approval and dataset operations. View only.
           {% else %}New customer classifications awaiting Owner decision.{% endif %}
         </p>
       </div>
       <a class="ch-link" href="{{ url_for('reviews.dataset_contributions') }}">Open Customer Contributions →</a>
     </div>
+
+    {% if panel == 'approved' and rows %}
+    <div class="ch-approved-tools" id="approvedTools">
+      <button type="button" class="ch-btn ch-btn--navy" id="selectAllApprovedBtn">
+        Select all approved (not in dataset)
+      </button>
+      <p class="ch-form-hint">Selects every Approved photo on this page that is not already in the dataset pool, then asks for confirmation.</p>
+    </div>
+    {% endif %}
 
     {% if error %}
     <div class="ch-flash ch-flash--error">{{ error }}</div>
@@ -423,5 +432,5 @@
 {% endblock %}
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/navbar.js') }}"></script>
-<script src="{{ url_for('static', filename='js/customer-history.js') }}?v=9"></script>
+<script src="{{ url_for('static', filename='js/customer-history.js') }}?v=10"></script>
 {% endblock %}

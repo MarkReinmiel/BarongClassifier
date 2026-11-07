@@ -606,6 +606,32 @@
     syncSelectionUi();
   });
 
+  function selectAllApprovedForDataset({ openConfirm = true } = {}) {
+    const targets = eligibleChecks().filter(
+      (input) => (input.getAttribute("data-status") || "") === "approved"
+    );
+    if (!targets.length) {
+      showToast("No approved photos on this page are waiting for the dataset pool.", "bad");
+      return [];
+    }
+    eligibleChecks().forEach((input) => {
+      input.checked = false;
+    });
+    targets.forEach((input) => {
+      input.checked = true;
+    });
+    syncSelectionUi();
+    const ids = selectedDatasetIds();
+    if (openConfirm && ids.length) {
+      openDatasetPrompt(ids, ids.length);
+    }
+    return ids;
+  }
+
+  document.getElementById("selectAllApprovedBtn")?.addEventListener("click", () => {
+    selectAllApprovedForDataset({ openConfirm: true });
+  });
+
   document.getElementById("clearSelectionBtn")?.addEventListener("click", clearSelection);
 
   document.getElementById("batchApproveBtn")?.addEventListener("click", () => {

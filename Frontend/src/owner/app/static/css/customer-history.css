@@ -654,6 +654,23 @@
 .ch-tab--ok strong { color: var(--ch-ok); }
 .ch-tab--bad strong { color: var(--ch-bad); }
 
+.ch-approved-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 16px;
+  margin: 0 0 14px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(36, 54, 80, 0.12);
+  background: rgba(36, 54, 80, 0.03);
+}
+
+.ch-approved-tools .ch-form-hint {
+  margin: 0;
+  flex: 1 1 220px;
+}
+
 /* Selection toolbar */
 .ch-batch-bar {
   display: flex;
