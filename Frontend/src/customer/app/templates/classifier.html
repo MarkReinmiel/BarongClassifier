@@ -1,7 +1,7 @@
 ﻿{% extends "base.html" %}
 {% block title %}Classify Textile | {{ app_name }}{% endblock %}
 {% block head %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/classifier.css') }}?v=32">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/classifier.css') }}?v=33">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/camera.css') }}?v=2">
 {% endblock %}
 {% block content %}
@@ -11,6 +11,7 @@
   hidden
   data-section="classify"
   data-launch="{{ '1' if launch_classify_tour|default(false) else '0' }}"
+  data-skip-mobile="1"
 ></div>
 
 <div class="classify-shell">
@@ -41,19 +42,55 @@
       </div>
 
       <div class="classify-sources" data-tour="classify-sources">
-        <label class="classify-source-btn" for="fileGal" id="galBtn" data-tour="classify-gallery">
+        {# Desktop: gallery upload only #}
+        <label class="classify-source-btn classify-source-desktop" for="fileGal" id="galBtn" data-tour="classify-gallery">
           <span class="classify-source-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10.5" r="1.5"/><path d="m21 16-5.5-5.5L9 17"/></svg>
           </span>
-          <span class="classify-source-label-mobile">Browse from gallery</span>
-          <span class="classify-source-label-desktop">Upload from Gallery</span>
+          <span>Upload from Gallery</span>
         </label>
-        <button type="button" class="classify-source-btn mobile-only mobile-only-camera" id="openCamera" data-tour="classify-camera">
+        {# Mobile: opens gallery vs live-camera sheet #}
+        <button type="button" class="classify-source-btn classify-source-mobile" id="chooseSourceBtn" data-tour="classify-gallery" aria-haspopup="dialog" aria-controls="sourceSheet">
           <span class="classify-source-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-2h6l2 2h3v11H4V8z"/><circle cx="12" cy="13" r="3.5"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10.5" r="1.5"/><path d="m21 16-5.5-5.5L9 17"/></svg>
           </span>
-          <span>Camera</span>
+          <span>Choose image</span>
         </button>
+        {# Programmatic live-camera trigger (WebRTC); not shown in the source row #}
+        <button type="button" id="openCamera" class="sr-file" tabindex="-1" aria-hidden="true">Open camera</button>
+      </div>
+
+      <div id="sourceSheet" class="source-sheet" hidden>
+        <button type="button" class="source-sheet-backdrop" data-source-dismiss aria-label="Close"></button>
+        <div
+          class="source-sheet-panel"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="sourceSheetTitle"
+        >
+          <p class="source-sheet-eyebrow">Classify textile</p>
+          <h3 id="sourceSheetTitle">Choose a photo source</h3>
+          <p class="source-sheet-copy">Pick how you want to add a textile image.</p>
+          <button type="button" class="source-sheet-option" id="sourceGallery">
+            <span class="classify-source-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10.5" r="1.5"/><path d="m21 16-5.5-5.5L9 17"/></svg>
+            </span>
+            <span class="source-sheet-option-text">
+              <strong>Upload from Gallery</strong>
+              <span>Choose an existing photo</span>
+            </span>
+          </button>
+          <button type="button" class="source-sheet-option" id="sourceCamera">
+            <span class="classify-source-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-2h6l2 2h3v11H4V8z"/><circle cx="12" cy="13" r="3.5"/></svg>
+            </span>
+            <span class="source-sheet-option-text">
+              <strong>Live Camera</strong>
+              <span>Capture with your device camera</span>
+            </span>
+          </button>
+          <button type="button" class="source-sheet-cancel" data-source-dismiss>Cancel</button>
+        </div>
       </div>
 
       <p id="cameraNotice" class="camera-notice mobile-only-camera" role="status" hidden></p>
@@ -111,6 +148,7 @@
       </div>
 
       <input type="file" name="file" id="fileGal" accept="image/png,image/jpeg,image/jpg,image/jpe,image/webp,.jpg,.jpeg,.jpe,.png,.webp" class="sr-file">
+      {# Native camera capture fallback (used if Live Camera WebRTC is unavailable) #}
       <input type="file" id="fileCam" accept="image/*" capture="environment" class="sr-file">
       <button class="btn p classify-analyze" id="analyze" type="submit" disabled data-tour="classify-analyze">
         <span class="classify-analyze-icon" aria-hidden="true">
@@ -164,7 +202,7 @@
 </div>
 {% endblock %}
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/classifier.js') }}?v=7"></script>
+<script src="{{ url_for('static', filename='js/classifier.js') }}?v=8"></script>
 <script src="{{ url_for('static', filename='js/cameraGuidance.js') }}?v=7"></script>
-<script src="{{ url_for('static', filename='js/liveCamera.js') }}?v=2"></script>
+<script src="{{ url_for('static', filename='js/liveCamera.js') }}?v=3"></script>
 {% endblock %}

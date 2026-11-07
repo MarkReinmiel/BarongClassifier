@@ -67,14 +67,14 @@
  * lock is released, virtual cursor hidden, THIS class re-enables real clicks
  * on the spotlighted control while the rest of the page stays blocked.
  */
+/* Highlight is visual-only — clicks go through the hit-proxy only */
 .tour-target-live.tour-target-user {
-  z-index: 12006 !important;
-  pointer-events: auto !important;
-  cursor: pointer !important;
+  z-index: 12002 !important;
+  pointer-events: none !important;
   box-shadow: 0 0 0 3px rgba(200, 70, 48, 0.45);
 }
 
-/* Transparent click bridge — always above the dim layer */
+/* Sole interactive surface while the tour is open */
 .tour-hit-proxy {
   position: fixed;
   z-index: 12020;
@@ -86,6 +86,7 @@
   cursor: pointer;
   appearance: none;
   -webkit-appearance: none;
+  pointer-events: auto !important;
 }
 .tour-hit-proxy:focus-visible {
   outline: 2px solid rgba(200, 70, 48, 0.7);
@@ -98,28 +99,24 @@
   filter: brightness(0.96);
 }
 
-/* Your-turn: restore the REAL mouse (tour-active forces cursor:none otherwise) */
-body.tour-active.tour-user-phase,
-body.tour-active.tour-user-phase * {
+/* Your-turn: real cursor for the hit-proxy; everything else stays blocked */
+body.tour-active.tour-user-phase {
   cursor: auto !important;
 }
 
-body.tour-active.tour-user-phase .tour-hit-proxy,
-body.tour-active.tour-user-phase .tour-target-user,
-body.tour-active.tour-user-phase .tour-target-user * {
+body.tour-active.tour-user-phase .tour-hit-proxy {
   cursor: pointer !important;
 }
 
 body.tour-user-phase .tour-block {
-  /* Let the hit-proxy receive clicks; block only dims visually */
-  pointer-events: none !important;
-  cursor: auto !important;
+  /* Keep shield active so non-highlighted UI cannot receive clicks */
+  pointer-events: auto !important;
 }
 
-/* Fake black cursor stays off; tip description is shown */
 .tour-cursor,
 .tour-cursor-ripple {
   display: none !important;
+  pointer-events: none !important;
 }
 
 @keyframes tour-target-pulse {
@@ -134,7 +131,7 @@ body.tour-user-phase .tour-block {
 
 .tour-tip {
   position: fixed;
-  z-index: 12003;
+  z-index: 12020;
   width: min(300px, calc(100vw - 32px));
   padding: 14px 14px 12px;
   border-radius: 14px;
@@ -142,7 +139,7 @@ body.tour-user-phase .tour-block {
   border: 1.5px solid var(--line, #d4cdbb);
   box-shadow: 0 16px 36px rgba(31, 34, 50, 0.22);
   color: var(--ink, #1f2232);
-  pointer-events: none;
+  pointer-events: auto;
   font-family: var(--sans, "DM Sans", sans-serif);
   animation: tour-tip-in 0.28s ease;
 }
@@ -183,10 +180,45 @@ body.tour-user-phase .tour-block {
 
 .tour-tip-nudge {
   display: block;
-  margin-top: 6px;
+  margin: 0 0 10px;
   font-size: 12px;
   font-weight: 700;
   color: var(--accent, #c84630);
+}
+
+.tour-tip-nudge[hidden] {
+  display: none !important;
+}
+
+.tour-tip-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 4px;
+}
+
+.tour-skip {
+  pointer-events: auto;
+  min-height: 40px;
+  min-width: 72px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1.5px solid var(--line, #d4cdbb);
+  background: transparent;
+  color: var(--ink2, #596475);
+  font-family: var(--sans, "DM Sans", sans-serif);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.tour-skip:hover,
+.tour-skip:focus-visible {
+  color: var(--ink, #1f2232);
+  border-color: var(--ink2, #596475);
+  outline: 2px solid var(--accent, #c84630);
+  outline-offset: 2px;
 }
 
 /* ---------------------------------------------------------

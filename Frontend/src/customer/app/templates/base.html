@@ -8,14 +8,14 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}?v=42">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}?v=44">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}?v=51">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/classifier.css') }}?v=32">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/responsive.css') }}?v=14">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/motion.css') }}?v=5">
   {% block head %}{% endblock %}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-ui.css') }}?v=15">
   {% if current_user and current_user.nickname_completed %}
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/tour.css') }}?v=8">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/tour.css') }}?v=12">
   {% endif %}
 </head>
 <body data-static-root="{{ url_for('static', filename='') }}">
@@ -137,7 +137,7 @@
     data-csrf="{{ csrf_token() }}"
     data-progress='{{ tour_progress_json|default("{\"main\":true,\"classify\":true,\"textile\":true,\"history\":true,\"profile\":true}")|safe }}'
   ></div>
-  <script src="{{ url_for('static', filename='js/tour.js') }}?v=9" defer></script>
+  <script src="{{ url_for('static', filename='js/tour.js') }}?v=12" defer></script>
   {% endif %}
 
   <script src="{{ url_for('static', filename='js/motion.js') }}?v=5"></script>

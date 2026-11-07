@@ -194,7 +194,7 @@ def google_start():
 @bp.get("/google/callback")
 def google_callback():
     """Landing page after Supabase/Google — JS posts the access token to complete."""
-    from app.services.google_auth_service import ACCOUNT_EXISTS_MSG, google_oauth_configured
+    from app.services.google_auth_service import google_oauth_configured
 
     if current_user():
         return redirect(url_for("main.dashboard"))
@@ -206,24 +206,36 @@ def google_callback():
     if intent not in {"login", "register"}:
         intent = "login"
 
-    # Supabase may bounce here with ?error=... when the Google email already
-    # exists in Auth / the directory ("Database error saving new user").
+    # Supabase may bounce here with ?error=... (provider/config issues). Never show
+    # the old “account already exists” register error — prefer Sign in instead.
     oauth_error = (request.args.get("error") or "").strip().lower()
     oauth_desc = (request.args.get("error_description") or request.args.get("error_code") or "").strip()
     if oauth_error:
         desc_l = oauth_desc.lower()
-        if (
+        looks_like_existing = (
             "saving new user" in desc_l
             or "already" in desc_l
             or "duplicate" in desc_l
             or "unique" in desc_l
-            or oauth_error in {"server_error", "access_denied"}
-        ):
-            flash(ACCOUNT_EXISTS_MSG, "error")
-        else:
-            flash(oauth_desc.replace("+", " ") or "Google sign-in could not be completed.", "error")
-        # Always return to Create account so the message shows in the auth UI.
-        return redirect(url_for("auth.register"))
+            or "registered" in desc_l
+        )
+        if looks_like_existing and intent == "register" and not session.pop("google_oauth_login_retry", None):
+            # One retry through the login entry point (avoids register 409 UX).
+            session["google_oauth_intent"] = "login"
+            session["google_oauth_login_retry"] = True
+            session.modified = True
+            return redirect(url_for("auth.google_start", intent="login"))
+        session.pop("google_oauth_login_retry", None)
+        session.pop("google_oauth_intent", None)
+        # No access token on this bounce — send to Sign in (password or Google again).
+        if looks_like_existing:
+            flash(
+                "Welcome back — sign in to continue. You can use Continue with Google or your password.",
+                "info",
+            )
+            return redirect(url_for("auth.login"))
+        flash(oauth_desc.replace("+", " ") or "Google sign-in could not be completed.", "error")
+        return redirect(url_for("auth.register" if intent == "register" else "auth.login"))
 
     return render_template(
         "auth/google_callback.html",
@@ -258,8 +270,7 @@ def google_complete():
         user = upsert_google_customer(access_token, intent=intent)
     except AuthError as error:
         flash(str(error), "error")
-        # Existing email → Create account page with the flash message (not the 500 page).
-        dest = url_for("auth.register") if error.status_code == 409 else fallback
+        dest = url_for("auth.login") if error.status_code in {403, 409} else fallback
         return jsonify({"ok": False, "error": str(error), "redirect": dest}), 200
     except Exception:
         current_app.logger.exception("Google sign-in complete failed.")
@@ -294,6 +305,7 @@ def google_complete():
 
     # Trusted Google session — skip Turnstile / device email gate.
     session.pop("google_oauth_intent", None)
+    session.pop("google_oauth_login_retry", None)
     session.clear()
     session["user_id"] = str(user.id)
     session.permanent = bool(remember)

@@ -7,18 +7,233 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/history.css') }}?v=4">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-app.css') }}?v=9">
 <style>
-  .user-card{display:grid;gap:12px;padding:22px;margin-bottom:14px;background:var(--surface,#fffdf8);border:1px solid var(--gold-line,#d4bc8a);border-radius:16px;box-shadow:0 10px 24px rgba(42,36,28,.06)}
-  .user-card h3{margin:0;font-family:"Playfair Display",Georgia,serif;font-size:18px;color:#3b2919}
-  .user-card .meta{margin:0;font-size:12px;color:#755f48}
-  .user-actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
-  .user-actions select{min-height:40px;border:1px solid var(--line-strong);border-radius:7px;background:var(--surface-soft);padding:0 10px}
-  .btn{min-height:40px;border:0;border-radius:6px;padding:0 14px;font-weight:600;cursor:pointer;background:var(--accent);color:#fff}
-  .btn.danger{background:#B85C5C}
+  /* Layout chrome matches dashboard; colors from owner shared palette only */
+  .users-page-header{text-align:left;margin-bottom:18px}
+  .users-page-header .stitch-divider{margin-left:0;margin-right:auto}
+  .users-stats{
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:12px;
+    margin:0 0 14px;
+  }
+  .users-stat{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:16px 18px;
+    box-shadow:0 8px 18px var(--shadow);
+  }
+  .users-stat span{
+    display:block;
+    font-family:"DM Sans",Arial,sans-serif;
+    font-size:11px;
+    font-weight:600;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+  }
+  .users-stat strong{
+    display:block;
+    margin-top:6px;
+    font-family:"Playfair Display",Georgia,serif;
+    font-size:28px;
+    font-weight:600;
+    line-height:1;
+    color:var(--ink);
+  }
+  .users-toolbar{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:14px;
+    margin:0 0 14px;
+    box-shadow:0 8px 18px var(--shadow);
+  }
+  .users-toolbar-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    align-items:center;
+  }
+  .users-search{
+    flex:1 1 220px;
+    min-height:40px;
+    border:1px solid var(--line-strong);
+    border-radius:10px;
+    background:var(--surface-soft);
+    color:var(--ink);
+    padding:0 12px;
+    font-family:"DM Sans",Arial,sans-serif;
+    font-size:14px;
+  }
+  .users-search::placeholder{color:var(--ink-soft)}
+  .users-toolbar select{
+    min-height:40px;
+    border:1px solid var(--line-strong);
+    border-radius:10px;
+    background:var(--surface-soft);
+    color:var(--ink);
+    padding:0 10px;
+    font-family:"DM Sans",Arial,sans-serif;
+    font-size:13px;
+  }
+  .users-clear{
+    min-height:40px;
+    border:0;
+    border-radius:999px;
+    padding:0 14px;
+    font-weight:600;
+    cursor:pointer;
+    background:var(--baltic);
+    color:#fff;
+    font-family:"DM Sans",Arial,sans-serif;
+  }
+  .users-count{
+    margin:10px 2px 0;
+    font-size:12px;
+    color:var(--ink-soft);
+  }
+  .users-list{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:16px;
+    overflow:hidden;
+    box-shadow:0 8px 18px var(--shadow);
+  }
+  .user-row{
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
+    justify-content:space-between;
+    gap:14px;
+    padding:16px 18px;
+    border-bottom:1px solid var(--line);
+  }
+  .user-row:last-child{border-bottom:0}
+  .user-row.is-hidden{display:none}
+  .user-main{
+    display:flex;
+    align-items:flex-start;
+    gap:12px;
+    min-width:0;
+    flex:1 1 260px;
+  }
+  .user-avatar{
+    flex:none;
+    width:42px;
+    height:42px;
+    border-radius:50%;
+    display:grid;
+    place-items:center;
+    background:var(--surface-soft);
+    border:1px solid var(--line);
+    color:var(--midnight);
+    font-family:"Playfair Display",Georgia,serif;
+    font-size:18px;
+    font-weight:600;
+  }
+  .user-copy{min-width:0}
+  .user-name-row{
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
+    gap:8px;
+  }
+  .user-name{
+    margin:0;
+    font-family:"DM Sans",Arial,sans-serif;
+    font-size:15px;
+    font-weight:700;
+    color:var(--ink);
+  }
+  .user-id{
+    display:inline-flex;
+    align-items:center;
+    min-height:22px;
+    padding:0 8px;
+    border-radius:999px;
+    background:var(--surface-soft);
+    border:1px solid var(--line);
+    color:var(--ink-soft);
+    font-size:11px;
+    font-weight:600;
+  }
+  .user-email{
+    margin:4px 0 8px;
+    font-size:13px;
+    color:var(--ink-soft);
+    word-break:break-word;
+  }
+  .user-badges{display:flex;flex-wrap:wrap;gap:6px}
+  .user-badge{
+    display:inline-flex;
+    align-items:center;
+    min-height:22px;
+    padding:0 9px;
+    border-radius:999px;
+    font-size:11px;
+    font-weight:700;
+    text-transform:lowercase;
+  }
+  .user-badge.role{
+    background:rgba(51,101,138,.12);
+    color:var(--baltic);
+  }
+  .user-badge.active{
+    background:rgba(117,142,79,.18);
+    color:var(--accent-deep);
+  }
+  .user-badge.inactive{
+    background:rgba(163,50,11,.12);
+    color:var(--rust);
+  }
+  .user-actions{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    align-items:center;
+    justify-content:flex-end;
+  }
+  .user-actions form{
+    display:inline-flex;
+    flex-wrap:wrap;
+    gap:8px;
+    align-items:center;
+    margin:0;
+  }
+  .user-actions select{
+    min-height:40px;
+    border:1px solid var(--line-strong);
+    border-radius:7px;
+    background:var(--surface-soft);
+    color:var(--ink);
+    padding:0 10px;
+  }
+  .btn{
+    min-height:40px;
+    border:0;
+    border-radius:999px;
+    padding:0 14px;
+    font-weight:600;
+    cursor:pointer;
+    background:var(--accent);
+    color:#fff;
+  }
+  .btn.danger{background:var(--rust)}
+  .btn.soft-danger{background:#B85C5C}
+  .user-locked{margin:0;font-size:12px;color:var(--ink-soft)}
   .flash{border-radius:10px;padding:12px 14px;margin-bottom:12px}
   .flash.error{background:#f8e8eb;color:#8b2e3b}
   .flash.success{background:#e8f4ee;color:#2f6b4f}
-  .users-page-header{text-align:center;margin-bottom:18px}
-  .users-page-header .stitch-divider{margin-left:auto;margin-right:auto}
+  .users-empty{
+    padding:22px;
+    text-align:center;
+    color:var(--ink-soft);
+  }
+  @media (max-width:720px){
+    .users-stats{grid-template-columns:1fr}
+    .user-actions{width:100%;justify-content:flex-start}
+  }
 </style>
 {% endblock %}
 {% block body %}
@@ -30,56 +245,172 @@
       <h2>User management</h2>
       <hr class="stitch-divider" aria-hidden="true">
     </div>
+
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% for category, message in messages %}
         <div class="flash {{ category }}">{{ message }}</div>
       {% endfor %}
     {% endwith %}
+
+    <div class="users-stats" aria-label="User counts">
+      <div class="users-stat">
+        <span>Total Users</span>
+        <strong>{{ users_total|default(users|length) }}</strong>
+      </div>
+      <div class="users-stat">
+        <span>Active</span>
+        <strong>{{ users_active|default(0) }}</strong>
+      </div>
+      <div class="users-stat">
+        <span>Inactive</span>
+        <strong>{{ users_inactive|default(0) }}</strong>
+      </div>
+    </div>
+
+    <div class="users-toolbar">
+      <div class="users-toolbar-row">
+        <input
+          id="usersSearch"
+          class="users-search"
+          type="search"
+          placeholder="Search name, email or ID"
+          autocomplete="off"
+        >
+        <select id="usersRoleFilter" aria-label="Filter by role">
+          <option value="">All roles</option>
+          <option value="customer">customer</option>
+          <option value="owner">owner</option>
+          <option value="admin">admin</option>
+        </select>
+        <select id="usersStatusFilter" aria-label="Filter by status">
+          <option value="">All status</option>
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+        </select>
+        <button type="button" class="users-clear" id="usersClearFilters">Clear</button>
+      </div>
+      <p class="users-count" id="usersCountLabel">Showing {{ users|length }} of {{ users|length }} users</p>
+    </div>
+
     {% if not users %}
-      <div class="overview-card"><div class="overview-info"><h3>No users found</h3><p>The shared directory is empty or unavailable.</p></div></div>
+      <div class="users-list">
+        <div class="users-empty">
+          <h3>No users found</h3>
+          <p>The shared directory is empty or unavailable.</p>
+        </div>
+      </div>
+    {% else %}
+      <div class="users-list" id="usersList">
+        {% for row in users %}
+        {% set display_name = row.full_name or (row.email.split('@')[0] if row.email else 'User') %}
+        {% set initial = (display_name[:1] or '?')|upper %}
+        {% set short_id = (row.id|string)[:8] %}
+        <article
+          class="user-row"
+          data-name="{{ display_name|lower }}"
+          data-email="{{ (row.email or '')|lower }}"
+          data-id="{{ row.id }}"
+          data-role="{{ (row.role or '')|lower }}"
+          data-status="{{ 'active' if row.is_active else 'inactive' }}"
+        >
+          <div class="user-main">
+            <div class="user-avatar" aria-hidden="true">{{ initial }}</div>
+            <div class="user-copy">
+              <div class="user-name-row">
+                <h3 class="user-name">{{ display_name }}</h3>
+                <span class="user-id">ID #{{ short_id }}</span>
+              </div>
+              <p class="user-email">{{ row.email }}</p>
+              <div class="user-badges">
+                <span class="user-badge role">{{ row.role or 'customer' }}</span>
+                <span class="user-badge {{ 'active' if row.is_active else 'inactive' }}">
+                  {{ 'Active' if row.is_active else 'Inactive' }}
+                </span>
+                {% if row.email_verified %}
+                <span class="user-badge role">verified</span>
+                {% else %}
+                <span class="user-badge inactive">unverified</span>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+
+          <div class="user-actions">
+            {% if row.role == 'admin' %}
+              <p class="user-locked">Admin accounts are locked here.</p>
+            {% else %}
+              <form method="post" action="{{ url_for('dashboard.set_role', user_id=row.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <select name="role" aria-label="Role for {{ display_name }}">
+                  <option value="customer" {% if row.role == 'customer' %}selected{% endif %}>customer</option>
+                  <option value="owner" {% if row.role == 'owner' %}selected{% endif %}>owner</option>
+                </select>
+                <button class="btn" type="submit">Save role</button>
+              </form>
+              <form method="post" action="{{ url_for('dashboard.set_status', user_id=row.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="is_active" value="{{ 'false' if row.is_active else 'true' }}">
+                <button class="btn {% if row.is_active %}soft-danger{% endif %}" type="submit">
+                  {{ 'Deactivate' if row.is_active else 'Activate' }}
+                </button>
+              </form>
+              <form
+                method="post"
+                action="{{ url_for('dashboard.remove_user', user_id=row.id) }}"
+                onsubmit="return confirm('Delete this user permanently? This cannot be undone.');"
+              >
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="btn danger" type="submit">Delete</button>
+              </form>
+            {% endif %}
+          </div>
+        </article>
+        {% endfor %}
+      </div>
     {% endif %}
-    {% for row in users %}
-    <article class="user-card">
-      <div>
-        <h3>{{ row.full_name or 'User' }} · {{ row.email }}</h3>
-        <p class="meta">
-          {{ row.role }} · {{ 'active' if row.is_active else 'inactive' }} · {{ 'verified' if row.email_verified else 'unverified' }}
-        </p>
-      </div>
-      <div class="user-actions">
-        {% if row.role == 'admin' %}
-          <span class="meta">Admin accounts are locked here.</span>
-        {% else %}
-          <form method="post" action="{{ url_for('dashboard.set_role', user_id=row.id) }}">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <select name="role">
-              <option value="customer" {% if row.role == 'customer' %}selected{% endif %}>customer</option>
-              <option value="owner" {% if row.role == 'owner' %}selected{% endif %}>owner</option>
-            </select>
-            <button class="btn" type="submit">Save role</button>
-          </form>
-          <form method="post" action="{{ url_for('dashboard.set_status', user_id=row.id) }}">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <input type="hidden" name="is_active" value="{{ 'false' if row.is_active else 'true' }}">
-            <button class="btn {% if row.is_active %}danger{% endif %}" type="submit">
-              {{ 'Deactivate' if row.is_active else 'Activate' }}
-            </button>
-          </form>
-          <form
-            method="post"
-            action="{{ url_for('dashboard.remove_user', user_id=row.id) }}"
-            onsubmit="return confirm('Delete this user permanently? This cannot be undone.');"
-          >
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <button class="btn danger" type="submit">Delete</button>
-          </form>
-        {% endif %}
-      </div>
-    </article>
-    {% endfor %}
   </section>
 </main>
 {% endblock %}
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/navbar.js') }}"></script>
+<script>
+(function () {
+  var search = document.getElementById("usersSearch");
+  var roleFilter = document.getElementById("usersRoleFilter");
+  var statusFilter = document.getElementById("usersStatusFilter");
+  var clearBtn = document.getElementById("usersClearFilters");
+  var countLabel = document.getElementById("usersCountLabel");
+  var rows = Array.prototype.slice.call(document.querySelectorAll("#usersList .user-row"));
+  if (!rows.length) return;
+
+  function applyFilters() {
+    var q = ((search && search.value) || "").trim().toLowerCase();
+    var role = ((roleFilter && roleFilter.value) || "").toLowerCase();
+    var status = ((statusFilter && statusFilter.value) || "").toLowerCase();
+    var shown = 0;
+    rows.forEach(function (row) {
+      var hay = [row.getAttribute("data-name") || "", row.getAttribute("data-email") || "", row.getAttribute("data-id") || ""].join(" ");
+      var matchQ = !q || hay.indexOf(q) !== -1;
+      var matchRole = !role || (row.getAttribute("data-role") || "") === role;
+      var matchStatus = !status || (row.getAttribute("data-status") || "") === status;
+      var ok = matchQ && matchRole && matchStatus;
+      row.classList.toggle("is-hidden", !ok);
+      if (ok) shown += 1;
+    });
+    if (countLabel) countLabel.textContent = "Showing " + shown + " of " + rows.length + " users";
+  }
+
+  if (search) search.addEventListener("input", applyFilters);
+  if (roleFilter) roleFilter.addEventListener("change", applyFilters);
+  if (statusFilter) statusFilter.addEventListener("change", applyFilters);
+  if (clearBtn) {
+    clearBtn.addEventListener("click", function () {
+      if (search) search.value = "";
+      if (roleFilter) roleFilter.value = "";
+      if (statusFilter) statusFilter.value = "";
+      applyFilters();
+    });
+  }
+})();
+</script>
 {% endblock %}

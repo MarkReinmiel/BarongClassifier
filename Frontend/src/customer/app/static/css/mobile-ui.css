@@ -304,19 +304,14 @@
     gap: 8px;
   }
 
-  .classify-source-btn {
+  .classify-source-btn,
+  .classify-source-mobile {
     min-height: 48px;
     border-radius: 999px;
     background: var(--accent);
     color: #fff;
     border-color: var(--accent);
     justify-content: center;
-  }
-
-  .classify-source-btn.mobile-only-camera {
-    background: #fff;
-    color: var(--deep);
-    border: 1px solid var(--line2, #C9CDD6);
   }
 
   .classify-tips {
@@ -520,7 +515,8 @@
     grid-template-columns: 1fr !important;
     width: min(100%, 480px);
     gap: 20px;
-    padding: 88px 16px 48px;
+    min-height: 0;
+    padding: 16px 16px calc(28px + env(safe-area-inset-bottom, 0px));
   }
 
   .auth-body--home .auth-split-brand {
@@ -533,7 +529,7 @@
 
   .auth-shell--hero {
     position: relative;
-    padding: 40px 16px 88px;
+    padding: 28px 16px calc(28px + env(safe-area-inset-bottom, 0px));
     overflow: hidden;
     background: var(--nav);
   }

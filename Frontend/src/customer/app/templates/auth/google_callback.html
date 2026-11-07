@@ -43,7 +43,8 @@
       errorEl.hidden = false;
       errorEl.textContent = message || "Please try again.";
       backEl.hidden = false;
-      backEl.href = registerUrl || loginUrl;
+      backEl.href = loginUrl || registerUrl;
+      backEl.textContent = "Back to sign in";
     }
 
     function finish(accessToken) {
@@ -69,14 +70,14 @@
           if (!result.data || !result.data.ok) {
             fail(
               (result.data && result.data.error) || "Google sign-in failed.",
-              (result.data && result.data.redirect) || registerUrl
+              (result.data && result.data.redirect) || loginUrl
             );
             return;
           }
           window.location.replace(result.data.redirect || "/dashboard");
         })
         .catch(function () {
-          fail("Network error while completing Google sign-in.", registerUrl);
+          fail("Network error while completing Google sign-in.", loginUrl);
         });
     }
 
@@ -93,13 +94,13 @@
 
     var loc = tokenFromLocation();
     if (loc.error) {
-      /* Server should usually catch this; keep a client fallback. */
-      window.location.replace(registerUrl);
+      /* Prefer Sign in so existing accounts can complete Google without a register error. */
+      window.location.replace(loginUrl);
       return;
     }
 
     if (!window.supabase || !supabaseUrl || !supabaseKey) {
-      fail("Google sign-in is missing configuration.", registerUrl);
+      fail("Google sign-in is missing configuration.", loginUrl);
       return;
     }
 
@@ -126,11 +127,11 @@
         }
         fail(
           "No Google session was returned.",
-          registerUrl
+          loginUrl
         );
       })
       .catch(function () {
-        fail("Could not read the Google session.", registerUrl);
+        fail("Could not read the Google session.", loginUrl);
       });
   })();
   </script>

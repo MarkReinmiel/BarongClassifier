@@ -180,8 +180,16 @@ main.shell:has(.classify-shell) {
 
 .classify-sources {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 10px;
+}
+
+.classify-source-desktop {
+  display: none !important;
+}
+
+.classify-source-mobile {
+  display: flex !important;
 }
 
 .classify-source-btn--desktop {
@@ -262,6 +270,14 @@ main.shell:has(.classify-shell) {
   .classify-sources {
     grid-template-columns: 1fr;
     gap: 10px;
+  }
+
+  .classify-source-desktop {
+    display: flex !important;
+  }
+
+  .classify-source-mobile {
+    display: none !important;
   }
 
   .classify-source-btn--desktop {
@@ -422,20 +438,34 @@ input[type="file"].sr-file,
 }
 
 .classify-source-btn.mobile-only,
-#camBtn,
-#openCamera {
+#camBtn {
   display: none !important;
+}
+
+#openCamera.sr-file {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
 }
 
 @media (max-width: 899px) {
   .classify-source-btn.mobile-only,
-  #camBtn,
-  #openCamera {
-    display: flex !important;
+  #camBtn {
+    display: none !important;
   }
 
-  .classify-source-btn--desktop {
+  .classify-source-btn--desktop,
+  .classify-source-desktop {
     display: none !important;
+  }
+
+  .classify-source-mobile {
+    display: flex !important;
   }
 
   .classify-side-copy {
@@ -448,6 +478,144 @@ input[type="file"].sr-file,
 
   .classify-latest {
     display: none;
+  }
+}
+
+/* Mobile source picker (bottom sheet) */
+.source-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 11050;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.source-sheet[hidden] {
+  display: none !important;
+}
+
+.source-sheet-backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  background: rgba(31, 34, 50, 0.48);
+  cursor: pointer;
+}
+
+.source-sheet-panel {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 440px);
+  max-height: min(88vh, 560px);
+  overflow: auto;
+  padding: 18px 16px calc(16px + env(safe-area-inset-bottom, 0px));
+  border-radius: 22px 22px 0 0;
+  background: var(--surface, #fbf9f4);
+  border: 1px solid var(--line, #d4cdbb);
+  border-bottom: 0;
+  box-shadow: 0 -18px 40px rgba(31, 34, 50, 0.22);
+  animation: source-sheet-up 0.28s ease;
+}
+
+@keyframes source-sheet-up {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.source-sheet-eyebrow {
+  margin: 0 0 4px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink2, #596475);
+}
+
+.source-sheet-panel h3 {
+  margin: 0 0 6px;
+  font-family: var(--serif, "Playfair Display", Georgia, serif);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--ink, #1f2232);
+}
+
+.source-sheet-copy {
+  margin: 0 0 14px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--ink2, #596475);
+}
+
+.source-sheet-option {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+  min-height: 64px;
+  margin: 0 0 10px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  border: 1.5px solid var(--accent, #c84630);
+  background: #fff;
+  color: var(--deep, #26354a);
+  cursor: pointer;
+  font-family: var(--sans, "DM Sans", sans-serif);
+}
+
+.source-sheet-option:hover,
+.source-sheet-option:focus-visible {
+  background: rgba(200, 70, 48, 0.06);
+  outline: none;
+}
+
+.source-sheet-option-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.source-sheet-option-text strong {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.source-sheet-option-text span {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink2, #596475);
+}
+
+.source-sheet-cancel {
+  width: 100%;
+  min-height: 46px;
+  margin-top: 4px;
+  border: 0;
+  border-radius: 14px;
+  background: transparent;
+  color: var(--ink2, #596475);
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  font-family: var(--sans, "DM Sans", sans-serif);
+}
+
+body.source-sheet-open {
+  overflow: hidden;
+}
+
+@media (min-width: 900px) {
+  .source-sheet {
+    display: none !important;
   }
 }
 
