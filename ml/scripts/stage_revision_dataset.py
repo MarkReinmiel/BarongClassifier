@@ -1,8 +1,10 @@
-"""Stage an immutable training revision dataset.
+"""Stage a training revision dataset.
 
 Copies the master folder dataset, merges Owner-approved customer contributions
 (deduped by content hash), updates the master with newly seen files, and writes
 a snapshot under ml/data/snapshots/<snapshot_id>/ for training.
+
+Same revision slot overwrites its snapshot folder (no _alt / timestamp piles).
 """
 
 from __future__ import annotations
@@ -135,9 +137,10 @@ def stage_from_plan(plan: dict[str, Any], *, log=print) -> dict[str, Any]:
             log(f"Failed contribution {item.get('classification_id')}: {error}")
 
     if snapshot_dir.exists():
-        # Never delete prior snapshots; use a unique child if collision.
-        snapshot_dir = snapshot_dir.parent / f"{snapshot_dir.name}_alt"
-    snapshot_dir.mkdir(parents=True, exist_ok=False)
+        # Same revision slot: overwrite so retries do not stack ~1.7GB folders.
+        log(f"Overwriting existing snapshot at {snapshot_dir}")
+        shutil.rmtree(snapshot_dir, ignore_errors=True)
+    snapshot_dir.mkdir(parents=True, exist_ok=True)
 
     for class_name in CLASSES:
         src_dir = master / class_name
