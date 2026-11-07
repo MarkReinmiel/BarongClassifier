@@ -2,7 +2,7 @@
 {% block title %}Home | {{ app_name }}{% endblock %}
 {% block head %}
   {% if request.args.get('from_login') == '1' or request.args.get('from_google') == '1' %}
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/page-skeleton.css') }}?v=3">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/page-skeleton.css') }}?v=5">
   {% endif %}
 {% endblock %}
 {% block content %}
