@@ -902,7 +902,75 @@ body:has(.classify-shell) {
   }
 
   .classify-layout {
-    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    grid-template-columns: none;
+    width: 100%;
+    max-width: 100%;
+    margin: 0 auto;
+    gap: 12px;
+    box-sizing: border-box;
+  }
+
+  .classify-preview-card {
+    order: 1;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .classify-side {
+    order: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    max-width: 100%;
+    gap: 12px;
+    box-sizing: border-box;
+  }
+
+  /* After capture: Analyze sits under the picture, above Gallery/Camera */
+  .classify-side .classify-analyze {
+    order: -2;
+    position: static;
+    width: 100%;
+    margin: 0;
+  }
+
+  .classify-side .classify-sources,
+  .classify-side .classify-tips,
+  .classify-side .camera-panel {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .classify-side .classify-help {
+    order: -1;
+  }
+
+  .classify-side .classify-side-copy {
+    order: 0;
+  }
+
+  .classify-side .classify-sources {
+    order: 1;
+  }
+
+  .classify-side .camera-notice,
+  .classify-side .camera-panel {
+    order: 2;
+  }
+
+  .classify-side .classify-tips {
+    order: 3;
+  }
+
+  .classify-side .sr-file {
+    order: 4;
   }
 
   .classify-sources {
@@ -915,12 +983,6 @@ body:has(.classify-shell) {
 
   .drop #prev:not([hidden]) {
     max-height: 42vh;
-  }
-
-  .classify-analyze {
-    position: sticky;
-    bottom: calc(74px + env(safe-area-inset-bottom));
-    z-index: 5;
   }
 }
 

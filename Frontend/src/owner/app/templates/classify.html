@@ -3,7 +3,7 @@
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/shared.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/topnav.css') }}?v=16">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/classify.css') }}?v=20">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/classify.css') }}?v=22">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/camera.css') }}?v=8">
 {% endblock %}
 {% block body %}
@@ -144,13 +144,13 @@
 
       <input type="file" name="file" id="fileGal" accept="image/png,image/jpeg,image/jpg,image/jpe,image/bmp,image/webp,.jpg,.jpeg,.jpe,.png,.bmp,.webp" class="sr-file">
       <input type="file" id="fileCam" accept="image/*" capture="environment" class="sr-file">
-      <button class="btn p classify-analyze" id="analyze" type="submit" disabled>
+      <button class="btn p classify-analyze" id="analyze" type="submit" disabled hidden>
         <span class="classify-analyze-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
         </span>
         <span>Analyze Textile</span>
       </button>
-      <p class="classify-help">Tap Analyze after the photo appears in the preview.</p>
+      <p class="classify-help" id="classifyHelp" hidden>Tap Analyze after the photo appears in the preview.</p>
     </aside>
   </form>
 
@@ -196,7 +196,7 @@
 </main>
 {% endblock %}
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/classify.js') }}?v=14"></script>
+<script src="{{ url_for('static', filename='js/classify.js') }}?v=15"></script>
 <script src="{{ url_for('static', filename='js/cameraGuidance.js') }}?v=9"></script>
 <script src="{{ url_for('static', filename='js/liveCamera.js') }}?v=6"></script>
 {% endblock %}

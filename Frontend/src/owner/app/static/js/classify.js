@@ -5,6 +5,7 @@
   var prev = document.getElementById("prev");
   var prompt = document.getElementById("prompt");
   var analyze = document.getElementById("analyze");
+  var classifyHelp = document.getElementById("classifyHelp");
   var form = document.getElementById("classifyForm");
   var loading = document.getElementById("classifyLoading");
   var previewActions = document.getElementById("previewActions");
@@ -19,6 +20,12 @@
   var submitting = false;
 
   if (!fileInput || !prev || !analyze || !form) return;
+
+  function setAnalyzeVisible(visible) {
+    analyze.hidden = !visible;
+    analyze.disabled = !visible;
+    if (classifyHelp) classifyHelp.hidden = !visible;
+  }
 
   function showLoading(on) {
     if (!loading) return;
@@ -35,7 +42,7 @@
     prev.hidden = true;
     prev.style.display = "none";
     if (prompt) prompt.style.display = "";
-    analyze.disabled = true;
+    setAnalyzeVisible(false);
     if (clearBtn) clearBtn.hidden = true;
     if (previewActions) previewActions.hidden = true;
     fileInput.value = "";
@@ -52,7 +59,7 @@
     prev.hidden = false;
     prev.style.display = "block";
     if (prompt) prompt.style.display = "none";
-    analyze.disabled = false;
+    setAnalyzeVisible(true);
     if (clearBtn) clearBtn.hidden = false;
     if (previewActions) previewActions.hidden = false;
 
@@ -234,7 +241,7 @@
     }
     if (!fileInput.files || !fileInput.files.length) {
       event.preventDefault();
-      analyze.disabled = false;
+      setAnalyzeVisible(false);
       showLoading(false);
       return;
     }
@@ -248,8 +255,13 @@
     submitting = false;
     showLoading(false);
     if (analyze && fileInput.files && fileInput.files.length) {
-      analyze.disabled = false;
-      analyze.textContent = "Analyze Textile";
+      setAnalyzeVisible(true);
+      analyze.innerHTML =
+        '<span class="classify-analyze-icon" aria-hidden="true">' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>' +
+        "</span><span>Analyze Textile</span>";
+    } else {
+      setAnalyzeVisible(false);
     }
   });
 })();

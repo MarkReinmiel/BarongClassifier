@@ -5,6 +5,7 @@
   var prev = document.getElementById("prev");
   var prompt = document.getElementById("prompt");
   var analyze = document.getElementById("analyze");
+  var classifyHelp = document.getElementById("classifyHelp");
   var form = document.getElementById("classifyForm");
   var drop = document.getElementById("drop");
   var chooseSourceBtn = document.getElementById("chooseSourceBtn");
@@ -29,6 +30,12 @@
     return window.matchMedia("(max-width: 899px)").matches;
   }
 
+  function setAnalyzeVisible(visible) {
+    analyze.hidden = !visible;
+    analyze.disabled = !visible;
+    if (classifyHelp) classifyHelp.hidden = !visible;
+  }
+
   function clearFile() {
     if (url) URL.revokeObjectURL(url);
     url = null;
@@ -37,7 +44,7 @@
     prev.alt = "";
     prev.hidden = true;
     if (prompt) prompt.style.display = "";
-    analyze.disabled = true;
+    setAnalyzeVisible(false);
     if (clearBtn) clearBtn.hidden = true;
     if (previewActions) previewActions.hidden = true;
     fileInput.value = "";
@@ -53,7 +60,7 @@
     prev.alt = "Selected textile preview";
     prev.hidden = false;
     if (prompt) prompt.style.display = "none";
-    analyze.disabled = false;
+    setAnalyzeVisible(true);
     if (clearBtn) clearBtn.hidden = false;
     if (previewActions) previewActions.hidden = false;
     try {
@@ -335,7 +342,7 @@
     }
     if (!fileInput.files || !fileInput.files.length) {
       event.preventDefault();
-      analyze.disabled = false;
+      setAnalyzeVisible(false);
       return;
     }
     analyze.disabled = true;
