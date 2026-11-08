@@ -3,7 +3,8 @@ from __future__ import annotations
 import logging
 from pathlib import Path
 
-from flask import Flask, jsonify, render_template
+from flask import Flask, jsonify, render_template, request
+from flask_wtf.csrf import CSRFError
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -51,6 +52,17 @@ def create_app(config_object: type[Config] = Config) -> Flask:
     flask_app.register_blueprint(classify_bp)
     flask_app.register_blueprint(reviews_bp)
     flask_app.register_blueprint(model_management_bp)
+
+    @flask_app.errorhandler(CSRFError)
+    def csrf_error(error):
+        wants_json = (
+            request.headers.get("X-Requested-With") == "XMLHttpRequest"
+            or "application/json" in (request.headers.get("Accept") or "")
+        )
+        message = "Session expired. Refresh the page and try again."
+        if wants_json:
+            return jsonify({"ok": False, "error": message}), 400
+        return render_template("errors/403.html"), 400
 
     @flask_app.errorhandler(403)
     def forbidden(_error):

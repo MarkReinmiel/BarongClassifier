@@ -28,7 +28,8 @@ const CAMERA_GUIDANCE_CONFIG = {
     CROP_TO_GUIDE: true,
 
     // Zoom applied when the camera opens (clamped to what the device supports).
-    INITIAL_ZOOM: 1,
+    // Default 4x so the weave is readable from a short working distance.
+    INITIAL_ZOOM: 4,
     MAX_REQUESTED_ZOOM: 10,
 
     // Framing: is there textile everywhere inside the guide?
@@ -39,15 +40,12 @@ const CAMERA_GUIDANCE_CONFIG = {
     COVERAGE_ADJUST_MIN: 0.5,
 
     // Texture scale (0..1): smaller = texture looks smaller (too far),
-    // larger = texture looks bigger (too close). Training photos: p1 0.461,
-    // p5 0.474, median 0.546, p95 0.664, p99 0.715 (jusi ~0.49, pina ~0.55,
-    // cocoon ~0.65). The same photos simulated 2x farther read ~0.35,
-    // 1.4x farther ~0.45, 1.4x closer ~0.67, 2x closer ~0.79, 3x closer ~0.82-0.91.
-    // The band is set closer than the training photos on purpose.
-    SCALE_ADJUST_MIN: 0.45,
-    SCALE_GOOD_MIN: 0.53,
-    SCALE_GOOD_MAX: 0.88,
-    SCALE_ADJUST_MAX: 0.95,
+    // larger = texture looks bigger (too close). Raised mins so guidance
+    // asks for a short/close distance to see the pattern clearly.
+    SCALE_ADJUST_MIN: 0.55,
+    SCALE_GOOD_MIN: 0.64,
+    SCALE_GOOD_MAX: 0.90,
+    SCALE_ADJUST_MAX: 0.96,
 
     // Laplacian variance on the 224x224 view. Training photos: cocoon p1 86,
     // jusi/pina p1 > 890. Live video is softer than still photos.

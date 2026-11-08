@@ -12,7 +12,14 @@ from flask import (
 
 from app.services.auth_service import AuthError, authenticate_owner, touch_login
 from app.services.turnstile_service import TurnstileError, turnstile_active, verify_turnstile
-from app.utils.security import current_user, is_owner_role, mask_email, no_store
+from app.utils.security import (
+    apply_remember_me,
+    current_user,
+    is_owner_role,
+    mask_email,
+    no_store,
+    remember_requested,
+)
 from app.models import OwnerUser
 
 bp = Blueprint("auth", __name__)
@@ -58,7 +65,7 @@ def login():
     if request.method == "POST":
         email_value = (request.form.get("email") or "").strip()
         password = request.form.get("password") or ""
-        remember = bool(request.form.get("remember"))
+        remember = remember_requested()
         nxt = _safe_next(request.args.get("next") or request.form.get("next"))
         try:
             user = authenticate_owner(email_value, password)
@@ -98,8 +105,7 @@ def _complete_owner_login(user: OwnerUser, remember: bool = False, nxt: str | No
     session.clear()
     session["owner_user_id"] = str(user.id)
     session["owner_role"] = user.role
-    session.permanent = bool(remember)
-    session.modified = True
+    apply_remember_me(remember)
     touch_login(user)
     return _redirect_within_app(nxt)
 
@@ -124,7 +130,7 @@ def verify_human():
         flash("Sign in again to complete human verification.", "error")
         return redirect(url_for("auth.login"))
 
-    remember = bool(session.get("pending_remember"))
+    remember = remember_requested(session.get("pending_remember"))
     nxt = _safe_next(session.get("pending_next"))
 
     if not turnstile_active():

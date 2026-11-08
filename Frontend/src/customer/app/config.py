@@ -112,7 +112,12 @@ class Config:
     SESSION_COOKIE_SAMESITE = "Lax"
     SESSION_COOKIE_SECURE = _first("SESSION_COOKIE_SECURE").lower() in {"1", "true", "yes"}
     REMEMBER_COOKIE_HTTPONLY = True
-    PERMANENT_SESSION_LIFETIME = int(_first("ACCESS_TOKEN_EXPIRE_MINUTES", default="30")) * 60
+    # "Remember me" keeps the login session for this many days (not ACCESS_TOKEN minutes).
+    REMEMBER_ME_DAYS = int(_first("REMEMBER_ME_DAYS", default="30"))
+    PERMANENT_SESSION_LIFETIME = REMEMBER_ME_DAYS * 24 * 60 * 60
+    # Sliding expiration while the user is active.
+    SESSION_REFRESH_EACH_REQUEST = True
+    ACCESS_TOKEN_EXPIRE_MINUTES = int(_first("ACCESS_TOKEN_EXPIRE_MINUTES", default="30"))
 
     MAIL_HOST = _first("MAIL_HOST", "SMTP_HOST", "MAIL_SERVER", default="smtp.gmail.com")
     MAIL_PORT = int(_first("MAIL_PORT", "SMTP_PORT", default="587"))
