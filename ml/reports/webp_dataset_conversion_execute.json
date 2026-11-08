@@ -2,33 +2,35 @@
   "source_root": "C:\\Users\\louis\\OneDrive\\Documents\\GitHub\\BarongClassifier\\ml\\data\\main_classifier",
   "output_root": "C:\\Users\\louis\\OneDrive\\Documents\\GitHub\\BarongClassifier\\ml\\data\\main_classifier_webp",
   "dry_run": false,
-  "started_at": "2026-11-07T18:36:31.779873+00:00",
-  "finished_at": "2026-11-07T19:20:20.667869+00:00",
+  "started_at": "2026-11-08T05:10:36.045551+00:00",
+  "finished_at": "2026-11-08T05:54:04.519077+00:00",
   "quality": 90,
   "method": 6,
   "lossless": false,
-  "discovered": 911,
-  "converted": 911,
+  "discovered": 900,
+  "converted": 900,
   "skipped_existing": 0,
   "skipped_unsupported": 0,
   "failed": 0,
-  "original_bytes": 1779981958,
-  "converted_bytes": 416097542,
+  "original_bytes": 1576584314,
+  "converted_bytes": 357792210,
   "per_class_counts": {
-    "cocoon": 301,
-    "jusi": 303,
-    "pina": 307
+    "cocoon": 300,
+    "jusi": 300,
+    "pina": 300
   },
   "per_format_counts": {
-    ".jpg": 911
+    ".jpg": 586,
+    ".png": 128,
+    ".webp": 186
   },
   "failures": [],
   "notes": [
     "Converted tree is separate from the live training dataset; do not mix original + WebP copies in one training run."
   ],
-  "savings_bytes": 1363884416,
-  "savings_percent": 76.62,
-  "savings_mb": 1300.7,
-  "original_mb": 1697.52,
-  "converted_mb": 396.82
+  "savings_bytes": 1218792104,
+  "savings_percent": 77.31,
+  "savings_mb": 1162.33,
+  "original_mb": 1503.55,
+  "converted_mb": 341.22
 }

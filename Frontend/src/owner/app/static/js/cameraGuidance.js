@@ -36,27 +36,30 @@ const CAMERA_GUIDANCE_CONFIG = {
     TEXTURE_MIN: 5,
     COVERAGE_CELL_ABS_MIN: 4,
     COVERAGE_CELL_RELATIVE: 0.45,
-    COVERAGE_GOOD_MIN: 0.75,
-    COVERAGE_ADJUST_MIN: 0.5,
+    COVERAGE_GOOD_MIN: 0.68,
+    COVERAGE_ADJUST_MIN: 0.45,
 
-    // Texture scale (0..1): smaller = texture looks smaller (too far),
-    // larger = texture looks bigger (too close). Raised mins so guidance
-    // asks for a short/close distance to see the pattern clearly.
-    SCALE_ADJUST_MIN: 0.55,
-    SCALE_GOOD_MIN: 0.64,
-    SCALE_GOOD_MAX: 0.90,
-    SCALE_ADJUST_MAX: 0.96,
+    // Texture scale (0..1): smaller = too far, larger = too close.
+    // Wider good band + hysteresis so tiny hand tremor does not flicker
+    // yellow ↔ green while the phone is held still.
+    SCALE_ADJUST_MIN: 0.48,
+    SCALE_GOOD_MIN: 0.56,
+    SCALE_GOOD_MAX: 0.92,
+    SCALE_ADJUST_MAX: 0.98,
+    SCALE_HYSTERESIS: 0.06,
+    COVERAGE_HYSTERESIS: 0.08,
+    METRIC_SMOOTHING_FRAMES: 7,
 
     // Laplacian variance on the 224x224 view. Training photos: cocoon p1 86,
     // jusi/pina p1 > 890. Live video is softer than still photos.
-    SHARPNESS_MIN: 20,
-    SHARPNESS_GOOD_MIN: 40,
+    SHARPNESS_MIN: 18,
+    SHARPNESS_GOOD_MIN: 34,
 
     // Mean brightness 0..255. Training photos: 168 - 179.
-    BRIGHTNESS_DARK: 60,
-    BRIGHTNESS_DIM: 90,
-    BRIGHTNESS_BRIGHT: 225,
-    BRIGHTNESS_TOO_BRIGHT: 245,
+    BRIGHTNESS_DARK: 55,
+    BRIGHTNESS_DIM: 85,
+    BRIGHTNESS_BRIGHT: 230,
+    BRIGHTNESS_TOO_BRIGHT: 248,
 
     // Fraction of near-white pixels. Advisory only; never blocks capture.
     GLARE_WARN: 0.02,
@@ -67,10 +70,12 @@ const CAMERA_GUIDANCE_CONFIG = {
     // reads ~0.5-0.8 (the same as panning across the fabric), while pointing
     // away from the fabric reads 2-33. So this only catches large movements;
     // blur from hand shake is caught by the sharpness check instead.
-    MOTION_STABLE_MAX: 1.0,
-    MOTION_HIGH: 2.0,
-    MOTION_SMOOTHING_FRAMES: 5,
-    STABLE_HOLD_MS: 200
+    MOTION_STABLE_MAX: 1.4,
+    MOTION_HIGH: 2.4,
+    MOTION_SMOOTHING_FRAMES: 7,
+    STABLE_HOLD_MS: 400,
+    // Keep overall green briefly so a single noisy yellow frame does not flash.
+    LEVEL_HOLD_MS: 550
 };
 
 function createCameraGuidance(config) {
@@ -100,27 +105,48 @@ function createCameraGuidance(config) {
     let hasPreviousThumb = false;
     let stableSince = null;
     let recentMotion = [];
+    let recentScale = [];
+    let recentCoverage = [];
+    let lastDistanceState = null;
+    let lastLevel = null;
+    let levelSince = null;
+    let stickyLevel = null;
+    let stickyHeadline = null;
 
     function reset() {
         hasPreviousThumb = false;
         stableSince = null;
         recentMotion = [];
+        recentScale = [];
+        recentCoverage = [];
+        lastDistanceState = null;
+        lastLevel = null;
+        levelSince = null;
+        stickyLevel = null;
+        stickyHeadline = null;
     }
 
-    // Median of the last few readings, so a single jumpy frame (autofocus,
-    // exposure change, small tremor) does not break "stable".
-    function smoothedMotion(motion) {
-        if (motion === null) {
+    // Median of recent readings so autofocus / exposure flicker does not flip UI.
+    function smoothedSeries(series, value, maxFrames) {
+        if (value === null || typeof value !== "number" || Number.isNaN(value)) {
             return null;
         }
-        recentMotion.push(motion);
-        if (recentMotion.length > config.MOTION_SMOOTHING_FRAMES) {
-            recentMotion.shift();
+        series.push(value);
+        if (series.length > maxFrames) {
+            series.shift();
         }
-        const sorted = recentMotion.slice().sort(function (a, b) {
+        const sorted = series.slice().sort(function (a, b) {
             return a - b;
         });
         return sorted[Math.floor((sorted.length - 1) / 2)];
+    }
+
+    function smoothedMotion(motion) {
+        return smoothedSeries(
+            recentMotion,
+            motion,
+            config.MOTION_SMOOTHING_FRAMES || 7
+        );
     }
 
     function drawRegion(source, region) {
@@ -302,22 +328,40 @@ function createCameraGuidance(config) {
     }
 
     function distanceCheck(m) {
+        const metricFrames = config.METRIC_SMOOTHING_FRAMES || 7;
+        const scale =
+            smoothedSeries(recentScale, m.scale, metricFrames) ?? m.scale;
+        const coverage =
+            smoothedSeries(recentCoverage, m.coverage, metricFrames) ?? m.coverage;
+        const scaleHyst = config.SCALE_HYSTERESIS || 0;
+        const coverHyst = config.COVERAGE_HYSTERESIS || 0;
+        const heldGood = lastDistanceState === "good";
+        const goodScaleMin = heldGood
+            ? config.SCALE_GOOD_MIN - scaleHyst
+            : config.SCALE_GOOD_MIN;
+        const goodScaleMax = heldGood
+            ? config.SCALE_GOOD_MAX + scaleHyst
+            : config.SCALE_GOOD_MAX;
+        const goodCoverMin = heldGood
+            ? config.COVERAGE_GOOD_MIN - coverHyst
+            : config.COVERAGE_GOOD_MIN;
+
+        let result;
         if (m.texture < config.TEXTURE_MIN) {
-            return check("bad", "Point at the textile and hold steady");
+            result = check("bad", "Point at the textile and hold steady");
+        } else if (coverage < config.COVERAGE_ADJUST_MIN || scale < config.SCALE_ADJUST_MIN) {
+            result = check("bad", "Move closer");
+        } else if (scale > config.SCALE_ADJUST_MAX) {
+            result = check("bad", "Move slightly farther");
+        } else if (coverage < goodCoverMin || scale < goodScaleMin) {
+            result = check("adjust", "Adjust distance — slightly closer");
+        } else if (scale > goodScaleMax) {
+            result = check("adjust", "Adjust distance — slightly farther");
+        } else {
+            result = check("good", "Good distance");
         }
-        if (m.coverage < config.COVERAGE_ADJUST_MIN || m.scale < config.SCALE_ADJUST_MIN) {
-            return check("bad", "Move closer");
-        }
-        if (m.scale > config.SCALE_ADJUST_MAX) {
-            return check("bad", "Move slightly farther");
-        }
-        if (m.coverage < config.COVERAGE_GOOD_MIN || m.scale < config.SCALE_GOOD_MIN) {
-            return check("adjust", "Adjust distance — slightly closer");
-        }
-        if (m.scale > config.SCALE_GOOD_MAX) {
-            return check("adjust", "Adjust distance — slightly farther");
-        }
-        return check("good", "Good distance");
+        lastDistanceState = result.state;
+        return result;
     }
 
     function focusCheck(m) {
@@ -404,6 +448,26 @@ function createCameraGuidance(config) {
         } else if (firstAdjust) {
             level = "yellow";
             headline = checks[firstAdjust].message;
+        }
+
+        // Hold green briefly against single-frame yellow flicker.
+        const holdMs = config.LEVEL_HOLD_MS || 0;
+        if (level !== lastLevel) {
+            levelSince = now;
+            lastLevel = level;
+        }
+        if (
+            stickyLevel === "green" &&
+            level === "yellow" &&
+            holdMs > 0 &&
+            levelSince !== null &&
+            now - levelSince < holdMs
+        ) {
+            level = "green";
+            headline = stickyHeadline || "Click this to Capture";
+        } else {
+            stickyLevel = level;
+            stickyHeadline = headline;
         }
 
         return {

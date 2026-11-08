@@ -1,0 +1,13 @@
+.env
+.venv/
+__pycache__/
+*.pyc
+instance/
+.pytest_cache/
+uploads/
+datasets/*
+!datasets/.gitkeep
+models/*
+!models/.gitkeep
+*.keras
+.DS_Store

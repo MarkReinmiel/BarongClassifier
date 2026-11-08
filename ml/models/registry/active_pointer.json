@@ -1,6 +1,6 @@
-{
-  "version_label": "main_20261104_181936",
-  "model_path": "C:\\Users\\louis\\OneDrive\\Documents\\GitHub\\BarongClassifier\\Frontend\\src\\owner\\models\\barong_model.keras",
-  "labels_path": "C:\\Users\\louis\\OneDrive\\Documents\\GitHub\\BarongClassifier\\Frontend\\src\\owner\\models\\labels.json",
-  "updated_at": "2026-11-08T02:23:43.007061+00:00"
+﻿{
+    "model_path":  "c:\\Users\\louis\\OneDrive\\Documents\\GitHub\\BarongClassifier\\Frontend\\src\\owner\\models\\barong_model.keras",
+    "labels_path":  "c:\\Users\\louis\\OneDrive\\Documents\\GitHub\\BarongClassifier\\Frontend\\src\\owner\\models\\labels.json",
+    "updated_at":  "2026-11-08T07:05:24.7657673Z",
+    "version_label":  "main_20261108_063110"
 }

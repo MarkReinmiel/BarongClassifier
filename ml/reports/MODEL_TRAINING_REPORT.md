@@ -1,8 +1,8 @@
 # Main classifier training report
 
-- Version: `main_20261104_181936`
+- Version: `main_20261108_063110`
 - Artifact: `C:\Users\louis\OneDrive\Documents\GitHub\BarongClassifier\ml\models\active\main_classifier.keras`
-- Test accuracy: **0.963** on 135 images
+- Test accuracy: **0.933** on 135 images
 - Train / val / test images: 630 / 135 / 135
 - Data source: balanced folders (300/class)
 - Piña Silk variant: **retired** — silk images folded into Piña.
@@ -12,19 +12,19 @@
 ```
               precision    recall  f1-score   support
 
-      Cocoon      1.000     0.933     0.966        45
-        Jusi      1.000     0.956     0.977        45
-        Piña      0.900     1.000     0.947        45
+      Cocoon      0.913     0.933     0.923        45
+        Jusi      0.977     0.956     0.966        45
+        Piña      0.911     0.911     0.911        45
 
-    accuracy                          0.963       135
-   macro avg      0.967     0.963     0.963       135
-weighted avg      0.967     0.963     0.963       135
+    accuracy                          0.933       135
+   macro avg      0.934     0.933     0.933       135
+weighted avg      0.934     0.933     0.933       135
 
 ```
 
 ## Confusion matrix (rows=true, cols=pred; cocoon,jusi,pina)
 ```
-[[42, 0, 3], [0, 43, 2], [0, 0, 45]]
+[[42, 1, 2], [0, 43, 2], [4, 0, 41]]
 ```
 
 ## Limitations
