@@ -188,6 +188,10 @@
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+.ma-metric-grid + .ma-note {
+  margin: -4px 0 14px;
+}
+
 .ma-tip {
   display: inline-grid;
   place-items: center;

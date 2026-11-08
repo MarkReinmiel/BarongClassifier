@@ -247,6 +247,12 @@
         "<dt>Accuracy</dt><dd>" +
         fmtPct(ev.accuracy_pct) +
         "</dd>" +
+        "<dt>ROC AUC (OVR)</dt><dd>" +
+        fmtNum(ev.roc_auc_ovr_macro, 3) +
+        "</dd>" +
+        "<dt>ROC AUC (OVO)</dt><dd>" +
+        fmtNum(ev.roc_auc_ovo_macro, 3) +
+        "</dd>" +
         "<dt>Macro precision</dt><dd>" +
         fmtPct(ev.precision_pct) +
         "</dd>" +

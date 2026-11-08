@@ -199,6 +199,7 @@ def main() -> int:
         pred = probs.argmax(axis=1)
         acc = float((pred == y_te).mean())
         matrix = confusion_matrix(y_te, pred, labels=[0, 1, 2])
+        roc_auc = trainer.multiclass_roc_auc(y_te, probs)
         report = classification_report(
             y_te,
             pred,
@@ -240,6 +241,9 @@ def main() -> int:
             "image_size": trainer.IMAGE_SIZE,
             "seed": trainer.SEED,
             "test_accuracy": acc,
+            "test_roc_auc_ovr_macro": roc_auc.get("roc_auc_ovr_macro"),
+            "test_roc_auc_ovo_macro": roc_auc.get("roc_auc_ovo_macro"),
+            "test_roc_auc_per_class": roc_auc.get("roc_auc_per_class"),
             "test_images": int(len(y_te)),
             "train_images": int(len(y_tr)),
             "val_images": int(len(y_va)),
@@ -260,6 +264,17 @@ def main() -> int:
 
         print(report, flush=True)
         print(f"Test accuracy: {acc:.3f}", flush=True)
+        if roc_auc.get("roc_auc_ovr_macro") is not None:
+            print(
+                f"Multiclass ROC AUC (OVR macro): {roc_auc['roc_auc_ovr_macro']:.3f}",
+                flush=True,
+            )
+        if roc_auc.get("roc_auc_ovo_macro") is not None:
+            print(
+                f"Multiclass ROC AUC (OVO macro): {roc_auc['roc_auc_ovo_macro']:.3f}",
+                flush=True,
+            )
+        print(f"Per-class ROC AUC: {roc_auc.get('roc_auc_per_class')}", flush=True)
         print(f"Saved candidate only: {model_path}", flush=True)
         print("Production Customer/Owner weights were NOT modified.", flush=True)
 
