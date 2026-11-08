@@ -3,8 +3,7 @@
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/shared.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/topnav.css') }}?v=16">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/classify.css') }}?v=16">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/result.css') }}?v=7">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/result.css') }}?v=9">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-app.css') }}?v=12">
 {% endblock %}
 {% block body %}
@@ -20,8 +19,10 @@
 {% set is_unidentified = status == 'unidentified_textile' or result.is_identified == false %}
 {% set is_rejected = status in ['unidentified_textile', 'undefined_textile', 'uncertain', 'poor_image_quality'] or is_unidentified %}
 <main class="classifier-page">
-  <section class="classifier-header reveal">
+  <div class="result-topbar">
     <a href="{{ url_for('classify.classify_page') }}" class="backbutton">&larr; Back to Classify</a>
+  </div>
+  <section class="classifier-header reveal">
     <p class="classifier-label">BARONG TAGALOG TEXTILE CLASSIFIER</p>
     <h1>Classification Result</h1>
     <hr class="stitch-divider" aria-hidden="true">
@@ -30,8 +31,6 @@
 
   <section class="classifier-card result-layout">
     <div class="result-analysis">
-      <p class="result-label">CLASSIFICATION RESULT</p>
-      <h2>Textile Analysis</h2>
       <div class="result-image-container">
         <img id="resultImage" src="{{ result.image_data_url }}" alt="Classified textile image">
       </div>
@@ -87,9 +86,9 @@
         </div>
         {% endif %}
       </div>
-      <div class="result-actions" style="margin-top:20px;display:flex;gap:12px;flex-wrap:wrap">
-        <a class="classify-button" href="{{ url_for('classify.classify_page') }}">{% if is_rejected %}Try again{% else %}Classify another{% endif %}</a>
-        <a class="remove-button" href="{{ url_for('dashboard.history') }}">View history</a>
+      <div class="result-actions">
+        <a class="result-action-primary" href="{{ url_for('classify.classify_page') }}">{% if is_rejected %}Try again{% else %}Classify another{% endif %}</a>
+        <a class="result-action-secondary" href="{{ url_for('dashboard.history') }}">View history</a>
       </div>
     </div>
   </section>

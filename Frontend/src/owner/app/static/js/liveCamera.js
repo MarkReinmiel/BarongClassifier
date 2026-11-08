@@ -236,9 +236,9 @@
     );
   }
 
-  async function startCamera() {
-    showCameraNotice("");
-    if (!navigator.mediaDevices || typeof navigator.mediaDevices.getUserMedia !== "function") {
+  function fallbackNativeCapture() {
+    var camInput = document.getElementById("fileCam");
+    if (!camInput) {
       showCameraNotice(
         window.isSecureContext
           ? "Camera access is unavailable in this browser."
@@ -246,27 +246,109 @@
       );
       return;
     }
-    openCamera.disabled = true;
+    showCameraNotice("Opening device camera…");
     try {
-      cameraStream = await navigator.mediaDevices.getUserMedia({
+      camInput.click();
+    } catch (err) {
+      showCameraNotice(
+        window.isSecureContext
+          ? "Camera access is unavailable in this browser."
+          : HTTPS_MESSAGE
+      );
+    }
+  }
+
+  function requestUserMedia(constraints) {
+    return navigator.mediaDevices.getUserMedia(constraints);
+  }
+
+  function withTimeout(promise, ms) {
+    return new Promise(function (resolve, reject) {
+      var done = false;
+      var timer = setTimeout(function () {
+        if (done) return;
+        done = true;
+        reject(new Error("Camera request timed out"));
+      }, ms);
+      promise.then(
+        function (value) {
+          if (done) return;
+          done = true;
+          clearTimeout(timer);
+          resolve(value);
+        },
+        function (error) {
+          if (done) return;
+          done = true;
+          clearTimeout(timer);
+          reject(error);
+        }
+      );
+    });
+  }
+
+  async function openCameraStream() {
+    var attempts = [
+      {
         audio: false,
         video: {
           facingMode: { ideal: "environment" },
-          width: { ideal: 2560 },
-          height: { ideal: 1440 },
+          width: { ideal: 1920 },
+          height: { ideal: 1080 },
         },
-      });
-    } catch (error) {
-      openCamera.disabled = false;
-      showCameraNotice(cameraErrorMessage(error));
+      },
+      {
+        audio: false,
+        video: { facingMode: { ideal: "environment" } },
+      },
+      { audio: false, video: true },
+    ];
+    var lastError = null;
+    for (var i = 0; i < attempts.length; i += 1) {
+      try {
+        return await withTimeout(requestUserMedia(attempts[i]), 10000);
+      } catch (error) {
+        lastError = error;
+      }
+    }
+    throw lastError || new Error("Camera unavailable");
+  }
+
+  async function startCamera() {
+    if (!window.isSecureContext) {
+      showCameraNotice(HTTPS_MESSAGE);
+      fallbackNativeCapture();
+      return;
+    }
+    if (!navigator.mediaDevices || typeof navigator.mediaDevices.getUserMedia !== "function") {
+      fallbackNativeCapture();
       return;
     }
 
-    cameraPreview.srcObject = cameraStream;
+    openCamera.disabled = true;
     cameraPanel.hidden = false;
     setCameraOpen(true);
+    showCameraNotice("Starting camera… allow access if prompted.");
+    if (guidanceHeadline) {
+      guidanceHeadline.textContent = "Starting camera…";
+      setLevel(guidanceHeadline, "red");
+    }
     if (calibrationPanel) calibrationPanel.hidden = true;
     captureButton.disabled = true;
+
+    try {
+      cameraStream = await openCameraStream();
+    } catch (error) {
+      openCamera.disabled = false;
+      setCameraOpen(false);
+      cameraPanel.hidden = true;
+      showCameraNotice(cameraErrorMessage(error));
+      fallbackNativeCapture();
+      return;
+    }
+
+    showCameraNotice("");
+    cameraPreview.srcObject = cameraStream;
     if (guidanceHeadline) {
       guidanceHeadline.textContent = "Point the camera at the textile";
       setLevel(guidanceHeadline, "red");
@@ -279,6 +361,7 @@
     setupZoom(cameraStream.getVideoTracks()[0]);
     stopAnalysis();
     analysisTimer = setTimeout(analysisLoop, config.ANALYSIS_INTERVAL_MS || 250);
+    openCamera.disabled = false;
   }
 
   if (guidanceHeadline) {
@@ -338,7 +421,24 @@
         stopCamera();
         showCameraNotice("");
         applyCapturedFile(capturedFile);
+      },
+      "image/webp",
+      0.9
+    );
   });
+
+  var camInput = document.getElementById("fileCam");
+  if (camInput) {
+    camInput.addEventListener("change", function () {
+      var file = camInput.files && camInput.files[0];
+      if (!file) return;
+      showCameraNotice("");
+      applyCapturedFile(file);
+      try {
+        camInput.value = "";
+      } catch (err) {}
+    });
+  }
 
   window.addEventListener("pagehide", stopCamera);
   document.addEventListener("visibilitychange", function () {

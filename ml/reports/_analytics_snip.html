@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Model Analytics | Owner</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/heritage.css?v=9">
+  <link rel="stylesheet" href="/static/css/main.css?v=4">
+  <link rel="stylesheet" href="/static/css/topnav.css?v=20">
+
+<link rel="stylesheet" href="/static/css/shared.css">
+<link rel="stylesheet" href="/static/css/topnav.css?v=16">
+<link rel="stylesheet" href="/static/css/dashboard.css?v=11">
+<link rel="stylesheet" href="/static/css/mobile-app.css?v=9">
+<link rel="stylesheet" href="/static/css/model-analytics.css?v=14">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js" defer></script>
+
+</head>
+<body data-static-root="/static/">
+  
+<header class="top">
+  <a class="brand" href="/dashboard">
+    <img src="/static/images/barongcognition_logo.png" alt="Barongcognition logo">
+    <div>
+      <b>Barongcognition</b>
+      <small>Preserving Heritage Through Technology</small>
+    </div>
+    <span class="owner-badge">OWNER</span>
+  </a>
+  <nav class="links" aria-label="Main">
+    <a href="/dashboard" class="">
+      <span class="nav-ico" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg>
+      </span>
+      <span>Home</span>
+    </a>
+    <a href="/classify" class="">
+      <span class="nav-ico" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-2h6l2 2h3v11H4V8z"/><circle cx="12" cy="13" r="3.5"/></svg>
+      </span>
+      <span>Classify Textile</span>
+    </a>
+    <a href="/textile-types" class="">
+      <span class="nav-ico" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+      </span>
+      <span>Textile Types</span>
+    </a>
+    
+    <div class="nav-dd" data-history-top-dd>
+      <button
+        type="button"
+        class="nav-dd-btn "
+        id="historyTopNavBtn"
+        aria-expanded="false"
+        aria-controls="historyTopNavMenu"
+        aria-haspopup="true"
+      >
+        <span class="nav-ico" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+        </span>
+        <span>History</span>
+        <span class="nav-dd-caret" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+        </span>
+      </button>
+      <div class="nav-dd-menu" id="historyTopNavMenu" role="menu" hidden>
+        <a role="menuitem" href="/history" class="">
+          <span class="nav-ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+          </span>
+          <span>Owner History</span>
+        </a>
+        <a role="menuitem" href="/customer-history" class="">
+          <span class="nav-ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          </span>
+          <span>Customer History</span>
+        </a>
+      </div>
+    </div>
+    
+    <div class="nav-dd" data-nav-dd>
+      <button
+        type="button"
+        class="nav-dd-btn on"
+        id="modelsNavBtn"
+        aria-expanded="false"
+        aria-controls="modelsNavMenu"
+        aria-haspopup="true"
+      >
+        <span class="nav-ico" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3"/><path d="M12 18v3"/><path d="M3 12h3"/><path d="M18 12h3"/><circle cx="12" cy="12" r="4"/><path d="m5.6 5.6 2.1 2.1"/><path d="m16.3 16.3 2.1 2.1"/><path d="m16.3 7.7 2.1-2.1"/><path d="m5.6 18.4 2.1-2.1"/></svg>
+        </span>
+        <span>Model Management</span>
+        <span class="nav-dd-caret" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+        </span>
+      </button>
+      <div class="nav-dd-menu" id="modelsNavMenu" role="menu" hidden>
+        <a role="menuitem" href="/model-management" class="">
+          <span class="nav-ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3"/><path d="M12 18v3"/><path d="M3 12h3"/><path d="M18 12h3"/><circle cx="12" cy="12" r="4"/><path d="m5.6 5.6 2.1 2.1"/><path d="m16.3 16.3 2.1 2.1"/><path d="m16.3 7.7 2.1-2.1"/><path d="m5.6 18.4 2.1-2.1"/></svg>
+          </span>
+          <span>Model Management</span>
+        </a>
+        <a role="menuitem" href="/model-analytics" class="on">
+          <span class="nav-ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5"/><path d="M4 19h16"/><path d="M8 17V10"/><path d="M12 17V7"/><path d="M16 17v-4"/></svg>
+          </span>
+          <span>Model Analytics</span>
+        </a>
+        <a role="menuitem" href="/dataset-contributions" class="">
+          <span class="nav-ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16"/><path d="M7 20V10"/><path d="M12 20V4"/><path d="M17 20v-6"/></svg>
+          </span>
+          <span>Contributions</span>
+        </a>
+      </div>
+    </div>
+    <a href="/about" class="">
+      <span class="nav-ico" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+      </span>
+      <span>About</span>
+    </a>
+  </nav>
+  
+</header>
+
+
+
+
+
+
+
+
+
+
+
+<main class="ma-page" id="modelAnalytics" data-analytics='{"confusion": {"available": true, "explanation": "Rows are true labels; columns are predicted labels. Diagonal cells are correct predictions.", "keys": ["cocoon", "jusi", "pina"], "labels": ["Cocoon", "Jusi", "Pi\u00f1a"], "matrix": [[42, 1, 2], [0, 43, 2], [4, 0, 41]], "row_normalized": [[93.3, 2.2, 4.4], [0.0, 95.6, 4.4], [8.9, 0.0, 91.1]]}, "efficiency": {"active_version": "v1.1", "artifact": "barong_model.keras", "latency": {"available": false, "cached": false, "message": "No cached latency benchmark yet. Use Refresh timing to measure local model.predict latency."}, "model_format": "Keras SavedModel (.keras)", "model_size_bytes": 21771200, "model_size_mb": 20.76}, "export": {"classification_report": "precision    recall  f1-score   support\n\n      Cocoon      0.913     0.933     0.923        45\n        Jusi      0.977     0.956     0.966        45\n        Pi\u00f1a      0.911     0.911     0.911        45\n\n    accuracy                          0.933       135\n   macro avg      0.934     0.933     0.933       135\nweighted avg      0.934     0.933     0.933       135", "metrics_version": "v1.1"}, "generated_at": "2026-11-08T13:08:18Z", "history": {"available": true, "best_val_accuracy": 0.9333333373069763, "epochs": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20], "epochs_completed": 20, "final_train_accuracy": 0.9507936239242554, "final_train_loss": 0.11651687324047089, "final_val_accuracy": 0.8962963223457336, "final_val_loss": 0.2757987082004547, "series": {"accuracy": [0.4888888895511627, 0.7349206209182739, 0.8428571224212646, 0.8476190567016602, 0.8857142925262451, 0.8984127044677734, 0.8873015642166138, 0.9047619104385376, 0.9253968000411987, 0.9047619104385376, 0.920634925365448, 0.9285714030265808, 0.9047619104385376, 0.958730161190033, 0.9428571462631226, 0.934920608997345, 0.9523809552192688, 0.9523809552192688, 0.9476190209388733, 0.9507936239242554], "loss": [1.0559732913970947, 0.610610842704773, 0.4413514733314514, 0.3926871120929718, 0.3307163417339325, 0.3119562566280365, 0.31933924555778503, 0.27547329664230347, 0.23493055999279022, 0.2585046887397766, 0.23875369131565094, 0.2225833237171173, 0.2568438649177551, 0.15054506063461304, 0.15172576904296875, 0.16140039265155792, 0.1378813534975052, 0.12588970363140106, 0.11967230588197708, 0.11651687324047089], "val_accuracy": [0.800000011920929, 0.8370370268821716, 0.8444444537162781, 0.8666666746139526, 0.8444444537162781, 0.8592592477798462, 0.8518518805503845, 0.9037036895751953, 0.9111111164093018, 0.9333333373069763, 0.9111111164093018, 0.9111111164093018, 0.9259259104728699, 0.9259259104728699, 0.8888888955116272, 0.9037036895751953, 0.9185185432434082, 0.8962963223457336, 0.9259259104728699, 0.8962963223457336], "val_loss": [0.7191285490989685, 0.5365845561027527, 0.48166871070861816, 0.43726930022239685, 0.4323316812515259, 0.4012247622013092, 0.4266456663608551, 0.3926412761211395, 0.3486105501651764, 0.3438883125782013, 0.3277708888053894, 0.3362862467765808, 0.3073570132255554, 0.28374841809272766, 0.3206723630428314, 0.2800925076007843, 0.2953222393989563, 0.25670063495635986, 0.228377565741539, 0.2757987082004547]}}, "limitations": ["Fewer than two evaluated revisions are available for numeric comparison; revisions without evaluation reports cannot be ranked by accuracy."], "overview": {"class_count": 3, "classes": ["Cocoon", "Jusi", "Pi\u00f1a"], "dataset": {"identifier": "held-out test (135 images)", "seed": 42, "snapshot_id": null, "test_images": 135, "train_images": 630, "val_images": 135}, "dataset_snapshot_id": null, "deployed_at": "2026-11-08T02:23:39Z", "image_size": 224, "last_evaluation_at": "2026-11-08T12:45:57.155500+00:00", "metrics_source": "ml/models/active/metrics.json", "name": "MobileNetV2", "registry_backed": true, "status": "Active", "version": "v1.1"}, "performance": {"accuracy": 0.9333333333333333, "accuracy_pct": 93.3, "available": true, "averaging_note": "Macro and weighted averages shown; headline cards use macro precision/recall/F1 and held-out test accuracy.", "evaluation_split": "held-out test", "f1_pct": 93.3, "macro": {"f1": 0.9334933896731651, "f1_pct": 93.3, "precision": 0.9338091055482359, "precision_pct": 93.4, "recall": 0.9333333333333332, "recall_pct": 93.3}, "not_training_accuracy": true, "per_class": [{"f1": 0.923, "f1_pct": 92.3, "key": "cocoon", "label": "Cocoon", "precision": 0.913, "precision_pct": 91.3, "recall": 0.933, "recall_pct": 93.3, "roc_auc": 0.9871604938271605, "support": 45}, {"f1": 0.966, "f1_pct": 96.6, "key": "jusi", "label": "Jusi", "precision": 0.977, "precision_pct": 97.7, "recall": 0.956, "recall_pct": 95.6, "roc_auc": 0.9948148148148147, "support": 45}, {"f1": 0.911, "f1_pct": 91.1, "key": "pina", "label": "Pi\u00f1a", "precision": 0.911, "precision_pct": 91.1, "recall": 0.911, "recall_pct": 91.1, "roc_auc": 0.9809876543209876, "support": 45}], "precision_pct": 93.4, "recall_pct": 93.3, "roc_auc_available": true, "roc_auc_note": "One-vs-rest (OVR) and one-vs-one (OVO) macro ROC AUC from softmax probabilities on the held-out test set.", "roc_auc_ovo_macro": 0.9876543209876543, "roc_auc_ovr_macro": 0.9876543209876543, "roc_auc_per_class": {"cocoon": 0.9871604938271605, "jusi": 0.9948148148148147, "pina": 0.9809876543209876}, "test_images": 135, "weighted": {"f1": 0.933493389673165, "f1_pct": 93.3, "precision": 0.9338091055482359, "precision_pct": 93.4, "recall": 0.9333333333333333, "recall_pct": 93.3}}, "training_runs": [{"architecture": "MobileNetV2", "best_validation_metric": {"name": "val_accuracy", "value": 0.9333333373069763, "value_pct": 93.3}, "dataset": {"identifier": "held-out test (135 images)", "seed": 42, "snapshot_id": null, "test_images": 135, "train_images": 630, "val_images": 135}, "duration": null, "duration_note": "Wall-clock duration was not recorded in metrics.json.", "epochs_completed": 20, "final": {"train_accuracy_pct": 95.1, "train_loss": 0.11651687324047089, "val_accuracy_pct": 89.6, "val_loss": 0.2757987082004547}, "history": {"available": true, "best_val_accuracy": 0.9333333373069763, "epochs": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20], "epochs_completed": 20, "final_train_accuracy": 0.9507936239242554, "final_train_loss": 0.11651687324047089, "final_val_accuracy": 0.8962963223457336, "final_val_loss": 0.2757987082004547, "series": {"accuracy": [0.4888888895511627, 0.7349206209182739, 0.8428571224212646, 0.8476190567016602, 0.8857142925262451, 0.8984127044677734, 0.8873015642166138, 0.9047619104385376, 0.9253968000411987, 0.9047619104385376, 0.920634925365448, 0.9285714030265808, 0.9047619104385376, 0.958730161190033, 0.9428571462631226, 0.934920608997345, 0.9523809552192688, 0.9523809552192688, 0.9476190209388733, 0.9507936239242554], "loss": [1.0559732913970947, 0.610610842704773, 0.4413514733314514, 0.3926871120929718, 0.3307163417339325, 0.3119562566280365, 0.31933924555778503, 0.27547329664230347, 0.23493055999279022, 0.2585046887397766, 0.23875369131565094, 0.2225833237171173, 0.2568438649177551, 0.15054506063461304, 0.15172576904296875, 0.16140039265155792, 0.1378813534975052, 0.12588970363140106, 0.11967230588197708, 0.11651687324047089], "val_accuracy": [0.800000011920929, 0.8370370268821716, 0.8444444537162781, 0.8666666746139526, 0.8444444537162781, 0.8592592477798462, 0.8518518805503845, 0.9037036895751953, 0.9111111164093018, 0.9333333373069763, 0.9111111164093018, 0.9111111164093018, 0.9259259104728699, 0.9259259104728699, 0.8888888955116272, 0.9037036895751953, 0.9185185432434082, 0.8962963223457336, 0.9259259104728699, 0.8962963223457336], "val_loss": [0.7191285490989685, 0.5365845561027527, 0.48166871070861816, 0.43726930022239685, 0.4323316812515259, 0.4012247622013092, 0.4266456663608551, 0.3926412761211395, 0.3486105501651764, 0.3438883125782013, 0.3277708888053894, 0.3362862467765808, 0.3073570132255554, 0.28374841809272766, 0.3206723630428314, 0.2800925076007843, 0.2953222393989563, 0.25670063495635986, 0.228377565741539, 0.2757987082004547]}}, "id": "v1.1", "name": "v1.1", "status": "Completed", "trained_at": "2026-11-08T12:45:57.155500+00:00"}], "versions": [{"architecture": "MobileNetV2", "artifact": "Frontend/src/owner/models/barong_model.keras", "comparable": true, "created_at": "2026-11-06T11:15:19Z", "dataset": {"seed": 42, "snapshot_id": null, "test_images": 135, "train_images": 630, "val_images": 135}, "dataset_snapshot_id": null, "deployed_at": "2026-11-08T02:23:39Z", "display_revision": "v1.1", "evaluation": {"accuracy": 0.9629629629629629, "accuracy_pct": 96.3, "dataset_note": "Held-out test split from training run", "macro_f1_pct": 96.3, "note": null, "precision_pct": 96.7, "recall_pct": 96.3, "roc_auc_ovo_macro": null, "roc_auc_ovr_macro": null, "roc_auc_per_class": null, "test_images": 135, "weighted_f1_pct": 96.3}, "file_size_bytes": 21771200, "file_size_mb": 20.76, "format": "Keras .keras", "id": "68a93a5f-2f6a-4b8e-96fa-20bf58ba001a", "is_production": true, "label": "v1.1", "major_version": 1, "revision_number": 1, "status": "Active"}]}'>
+  <header class="ma-header reveal">
+    <div>
+      <p class="ma-kicker">OWNER · MACHINE LEARNING</p>
+      <h1>Model Analytics</h1>
+      <hr class="stitch-divider" aria-hidden="true">
+      <p class="ma-lead">Held-out evaluation for the live production revision from Model Management. Metrics come from registry artifacts — not invented placeholders.</p>
+    </div>
+    <div class="ma-header-actions">
+      <a class="ma-btn ma-btn--ghost" href="/model-management">Model Management</a>
+      <a class="ma-btn ma-btn--ghost" href="/model-analytics">Refresh</a>
+      <a class="ma-btn ma-btn--ghost" href="/model-analytics?measure_latency=1">Refresh timing</a>
+      <button type="button" class="ma-btn ma-btn--primary" id="exportAnalyticsJson">Export JSON</button>
+    </div>
+  </header>
+
+  
+  <section class="ma-banner" role="note">
+    <strong>Data notes</strong>
+    <ul>
+      
+      <li>Fewer than two evaluated revisions are available for numeric comparison; revisions without evaluation reports cannot be ranked by accuracy.</li>
+      
+    </ul>
+  </section>
+  
+
+  <section class="ma-card ma-overview reveal">
+    <div class="ma-section-head">
+      <div>
+        <p class="ma-kicker">Model overview</p>
+        <h2>MobileNetV2</h2>
+      </div>
+      <span class="ma-status ma-status--active">Active</span>
+    </div>
+    <div class="ma-overview-grid">
+      <div>
+        <span class="ma-label">Live revision</span>
+        <strong>v1.1</strong>
+      </div>
+      <div>
+        <span class="ma-label">Deployed at</span>
+        <strong>2026-11-08T02:23:39Z</strong>
+      </div>
+      <div>
+        <span class="ma-label">Last evaluation</span>
+        <strong>2026-11-08T12:45:57.155500+00:00</strong>
+      </div>
+      <div>
+        <span class="ma-label">Supported classes</span>
+        <strong>3 · Cocoon, Jusi, Piña</strong>
+      </div>
+      <div>
+        <span class="ma-label">Evaluation dataset</span>
+        <strong>held-out test (135 images)</strong>
+      </div>
+      <div>
+        <span class="ma-label">Train / Val / Test</span>
+        <strong>
+          630 /
+          135 /
+          135
+        </strong>
+      </div>
+      <div>
+        <span class="ma-label">Metrics source</span>
+        <strong class="ma-mono">ml/models/active/metrics.json</strong>
+      </div>
+    </div>
+  </section>
+
+  <section class="ma-section reveal reveal-delay-1">
+    <div class="ma-section-head">
+      <div>
+        <p class="ma-kicker">Model performance</p>
+        <h2>Held-out test metrics</h2>
+      </div>
+      <p class="ma-note">Macro and weighted averages shown; headline cards use macro precision/recall/F1 and held-out test accuracy.</p>
+    </div>
+
+    
+    
+    
+    <div class="ma-metric-grid ma-metric-grid--3">
+      <div class="ma-metric">
+        <span class="ma-label">ROC AUC · OVR macro</span>
+        <strong>0.988</strong>
+        <small>One-vs-rest</small>
+      </div>
+      <div class="ma-metric">
+        <span class="ma-label">ROC AUC · OVO macro</span>
+        <strong>0.988</strong>
+        <small>One-vs-one</small>
+      </div>
+      <div class="ma-metric">
+        <span class="ma-label">Test accuracy</span>
+        <strong>93.3%</strong>
+        <small>n=135</small>
+      </div>
+    </div>
+    <p class="ma-note">One-vs-rest (OVR) and one-vs-one (OVO) macro ROC AUC from softmax probabilities on the held-out test set.</p>
+
+    <div class="ma-perf-split">
+    <div class="ma-chart-card ma-chart-card--metrics">
+      <div class="ma-chart-card-meta">
+        <h3>Headline metrics</h3>
+        <p>Hover a bar to see the exact value · test split n=135</p>
+      </div>
+      <canvas
+        id="headlineMetricsChart"
+        aria-label="Held-out accuracy, precision, recall, and F1-score"
+        role="img"
+      ></canvas>
+    </div>
+
+    <div class="ma-table-wrap">
+      <table class="ma-table">
+        <caption>Per-class performance on the held-out test set</caption>
+        <thead>
+          <tr>
+            <th scope="col">Class</th>
+            <th scope="col">Precision</th>
+            <th scope="col">Recall</th>
+            <th scope="col">F1-score</th>
+            <th scope="col">ROC AUC</th>
+            <th scope="col">Support</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+          
+          <tr>
+            <th scope="row">Cocoon</th>
+            <td>91.3%</td>
+            <td>93.3%</td>
+            <td>92.3%</td>
+            <td>0.987</td>
+            <td>45</td>
+          </tr>
+          
+          
+          <tr>
+            <th scope="row">Jusi</th>
+            <td>97.7%</td>
+            <td>95.6%</td>
+            <td>96.6%</td>
+            <td>0.995</td>
+            <td>45</td>
+          </tr>
+          
+          
+          <tr>
+            <th scope="row">Piña</th>
+            <td>91.1%</td>
+            <td>91.1%</td>
+            <td>91.1%</td>
+            <td>0.981</td>
+            <td>45</td>
+          </tr>
+          
+        </tbody>
+        <tfoot>
+          <tr>
+            <th scope="row">Macro avg</th>
+            <td>93.4%</td>
+            <td>93.3%</td>
+            <td>93.3%</td>
+            <td>0.988</td>
+            <td>135</td>
+          </tr>
+          <tr>
+            <th scope="row">Weighted avg</th>
+            <td>93.4%</td>
+            <td>93.3%</td>
+            <td>93.3%</td>
+            <td>—</td>
+            <td>135</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+    </div>
+    
+  </section>
+
+  <section class="ma-section reveal reveal-delay-2">
+    <div class="ma-section-head">
+      <div>
+        <p class="ma-kicker">Confusion matrix</p>
+        <h2>True vs predicted classes</h2>
+      </div>
+      
+      <div class="ma-toggle" role="group" aria-label="Matrix display mode">
+        <button type="button" class="ma-toggle-btn is-on" data-matrix-mode="counts">Counts</button>
+        <button type="button" class="ma-toggle-btn" data-matrix-mode="pct">Row %</button>
+      </div>
+      
+    </div>
+    
+    <p class="ma-note">Rows are true labels; columns are predicted labels. Diagonal cells are correct predictions.</p>
+    <div class="ma-matrix-wrap">
+      <table class="ma-matrix" id="confusionMatrix" data-counts='[[42, 1, 2], [0, 43, 2], [4, 0, 41]]' data-pct='[[93.3, 2.2, 4.4], [0.0, 95.6, 4.4], [8.9, 0.0, 91.1]]'>
+        <thead>
+          <tr>
+            <th scope="col">True \\ Pred</th>
+            
+            <th scope="col">Cocoon</th>
+            
+            <th scope="col">Jusi</th>
+            
+            <th scope="col">Piña</th>
+            
+          </tr>
+        </thead>
+        <tbody>
+          
+          
+          <tr>
+            <th scope="row">Cocoon</th>
+            
+            
+            <td class="is-diag" data-count="42" data-pct="93.3">42</td>
+            
+            
+            <td class="" data-count="1" data-pct="2.2">1</td>
+            
+            
+            <td class="" data-count="2" data-pct="4.4">2</td>
+            
+          </tr>
+          
+          
+          <tr>
+            <th scope="row">Jusi</th>
+            
+            
+            <td class="" data-count="0" data-pct="0.0">0</td>
+            
+            
+            <td class="is-diag" data-count="43" data-pct="95.6">43</td>
+            
+            
+            <td class="" data-count="2" data-pct="4.4">2</td>
+            
+          </tr>
+          
+          
+          <tr>
+            <th scope="row">Piña</th>
+            
+            
+            <td class="" data-count="4" data-pct="8.9">4</td>
+            
+            
+            <td class="" data-count="0" data-pct="0.0">0</td>
+            
+            
+            <td class="is-diag" data-count="41" data-pct="91.1">41</td>
+            
+          </tr>
+          
+        </tbody>
+      </table>
+    </div>
+    
+  </section>
+
+  <section class="ma-section reveal">
+    <div class="ma-section-head">
+      <div>
+        <p class="ma-kicker">Training history</p>
+        <h2>Recorded training runs</h2>
+      </div>
+      
+    </div>
+    
+    <div class="ma-table-wrap">
+      <table class="ma-table">
+        <thead>
+          <tr>
+            <th>Run</th>
+            <th>Architecture</th>
+            <th>Date</th>
+            <th>Samples (tr/va/te)</th>
+            <th>Epochs</th>
+            <th>Best val acc</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+          <tr>
+            <th scope="row">v1.1</th>
+            <td>MobileNetV2</td>
+            <td>2026-11-08T12:45:57.155500+00:00</td>
+            <td>
+              630 /
+              135 /
+              135
+            </td>
+            <td>20</td>
+            <td>
+              
+              93.3%
+              
+            </td>
+            <td><span class="ma-status ma-status--completed">Completed</span></td>
+          </tr>
+          
+        </tbody>
+      </table>
+    </div>
+    <p class="ma-note">Wall-clock duration was not recorded in metrics.json.</p>
+    
+  </section>
+
+  <section class="ma-section reveal">
+    <div class="ma-section-head">
+      <div>
+        <p class="ma-kicker">Training curves</p>
+        <h2>Accuracy and loss by epoch</h2>
+      </div>
+    </div>
+    
+    <div class="ma-charts">
+      <div class="ma-chart-card">
+        <h3>Accuracy</h3>
+        <canvas id="accuracyChart" aria-label="Training versus validation accuracy"></canvas>
+      </div>
+      <div class="ma-chart-card">
+        <h3>Loss</h3>
+        <canvas id="lossChart" aria-label="Training versus validation loss"></canvas>
+      </div>
+    </div>
+    
+  </section>
+
+  <section class="ma-section reveal">
+    <div class="ma-section-head">
+      <div>
+        <p class="ma-kicker">Model versions</p>
+        <h2>Registry revisions &amp; comparison</h2>
+      </div>
+      <p class="ma-note">Same major.revision history as Model Management.</p>
+    </div>
+    <div class="ma-table-wrap">
+      <table class="ma-table">
+        <thead>
+          <tr>
+            <th>Revision</th>
+            <th>Architecture</th>
+            <th>Created</th>
+            <th>Accuracy</th>
+            <th>ROC AUC (OVR)</th>
+            <th>Size</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+          <tr class="is-live">
+            <th scope="row">
+              v1.1
+              <span class="ma-pill">Live</span>
+            </th>
+            <td>MobileNetV2</td>
+            <td>2026-11-06T11:15:19Z</td>
+            <td>
+              
+              96.3%
+              
+            </td>
+            <td>
+              
+              —
+            </td>
+            <td>20.76 MB</td>
+            <td><span class="ma-status ma-status--active">Active</span></td>
+          </tr>
+          
+        </tbody>
+      </table>
+    </div>
+
+    <div class="ma-compare">
+      <h3>Side-by-side comparison</h3>
+      <p class="ma-note">Only versions with evaluation reports can be compared numerically. Higher accuracy alone does not mean a version should be promoted.</p>
+      <div class="ma-compare-controls">
+        <label>
+          <span class="ma-label">Version A</span>
+          <select id="compareA">
+            
+            <option value="68a93a5f-2f6a-4b8e-96fa-20bf58ba001a" selected>v1.1</option>
+            
+          </select>
+        </label>
+        <label>
+          <span class="ma-label">Version B</span>
+          <select id="compareB">
+            
+            <option value="68a93a5f-2f6a-4b8e-96fa-20bf58ba001a" selected>v1.1</option>
+            
+          </select>
+        </label>
+      </div>
+      <div id="compareOut" class="ma-compare-out" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <section class="ma-section reveal">
+    <div class="ma-section-head">
+      <div>
+        <p class="ma-kicker">Efficiency</p>
+        <h2>Inference time &amp; model size</h2>
+      </div>
+    </div>
+    <div class="ma-metric-grid ma-metric-grid--3">
+      <article class="ma-metric">
+        <span class="ma-label">Model size</span>
+        <strong><span class="num">20.76</span> MB</strong>
+        <small>Keras SavedModel (.keras) · barong_model.keras</small>
+      </article>
+      <article class="ma-metric">
+        <span class="ma-label">Avg inference</span>
+        <strong>—</strong>
+        <small>Local model.predict only</small>
+      </article>
+      <article class="ma-metric">
+        <span class="ma-label">Median / p95</span>
+        <strong>
+          —
+        </strong>
+        <small>n=<span class="num"></span></small>
+      </article>
+    </div>
+    
+    <div class="ma-empty">
+      <h3>Latency not measured yet</h3>
+      <p>No cached latency benchmark yet. Use Refresh timing to measure local model.predict latency.</p>
+    </div>
+    
+  </section>
+</main>
+
+  <script src="/static/js/main.js?v=4"></script>
+  <script src="/static/js/motion.js?v=1"></script>
+  
+<script src="/static/js/model-analytics.js?v=3"></script>
+
+</body>
+</html>

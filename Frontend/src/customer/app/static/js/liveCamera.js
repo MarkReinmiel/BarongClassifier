@@ -258,47 +258,97 @@
     }
   }
 
+  function requestUserMedia(constraints) {
+    return navigator.mediaDevices.getUserMedia(constraints);
+  }
+
+  function withTimeout(promise, ms) {
+    return new Promise(function (resolve, reject) {
+      var done = false;
+      var timer = setTimeout(function () {
+        if (done) return;
+        done = true;
+        reject(new Error("Camera request timed out"));
+      }, ms);
+      promise.then(
+        function (value) {
+          if (done) return;
+          done = true;
+          clearTimeout(timer);
+          resolve(value);
+        },
+        function (error) {
+          if (done) return;
+          done = true;
+          clearTimeout(timer);
+          reject(error);
+        }
+      );
+    });
+  }
+
+  async function openCameraStreamTimed() {
+    var attempts = [
+      {
+        audio: false,
+        video: {
+          facingMode: { ideal: "environment" },
+          width: { ideal: 1920 },
+          height: { ideal: 1080 },
+        },
+      },
+      {
+        audio: false,
+        video: { facingMode: { ideal: "environment" } },
+      },
+      { audio: false, video: true },
+    ];
+    var lastError = null;
+    for (var i = 0; i < attempts.length; i += 1) {
+      try {
+        return await withTimeout(requestUserMedia(attempts[i]), 10000);
+      } catch (error) {
+        lastError = error;
+      }
+    }
+    throw lastError || new Error("Camera unavailable");
+  }
+
   async function startCamera() {
-    showCameraNotice("");
+    if (!window.isSecureContext) {
+      showCameraNotice(HTTPS_MESSAGE);
+      fallbackNativeCapture();
+      return;
+    }
     if (!navigator.mediaDevices || typeof navigator.mediaDevices.getUserMedia !== "function") {
       fallbackNativeCapture();
       return;
     }
+
     openCamera.disabled = true;
+    cameraPanel.hidden = false;
+    setCameraOpen(true);
+    showCameraNotice("Starting camera… allow access if prompted.");
+    if (guidanceHeadline) {
+      guidanceHeadline.textContent = "Starting camera…";
+      setLevel(guidanceHeadline, "red");
+    }
+    if (calibrationPanel) calibrationPanel.hidden = true;
+    captureButton.disabled = true;
+
     try {
-      cameraStream = await navigator.mediaDevices.getUserMedia({
-        audio: false,
-        video: {
-          facingMode: { ideal: "environment" },
-          width: { ideal: 2560 },
-          height: { ideal: 1440 },
-        },
-      });
+      cameraStream = await openCameraStreamTimed();
     } catch (error) {
       openCamera.disabled = false;
-      // Prefer native capture attribute when WebRTC is blocked / unavailable.
-      if (
-        error &&
-        (error.name === "NotAllowedError" ||
-          error.name === "PermissionDeniedError" ||
-          error.name === "NotFoundError" ||
-          error.name === "DevicesNotFoundError" ||
-          error.name === "SecurityError" ||
-          !window.isSecureContext)
-      ) {
-        fallbackNativeCapture();
-        if (!window.isSecureContext) showCameraNotice(HTTPS_MESSAGE);
-        return;
-      }
+      setCameraOpen(false);
+      cameraPanel.hidden = true;
       showCameraNotice(cameraErrorMessage(error));
+      fallbackNativeCapture();
       return;
     }
 
+    showCameraNotice("");
     cameraPreview.srcObject = cameraStream;
-    cameraPanel.hidden = false;
-    setCameraOpen(true);
-    if (calibrationPanel) calibrationPanel.hidden = true;
-    captureButton.disabled = true;
     if (guidanceHeadline) {
       guidanceHeadline.textContent = "Point the camera at the textile";
       setLevel(guidanceHeadline, "red");
@@ -311,6 +361,7 @@
     setupZoom(cameraStream.getVideoTracks()[0]);
     stopAnalysis();
     analysisTimer = setTimeout(analysisLoop, config.ANALYSIS_INTERVAL_MS || 250);
+    openCamera.disabled = false;
   }
 
   if (guidanceHeadline) {

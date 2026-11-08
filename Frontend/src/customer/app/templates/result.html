@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Classification Result | {{ app_name }}{% endblock %}
 {% block head %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/result.css') }}?v=10">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/result.css') }}?v=12">
 {% endblock %}
 {% block content %}
 {% set photo = result.image_path if result.image_path and result.image_path.startswith('https://') else none %}
@@ -18,8 +18,10 @@
 {% set is_rejected = status in ['unidentified_textile', 'undefined_textile', 'uncertain', 'poor_image_quality'] or is_unidentified %}
 
 <section class="classifier-page">
-  <header class="classifier-header reveal">
+  <div class="result-topbar">
     <a href="{{ url_for('classifier.classify_page') }}" class="backbutton">&larr; Back to Classify</a>
+  </div>
+  <header class="classifier-header reveal">
     <p class="classifier-label">BARONG TAGALOG TEXTILE CLASSIFIER</p>
     <h1>Classification Result</h1>
     <hr class="stitch-divider" aria-hidden="true">
@@ -28,8 +30,6 @@
 
   <section class="classifier-card result-layout">
     <div class="result-analysis">
-      <p class="result-label">CLASSIFICATION RESULT</p>
-      <h2>Textile Analysis</h2>
       <div class="result-image-container">
         {% if image_src %}
         <img id="resultImage" src="{{ image_src }}" alt="Classified textile image"{% if photo and not result.image_data_url %} crossorigin="anonymous"{% endif %}>
@@ -86,8 +86,8 @@
         </div>
       </div>
       <div class="result-actions">
-        <a class="classify-button" href="{{ url_for('classifier.classify_page') }}">{% if is_rejected %}Try again{% else %}Classify another{% endif %}</a>
-        <a class="remove-button" href="{{ url_for('history.history_page') }}">View history</a>
+        <a class="result-action-primary" href="{{ url_for('classifier.classify_page') }}">{% if is_rejected %}Try again{% else %}Classify another{% endif %}</a>
+        <a class="result-action-secondary" href="{{ url_for('history.history_page') }}">View history</a>
       </div>
     </div>
   </section>

@@ -98,17 +98,17 @@
     </div>
 
     {% if p.available %}
-    {% set roc_ovr = p.get('roc_auc_ovr_macro') %}
-    {% set roc_ovo = p.get('roc_auc_ovo_macro') %}
+    {% set roc_ovr = p['roc_auc_ovr_macro'] if p is mapping and 'roc_auc_ovr_macro' in p else none %}
+    {% set roc_ovo = p['roc_auc_ovo_macro'] if p is mapping and 'roc_auc_ovo_macro' in p else none %}
     <div class="ma-metric-grid ma-metric-grid--3">
       <div class="ma-metric">
         <span class="ma-label">ROC AUC · OVR macro</span>
-        <strong>{% if roc_ovr is not none %}{{ '%.3f'|format(roc_ovr) }}{% else %}—{% endif %}</strong>
+        <strong>{% if roc_ovr is number %}{{ '%.3f'|format(roc_ovr) }}{% else %}—{% endif %}</strong>
         <small>One-vs-rest</small>
       </div>
       <div class="ma-metric">
         <span class="ma-label">ROC AUC · OVO macro</span>
-        <strong>{% if roc_ovo is not none %}{{ '%.3f'|format(roc_ovo) }}{% else %}—{% endif %}</strong>
+        <strong>{% if roc_ovo is number %}{{ '%.3f'|format(roc_ovo) }}{% else %}—{% endif %}</strong>
         <small>One-vs-one</small>
       </div>
       <div class="ma-metric">
@@ -117,7 +117,7 @@
         <small>{% if p.test_images is not none %}n={{ p.test_images }}{% else %}Held-out split{% endif %}</small>
       </div>
     </div>
-    <p class="ma-note">{{ p.get('roc_auc_note') or 'Multiclass ROC AUC from held-out softmax probabilities when present in metrics.json.' }}</p>
+    <p class="ma-note">{% if p is mapping and p.get('roc_auc_note') %}{{ p.get('roc_auc_note') }}{% elif roc_ovr is number %}One-vs-rest / one-vs-one macro ROC AUC on the held-out test set.{% else %}ROC AUC appears after a train that writes test_roc_auc_* into metrics.json.{% endif %}</p>
 
     <div class="ma-perf-split">
     <div class="ma-chart-card ma-chart-card--metrics">
@@ -147,13 +147,13 @@
         </thead>
         <tbody>
           {% for row in p.per_class %}
-          {% set row_auc = row.get('roc_auc') %}
+          {% set row_auc = row['roc_auc'] if row is mapping and 'roc_auc' in row else none %}
           <tr>
             <th scope="row">{{ row.label }}</th>
             <td>{% if row.precision_pct is not none %}{{ '%.1f'|format(row.precision_pct) }}%{% else %}—{% endif %}</td>
             <td>{% if row.recall_pct is not none %}{{ '%.1f'|format(row.recall_pct) }}%{% else %}—{% endif %}</td>
             <td>{% if row.f1_pct is not none %}{{ '%.1f'|format(row.f1_pct) }}%{% else %}—{% endif %}</td>
-            <td>{% if row_auc is not none %}{{ '%.3f'|format(row_auc) }}{% else %}—{% endif %}</td>
+            <td>{% if row_auc is number %}{{ '%.3f'|format(row_auc) }}{% else %}—{% endif %}</td>
             <td>{{ row.support if row.support is not none else '—' }}</td>
           </tr>
           {% else %}
@@ -166,7 +166,7 @@
             <td>{% if p.macro.precision_pct is not none %}{{ '%.1f'|format(p.macro.precision_pct) }}%{% else %}—{% endif %}</td>
             <td>{% if p.macro.recall_pct is not none %}{{ '%.1f'|format(p.macro.recall_pct) }}%{% else %}—{% endif %}</td>
             <td>{% if p.macro.f1_pct is not none %}{{ '%.1f'|format(p.macro.f1_pct) }}%{% else %}—{% endif %}</td>
-            <td>{% if roc_ovr is not none %}{{ '%.3f'|format(roc_ovr) }}{% else %}—{% endif %}</td>
+            <td>{% if roc_ovr is number %}{{ '%.3f'|format(roc_ovr) }}{% else %}—{% endif %}</td>
             <td>{{ p.test_images or '—' }}</td>
           </tr>
           <tr>

@@ -36,33 +36,43 @@ body {
    PAGE HEADER
 ================================= */
 
+.result-topbar {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    align-self: stretch;
+    width: 100%;
+    margin: 0 0 18px;
+    text-align: left;
+}
+
+.result-topbar .backbutton {
+    align-self: flex-start;
+    margin-right: auto;
+}
+
 .classifier-header {
+    position: relative;
     text-align: center;
-
     margin-bottom: 42px;
-
     animation: fade-up 0.65s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-/* Back button */
+/* Back button — upper left */
 .backbutton {
-    position: absolute;
-    top: 15px;
-    left: 48px;
-
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     padding: 8px 16px;
-
+    min-height: 40px;
+    margin: 0;
     border: 1px solid var(--forest-mid, var(--accent));
     border-radius: 999px;
-
-    background: transparent;
+    background: var(--surface, #fffdf8);
     color: var(--forest, var(--accent));
-
     font-family: "DM Sans", Arial, sans-serif;
     font-size: 13px;
     font-weight: 500;
-
     text-decoration: none;
     transition:
         background 0.2s ease,
@@ -73,8 +83,58 @@ body {
 .backbutton:hover {
     background: var(--forest, var(--accent));
     color: #fff;
-
     transform: translateY(-2px);
+}
+
+.result-actions {
+    margin-top: 22px;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: stretch;
+}
+
+.result-action-primary,
+.result-action-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 18px;
+    min-height: 46px;
+    border-radius: 999px;
+    font-family: "DM Sans", Arial, sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    box-sizing: border-box;
+    transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+}
+
+.result-action-primary {
+    background: var(--forest, #1e3a2f);
+    border: 1.5px solid var(--forest, #1e3a2f);
+    color: #fff;
+    box-shadow: 0 6px 14px rgba(30, 58, 47, 0.18);
+}
+
+.result-action-primary:hover {
+    background: var(--forest-mid, #2f5a45);
+    border-color: var(--forest-mid, #2f5a45);
+    color: #fff;
+    transform: translateY(-1px);
+}
+
+.result-action-secondary {
+    border: 1.5px solid var(--forest, #1e3a2f);
+    background: transparent;
+    color: var(--forest, #1e3a2f);
+}
+
+.result-action-secondary:hover {
+    background: var(--surface-soft, #f7f1e8);
+    color: var(--forest, #1e3a2f);
+    transform: translateY(-1px);
 }
 
 .classifier-label {
@@ -597,20 +657,28 @@ body.modal-open {
         padding: 16px 16px calc(28px + env(safe-area-inset-bottom));
     }
 
+    .result-topbar {
+        margin-bottom: 14px;
+    }
+
     .classifier-header {
         margin-bottom: 28px;
+        text-align: center;
     }
 
     .backbutton {
-        position: static;
-
         display: inline-flex;
-
         align-items: center;
-
         min-height: 44px;
+    }
 
-        margin-bottom: 18px;
+    .result-actions {
+        flex-direction: column;
+    }
+
+    .result-action-primary,
+    .result-action-secondary {
+        width: 100%;
     }
 
     .result-image-actions {
