@@ -3,9 +3,9 @@
 ================================= */
 
 .dashboard {
-    min-height: calc(100vh - 72px);
+    min-height: calc(100dvh - 72px);
     padding: 14px 4% 64px;
-    background: transparent;
+    background: var(--bg, #E3CEBB);
     box-sizing: border-box;
 }
 
@@ -666,6 +666,9 @@
 @media (max-width: 700px) {
     .dashboard {
         padding: 16px 14px calc(88px + env(safe-area-inset-bottom));
+        /* Fill viewport so white body does not show under short content */
+        min-height: calc(100dvh - 64px - env(safe-area-inset-top, 0px));
+        background: var(--bg, #E3CEBB);
     }
 
     .dashboard-hero {

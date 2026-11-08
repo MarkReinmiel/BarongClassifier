@@ -830,8 +830,10 @@
 
 
 @media (max-width: 899px) {
+    /* Match shared page almond cream so short pages (dashboard / textile)
+       do not show a white split under content. Tab bar stays white. */
     body {
-        background: #ffffff;
+        background: var(--bg, #E3CEBB);
     }
 
     .mobile-tabbar {
