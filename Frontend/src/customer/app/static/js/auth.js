@@ -27,8 +27,38 @@
     }
   }
 
+  var REMEMBER_EMAIL_KEY = "bc_customer_remember_email";
+
+  function readRememberedEmail() {
+    try {
+      return (localStorage.getItem(REMEMBER_EMAIL_KEY) || "").trim();
+    } catch (err) {
+      return "";
+    }
+  }
+
+  function writeRememberedEmail(email) {
+    try {
+      var value = String(email || "").trim();
+      if (value) localStorage.setItem(REMEMBER_EMAIL_KEY, value);
+      else localStorage.removeItem(REMEMBER_EMAIL_KEY);
+    } catch (err) {
+      /* private mode */
+    }
+  }
+
   var loginForm = document.getElementById("loginForm");
   var loginBtn = document.getElementById("loginBtn");
+  var loginEmail = document.getElementById("loginEmail");
+  var loginRemember = document.getElementById("loginRemember");
+  if (loginForm && loginEmail) {
+    var remembered = readRememberedEmail();
+    /* Prefill last email only when Remember me was used before */
+    if (remembered && !loginEmail.value) {
+      loginEmail.value = remembered;
+      if (loginRemember) loginRemember.checked = true;
+    }
+  }
   if (loginForm && loginBtn) {
     loginForm.addEventListener("submit", function (event) {
       if (!loginForm.checkValidity()) return;
@@ -38,6 +68,12 @@
         event.preventDefault();
         window.location.reload();
         return;
+      }
+      var emailValue = loginEmail ? loginEmail.value.trim() : "";
+      if (loginRemember && loginRemember.checked && emailValue) {
+        writeRememberedEmail(emailValue);
+      } else {
+        writeRememberedEmail("");
       }
       setLoading(loginBtn, true);
     });
