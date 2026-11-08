@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, render_template, request
 
-from app.services.statistics_service import dashboard_stats
+from app.services.statistics_service import about_stats, dashboard_stats
 from app.services.tour_service import (
     get_tour_progress,
     mark_section_completed,
@@ -93,3 +93,27 @@ def textile_types():
         launch_textile_tour=section_needs_tour(user, "textile"),
         tour_progress=get_tour_progress(user),
     )
+
+
+@bp.route("/about")
+@nickname_required
+def about():
+    user = current_user()
+    try:
+        stats = about_stats()
+    except Exception:
+        stats = {
+            "model_accuracy": None,
+            "test_images": None,
+            "classifications_total": 0,
+            "textile_types": 3,
+        }
+    return render_template("about.html", user=user, stats=stats)
+
+
+@bp.route("/contact")
+@nickname_required
+def contact():
+    from flask import redirect, url_for
+
+    return redirect(url_for("main.about") + "#contact")

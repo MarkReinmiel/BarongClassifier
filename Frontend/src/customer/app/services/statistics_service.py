@@ -117,3 +117,37 @@ def dashboard_stats(user: CustomerUser) -> dict:
             for row in recent_rows
         ],
     }
+
+
+def about_stats() -> dict:
+    """Model/dataset overview numbers for the About page."""
+    metrics = _load_metrics()
+    accuracy = None
+    test_images = None
+    value = metrics.get("test_accuracy")
+    if value is None:
+        history = metrics.get("history") or {}
+        vals = history.get("val_accuracy") or []
+        if vals:
+            value = vals[-1]
+    try:
+        score = float(value)
+        if 0.0 <= score <= 1.0:
+            accuracy = round(score * 100)
+    except (TypeError, ValueError):
+        accuracy = None
+    try:
+        if metrics.get("test_images") is not None:
+            test_images = int(metrics["test_images"])
+    except (TypeError, ValueError):
+        test_images = None
+    try:
+        classifications_total = int(Classification.query.count() or 0)
+    except Exception:
+        classifications_total = 0
+    return {
+        "model_accuracy": accuracy,
+        "test_images": test_images,
+        "classifications_total": classifications_total,
+        "textile_types": _load_class_count(),
+    }

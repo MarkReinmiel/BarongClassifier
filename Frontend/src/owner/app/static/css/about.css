@@ -1,6 +1,7 @@
 /* Owner About — floating cards on Pale Oak background */
 
 .about-page {
+  width: 100%;
   max-width: 1100px;
   margin: 0 auto;
   padding: 16px 20px 72px;

@@ -3,7 +3,7 @@
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/shared.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/topnav.css') }}?v=16">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/about.css') }}?v=2">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/about.css') }}?v=3">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-app.css') }}?v=9">
 {% endblock %}
 {% block body %}
@@ -37,10 +37,6 @@
       <article class="about-chip">
         <img src="{{ url_for('static', filename='images/textiles/cocoon.jpg') }}" alt="" loading="lazy">
         <span>Cocoon</span>
-      </article>
-      <article class="about-chip about-chip--wide">
-        <img src="{{ url_for('static', filename='images/textiles/others.png') }}" alt="" loading="lazy">
-        <span>Others</span>
       </article>
     </div>
   </section>

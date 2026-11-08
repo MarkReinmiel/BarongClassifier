@@ -11,7 +11,33 @@ bp = Blueprint("classify", __name__)
 @bp.get("/classify")
 @login_required
 def classify_page():
-    response = render_template("classify.html", user=current_user(), active="classify")
+    from app.services.users_service import list_recent_classifications
+
+    recent = []
+    try:
+        result = list_recent_classifications(limit=4)
+        for row in result.get("items") or []:
+            label = row.get("predicted_label") or ""
+            key = label.strip().lower().replace("ñ", "n").replace("piña", "pina")
+            image_path = (row.get("image_url") or "") or ""
+            recent.append(
+                {
+                    "label": label,
+                    "confidence": float(row.get("confidence") or 0),
+                    "image_name": row.get("image_name") or "image",
+                    "image_path": image_path,
+                    "textile_key": key,
+                    "created_label": row.get("created_at") or "",
+                }
+            )
+    except Exception:
+        recent = []
+    response = render_template(
+        "classify.html",
+        user=current_user(),
+        active="classify",
+        recent=recent,
+    )
     return no_store(response)
 
 

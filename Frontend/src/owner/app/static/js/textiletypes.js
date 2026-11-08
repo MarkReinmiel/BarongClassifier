@@ -1,4 +1,4 @@
-const TEXTILE_ORDER = ["pina", "jusi", "cocoon", "others"];
+const TEXTILE_ORDER = ["pina", "jusi", "cocoon"];
 
 const TEXTILES = {
   pina: {
@@ -30,16 +30,6 @@ const TEXTILES = {
     uses: "Elegant Barong Tagalog",
     characteristics: "Smooth, Soft sheen",
     images: ["images/textiles/cocoon.jpg"],
-  },
-  others: {
-    title: "Others",
-    description:
-      "Other textile materials and fabric types that may be associated with traditional Filipino clothing.",
-    material: "Mixed / alternative fibers",
-    origin: "Various",
-    uses: "Traditional and contemporary garments",
-    characteristics: "Varies by fabric",
-    images: ["images/textiles/others.png"],
   },
 };
 

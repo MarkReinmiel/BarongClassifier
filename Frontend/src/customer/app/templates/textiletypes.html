@@ -56,24 +56,13 @@
       <span class="textile-card-cta">View details &rarr;</span>
     </article>
 
-    <article class="textile-card" data-textile="others" tabindex="0" role="button">
-      <div class="textile-card-media">
-        <img class="textile-thumb" src="{{ url_for('static', filename='images/textiles/others.png') }}" alt="Other textiles">
-      </div>
-      <h2>Others</h2>
-      <p>Other textile materials and fabric types that may be associated with traditional Filipino clothing.</p>
-      <div class="textile-tags" aria-hidden="true">
-        <span>Mixed</span><span>Varies</span>
-      </div>
-      <span class="textile-card-cta">View details &rarr;</span>
-    </article>
   </section>
 </div>
 
 <div id="textileModal" class="textile-modal" hidden>
   <div class="textile-modal-panel" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
     <button class="close-modal" type="button" id="closeTextileModal" aria-label="Close">&times;</button>
-    <p class="textile-modal-index" id="modalIndex">1 OF 4</p>
+    <p class="textile-modal-index" id="modalIndex">1 OF 3</p>
     <h2 id="modalTitle"></h2>
     <img class="textile-modal-image" id="modalImage" alt="">
     <p id="modalDescription" class="textile-modal-desc"></p>
@@ -92,5 +81,5 @@
 </div>
 {% endblock %}
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/textiletypes.js') }}?v=3"></script>
+<script src="{{ url_for('static', filename='js/textiletypes.js') }}?v=4"></script>
 {% endblock %}

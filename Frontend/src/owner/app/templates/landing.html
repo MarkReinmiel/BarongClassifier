@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/heritage.css') }}?v=9">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/landing.css') }}?v=10">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/landing.css') }}?v=14">
 </head>
 <body class="landing-body">
   <header class="lp-top">
@@ -20,7 +20,6 @@
       <a href="#about">About Barong</a>
       <a href="#fabrics">Fabrics</a>
       <a href="#how">How it works</a>
-      <a href="#contact">Contact Us</a>
     </nav>
     <div class="lp-top-actions">
       <a class="lp-btn lp-btn--solid" href="{{ url_for('auth.login') }}">Sign In</a>
@@ -30,9 +29,13 @@
   <main>
     <section class="lp-hero">
       <div class="lp-hero-copy">
+        <div class="lp-hero-brand">
+          <img src="{{ url_for('static', filename='images/barongcognition_logo.png') }}" alt="">
+          <span>barongcognition</span>
+        </div>
         <p class="lp-kicker">Preserving heritage through technology</p>
         <h1>Know your Barong Tagalog fabric.</h1>
-        <p class="lp-lead">Take or upload a photo of a Barong Tagalog textile, and BarongClassifier helps identify whether it is Piña, Jusi or Cocoon.</p>
+        <p class="lp-lead">Take or upload a photo of a Barong Tagalog textile, and Barongcognition helps identify whether it is Piña, Jusi or Cocoon.</p>
         <div class="lp-hero-actions">
           <a class="lp-btn lp-btn--primary" href="{{ url_for('auth.login') }}">Sign In</a>
         </div>
@@ -104,44 +107,90 @@
     <section class="lp-section lp-how" id="how">
       <p class="lp-kicker">How it works</p>
       <h2 class="lp-section-title">From image to classification</h2>
+      <div class="lp-rule lp-rule--start" aria-hidden="true"><span></span></div>
       <div class="lp-steps">
-        <article class="lp-step"><span>01</span><h3>Open Classify</h3><p>Open the classification page.</p></article>
-        <article class="lp-step"><span>02</span><h3>Capture or Upload</h3><p>Take a textile photo or upload one.</p></article>
-        <article class="lp-step"><span>03</span><h3>CNN Analysis</h3><p>The model analyzes the image.</p></article>
-        <article class="lp-step"><span>04</span><h3>View Result</h3><p>See the predicted type and confidence.</p></article>
-      </div>
-    </section>
-
-    <section class="lp-section lp-contact" id="contact">
-      <p class="lp-kicker">Contact Us</p>
-      <h2 class="lp-section-title">We’re here to help</h2>
-      <p class="lp-contact-lead">Reach the BarongClassifier team for owner access, model feedback, or support.</p>
-
-      <div class="lp-contact-card">
-        <div class="lp-contact-email-block">
-          <span class="lp-contact-label">Email</span>
-          <a class="lp-contact-email" href="mailto:barongclassifier@gmail.com">barongclassifier@gmail.com</a>
-          <div class="lp-contact-actions">
-            <a class="lp-btn lp-btn--primary" href="mailto:barongclassifier@gmail.com">Send email</a>
-            <button type="button" class="lp-btn lp-btn--ghost-dark" id="copyContactEmail" data-email="barongclassifier@gmail.com">Copy email</button>
+        <article class="lp-step">
+          <div class="lp-step-icon" aria-hidden="true">
+            <svg viewBox="0 0 56 56" fill="none">
+              <rect x="8" y="10" width="34" height="28" rx="4" stroke="#331832" stroke-width="1.7"/>
+              <path d="M8 17h34" stroke="#331832" stroke-width="1.7"/>
+              <circle cx="13" cy="13.5" r="1.15" fill="#A3320B"/>
+              <circle cx="17.5" cy="13.5" r="1.15" fill="#C5A072"/>
+              <circle cx="22" cy="13.5" r="1.15" fill="#758E4F"/>
+              <rect x="13" y="22" width="20" height="8" rx="2.5" stroke="#331832" stroke-width="1.4"/>
+              <circle cx="28.5" cy="26" r="2.2" fill="#A3320B"/>
+              <path d="M29.8 27.3l2.2 2.2" stroke="#fff" stroke-width="1.2" stroke-linecap="round"/>
+              <path d="M36 32l7 10 2.2-5.2 5.2-1.2L36 32z" fill="#A3320B" stroke="#331832" stroke-width="1"/>
+            </svg>
           </div>
-          <p class="lp-contact-copied" id="contactCopied" hidden>Email copied</p>
-        </div>
-
-        <div class="lp-contact-topics">
-          <span class="lp-contact-label">Quick topics</span>
-          <div class="lp-contact-chips">
-            <a href="mailto:barongclassifier@gmail.com?subject=Owner%20access%20help">Owner access</a>
-            <a href="mailto:barongclassifier@gmail.com?subject=Model%20feedback">Model feedback</a>
-            <a href="mailto:barongclassifier@gmail.com?subject=Partnership%20inquiry">Partnership</a>
-            <a href="mailto:barongclassifier@gmail.com?subject=Bug%20report">Report a bug</a>
+          <span class="lp-step-num" aria-hidden="true">1</span>
+          <div class="lp-step-copy">
+            <h3>Open Classify</h3>
+            <p>Open the classification page.</p>
           </div>
-        </div>
+        </article>
+        <article class="lp-step">
+          <div class="lp-step-icon" aria-hidden="true">
+            <svg viewBox="0 0 56 56" fill="none">
+              <rect x="5" y="16" width="18" height="15" rx="3" stroke="#331832" stroke-width="1.6"/>
+              <circle cx="14" cy="23.5" r="3.6" stroke="#331832" stroke-width="1.5"/>
+              <circle cx="14" cy="23.5" r="1.5" fill="#A3320B"/>
+              <path d="M9 16l1.8-3.5h6.4L19 16" stroke="#331832" stroke-width="1.5" stroke-linejoin="round"/>
+              <text x="28" y="27" text-anchor="middle" font-size="8" font-family="DM Sans, Arial, sans-serif" fill="#5A4063">or</text>
+              <rect x="34" y="14" width="16" height="20" rx="2.5" stroke="#331832" stroke-width="1.6" stroke-dasharray="2.8 2.2"/>
+              <path d="M42 20v10M42 20l-3.2 3.2M42 20l3.2 3.2" stroke="#A3320B" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <span class="lp-step-num" aria-hidden="true">2</span>
+          <div class="lp-step-copy">
+            <h3>Capture or upload</h3>
+            <p>Take a textile photo or upload one.</p>
+          </div>
+        </article>
+        <article class="lp-step">
+          <div class="lp-step-icon" aria-hidden="true">
+            <svg viewBox="0 0 56 56" fill="none">
+              <circle cx="12" cy="14" r="3.2" fill="#A3320B"/>
+              <circle cx="28" cy="11" r="3.2" fill="#A3320B"/>
+              <circle cx="44" cy="14" r="3.2" fill="#A3320B"/>
+              <rect x="9" y="30" width="7" height="7" rx="1.2" fill="#331832"/>
+              <rect x="24.5" y="33" width="7" height="7" rx="1.2" fill="#331832"/>
+              <rect x="40" y="30" width="7" height="7" rx="1.2" fill="#331832"/>
+              <path d="M12 17.2V27M28 14.2V30M44 17.2V27M16 33.5H24.5M31.5 36.5H40M14.5 17.5l10 13.5M31 16.5l10 13.5M41.5 17.5l-9 13.5" stroke="#A3320B" stroke-width="1.25" opacity=".9"/>
+            </svg>
+          </div>
+          <span class="lp-step-num" aria-hidden="true">3</span>
+          <div class="lp-step-copy">
+            <h3>CNN analysis</h3>
+            <p>The model analyzes the image.</p>
+          </div>
+        </article>
+        <article class="lp-step">
+          <div class="lp-step-icon" aria-hidden="true">
+            <svg viewBox="0 0 56 56" fill="none">
+              <rect x="10" y="10" width="36" height="36" rx="6" fill="#F7F0E8" stroke="#331832" stroke-width="1.5"/>
+              <rect x="14" y="14" width="12" height="12" rx="2.5" fill="#E3CEBB"/>
+              <path d="M29 16h13M29 20.5h10" stroke="#331832" stroke-width="1.4" stroke-linecap="round"/>
+              <text x="14" y="36" font-size="8" font-family="Playfair Display, Georgia, serif" fill="#331832">Piña</text>
+              <text x="14" y="43" font-size="5.5" font-family="DM Sans, Arial, sans-serif" fill="#5A4063">Confidence</text>
+              <rect x="14" y="45" width="18" height="3.2" rx="1.5" fill="#E8D9C9"/>
+              <rect x="14" y="45" width="12" height="3.2" rx="1.5" fill="#A3320B"/>
+              <circle cx="40" cy="16" r="5.2" fill="#A3320B"/>
+              <path d="M37.6 16.1l1.6 1.6 3.2-3.2" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <span class="lp-step-num" aria-hidden="true">4</span>
+          <div class="lp-step-copy">
+            <h3>View result</h3>
+            <p>See the predicted type and confidence.</p>
+          </div>
+        </article>
       </div>
     </section>
 
     <section class="lp-cta">
       <h2>Ready to identify your fabric?</h2>
+      <div class="lp-rule lp-rule--center" aria-hidden="true"><span></span></div>
       <p>Sign in with your authorized Owner account to manage classification and analytics.</p>
       <div class="lp-hero-actions">
         <a class="lp-btn lp-btn--primary" href="{{ url_for('auth.login') }}">Sign In</a>
@@ -150,32 +199,15 @@
   </main>
 
   <footer class="lp-foot">
-    <p>
-      BarongClassifier · Preserving Heritage Through Technology
-      · <a href="mailto:barongclassifier@gmail.com">barongclassifier@gmail.com</a>
+    <div class="lp-mark lp-mark--footer">
+      <p class="lp-mark-name">barongcognition</p>
+      <div class="lp-rule lp-rule--center" aria-hidden="true"><span></span></div>
+      <p class="lp-mark-sub">Barong Textile Classifier</p>
+    </div>
+    <p class="lp-foot-line">
+      Barongcognition · Preserving Heritage Through Technology
+      · <a href="https://mail.google.com/mail/?view=cm&fs=1&to=barongclassifier@gmail.com" target="_blank" rel="noopener noreferrer">barongclassifier@gmail.com</a>
     </p>
   </footer>
-  <script>
-  (function () {
-    var btn = document.getElementById("copyContactEmail");
-    var note = document.getElementById("contactCopied");
-    if (!btn) return;
-    btn.addEventListener("click", function () {
-      var email = btn.getAttribute("data-email") || "barongclassifier@gmail.com";
-      var done = function () {
-        if (!note) return;
-        note.hidden = false;
-        window.setTimeout(function () { note.hidden = true; }, 1800);
-      };
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(email).then(done).catch(function () {
-          window.prompt("Copy this email", email);
-        });
-      } else {
-        window.prompt("Copy this email", email);
-      }
-    });
-  })();
-  </script>
 </body>
 </html>
