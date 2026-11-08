@@ -9,6 +9,7 @@
 {% endblock %}
 {% block body %}
 {% include "_nav.html" %}
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 <main class="history-page">
   <section class="history-page-header reveal">
     <p class="eyebrow">BARONG TAGALOG</p>
@@ -188,5 +189,5 @@
 {% endblock %}
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/navbar.js') }}"></script>
-<script src="{{ url_for('static', filename='js/history.js') }}?v=1"></script>
+<script src="{{ url_for('static', filename='js/history.js') }}?v=2"></script>
 {% endblock %}

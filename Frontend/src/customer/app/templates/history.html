@@ -5,6 +5,7 @@
 <meta name="csrf-token" content="{{ csrf_token() }}">
 {% endblock %}
 {% block content %}
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 <div
   id="onboarding-tour"
   hidden
@@ -230,5 +231,5 @@
 {% endblock %}
 {% block scripts %}
 {{ super() }}
-<script src="{{ url_for('static', filename='js/history.js') }}?v=1"></script>
+<script src="{{ url_for('static', filename='js/history.js') }}?v=2"></script>
 {% endblock %}

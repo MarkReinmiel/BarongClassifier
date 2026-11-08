@@ -194,7 +194,14 @@
     zoomSlider.max = zoomRange.allowedMax;
     zoomSlider.step = zoom.step || 0.1;
     zoomControls.hidden = false;
-    applyZoom(track, config.INITIAL_ZOOM || zoomRange.min);
+    var initialZoom =
+      typeof config.INITIAL_ZOOM === "number" ? config.INITIAL_ZOOM : 4;
+    applyZoom(track, initialZoom);
+    if (zoomStatus) {
+      zoomStatus.textContent = "Zoom: " + formatZoom(
+        Math.min(Math.max(initialZoom, zoomRange.min), zoomRange.allowedMax)
+      );
+    }
   }
 
   function cameraErrorMessage(error) {

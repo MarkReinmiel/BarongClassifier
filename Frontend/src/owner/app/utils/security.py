@@ -3,11 +3,33 @@ from __future__ import annotations
 import hashlib
 import hmac
 import secrets
+from datetime import timedelta
 from functools import wraps
 
 from flask import abort, current_app, make_response, redirect, request, session, url_for
 
 from app.models import OwnerUser
+
+
+def remember_requested(raw=None) -> bool:
+    """True when the Remember me checkbox (or equivalent payload) is on."""
+    if raw is None:
+        raw = request.form.get("remember") if request.form else None
+    if isinstance(raw, bool):
+        return raw
+    value = str(raw or "").strip().lower()
+    return value in {"1", "true", "yes", "on"}
+
+
+def apply_remember_me(remember: bool) -> None:
+    """Persist or drop the login session according to Remember me."""
+    wanted = bool(remember)
+    session.permanent = wanted
+    session["remember_me"] = wanted
+    if wanted:
+        days = int(current_app.config.get("REMEMBER_ME_DAYS") or 30)
+        current_app.permanent_session_lifetime = timedelta(days=max(1, days))
+    session.modified = True
 
 
 def generate_code(length: int = 6) -> str:

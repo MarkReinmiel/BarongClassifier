@@ -10,7 +10,12 @@
 
   function csrfToken() {
     var meta = document.querySelector('meta[name="csrf-token"]');
-    return meta ? meta.getAttribute("content") || "" : "";
+    if (meta) {
+      var fromMeta = meta.getAttribute("content") || "";
+      if (fromMeta) return fromMeta;
+    }
+    var input = document.querySelector('input[name="csrf_token"]');
+    return input ? input.value || "" : "";
   }
 
   function openDialog(dialog) {
@@ -31,6 +36,24 @@
     previewImage.alt = label ? label + " preview" : "Classification preview";
     if (previewTitle) previewTitle.textContent = label || "Classification preview";
     openDialog(previewModal);
+  }
+
+  function parseJsonResponse(response) {
+    return response.text().then(function (text) {
+      var data = null;
+      if (text) {
+        try {
+          data = JSON.parse(text);
+        } catch (_error) {
+          var hint =
+            response.status === 400
+              ? "Security check failed. Refresh the page and try again."
+              : "Server returned an unexpected response (" + response.status + ").";
+          throw new Error(hint);
+        }
+      }
+      return { ok: response.ok, status: response.status, data: data || {} };
+    });
   }
 
   document.addEventListener("click", function (event) {
@@ -85,21 +108,27 @@
   if (deleteConfirm) {
     deleteConfirm.addEventListener("click", function () {
       if (!pendingDeleteUrl) return;
+      var token = csrfToken();
+      if (!token) {
+        window.alert("Security token missing. Refresh the page and try again.");
+        return;
+      }
       deleteConfirm.disabled = true;
+      var body = new URLSearchParams();
+      body.set("csrf_token", token);
       fetch(pendingDeleteUrl, {
         method: "POST",
         headers: {
           Accept: "application/json",
+          "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
           "X-Requested-With": "XMLHttpRequest",
-          "X-CSRFToken": csrfToken(),
+          "X-CSRFToken": token,
+          "X-CSRF-Token": token,
         },
+        body: body.toString(),
         credentials: "same-origin",
       })
-        .then(function (response) {
-          return response.json().then(function (data) {
-            return { ok: response.ok, data: data };
-          });
-        })
+        .then(parseJsonResponse)
         .then(function (result) {
           if (!result.ok || !result.data || !result.data.ok) {
             throw new Error(

@@ -19,7 +19,15 @@ from app.models import CustomerUser, PendingSignup, utcnow
 from app.services import auth_service
 from app.services.auth_service import AuthError
 from app.services.turnstile_service import TurnstileError, turnstile_active, verify_turnstile
-from app.utils.security import client_label, current_user, login_required, mask_email, no_store
+from app.utils.security import (
+    apply_remember_me,
+    client_label,
+    current_user,
+    login_required,
+    mask_email,
+    no_store,
+    remember_requested,
+)
 from app.utils.validators import normalize_email
 
 bp = Blueprint("auth", __name__, url_prefix="/auth")
@@ -121,12 +129,12 @@ def login():
 
     email = request.form.get("email", "")
     password = request.form.get("password", "")
-    remember = bool(request.form.get("remember"))
+    remember = remember_requested()
     if request.is_json:
         payload = request.get_json(silent=True) or {}
         email = payload.get("email", email)
         password = payload.get("password", password)
-        remember = bool(payload.get("remember", remember))
+        remember = remember_requested(payload.get("remember", remember))
 
     try:
         user = auth_service.authenticate(email, password)
@@ -257,7 +265,7 @@ def google_complete():
 
     payload = request.get_json(silent=True) or {}
     access_token = (payload.get("access_token") or "").strip()
-    remember = bool(payload.get("remember", True))
+    remember = remember_requested(payload.get("remember", True))
     intent = (
         (payload.get("intent") or session.get("google_oauth_intent") or "login")
         .strip()
@@ -308,8 +316,7 @@ def google_complete():
     session.pop("google_oauth_login_retry", None)
     session.clear()
     session["user_id"] = str(user.id)
-    session.permanent = bool(remember)
-    session.modified = True
+    apply_remember_me(remember)
     try:
         user.last_login_at = utcnow()
         db.session.commit()
@@ -407,14 +414,15 @@ def _complete_login(user: CustomerUser, set_device: bool = False, remember: bool
 
     if remember is None:
         if request.form and "remember" in request.form:
-            remember = bool(request.form.get("remember"))
+            remember = remember_requested()
         else:
             remember = True
+    else:
+        remember = remember_requested(remember)
 
     session.clear()
     session["user_id"] = str(user.id)
-    session.permanent = bool(remember)
-    session.modified = True
+    apply_remember_me(remember)
     try:
         user.last_login_at = utcnow()
         db.session.commit()
@@ -500,7 +508,7 @@ def verify_human():
         return redirect(url_for("auth.login"))
 
     if not turnstile_active():
-        remember = bool(session.get("pending_remember", True))
+        remember = remember_requested(session.get("pending_remember", True))
         return _continue_after_human(user, remember=remember)
 
     if request.method == "GET":
@@ -509,7 +517,7 @@ def verify_human():
             email_hint=mask_email(user.email),
         )
 
-    remember = bool(session.get("pending_remember", True))
+    remember = remember_requested(session.get("pending_remember", True))
     try:
         verify_turnstile(request.form.get("cf-turnstile-response"))
     except TurnstileError as error:
@@ -582,11 +590,11 @@ def verify_code():
         return _json_error(error)
 
     if purpose == "device":
+        remember = remember_requested(session.get("pending_remember", True))
         token = auth_service.trust_device(user, client_label())
         session.clear()
         session["user_id"] = str(user.id)
-        session.permanent = True
-        session.modified = True
+        apply_remember_me(remember)
         user.last_login_at = utcnow()
         db.session.commit()
         target = (

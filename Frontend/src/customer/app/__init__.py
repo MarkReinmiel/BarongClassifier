@@ -54,6 +54,20 @@ def create_app(config_object: type[Config] = Config) -> Flask:
 
     @flask_app.errorhandler(CSRFError)
     def csrf_error(_error):
+        wants_json = (
+            request.headers.get("X-Requested-With") == "XMLHttpRequest"
+            or "application/json" in (request.headers.get("Accept") or "")
+        )
+        if wants_json:
+            return (
+                jsonify(
+                    {
+                        "ok": False,
+                        "error": "Session expired. Refresh the page and try again.",
+                    }
+                ),
+                400,
+            )
         flash("Your session expired. Please try again.", "error")
         target = request.referrer or url_for("auth.login")
         # Prefer auth pages when the token fails on login/register.
