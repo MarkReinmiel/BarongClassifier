@@ -29,6 +29,12 @@ document.querySelectorAll("form[data-loading]").forEach((form) => {
   const modelsRoot = document.querySelector("[data-nav-dd]");
   const modelsBtn = modelsRoot?.querySelector("#modelsNavBtn");
   const modelsMenu = modelsRoot?.querySelector("#modelsNavMenu");
+  const historyTopRoot = document.querySelector("[data-history-top-dd]");
+  const historyTopBtn = historyTopRoot?.querySelector("#historyTopNavBtn");
+  const historyTopMenu = historyTopRoot?.querySelector("#historyTopNavMenu");
+  const historyBottomRoot = document.querySelector("[data-history-dd]");
+  const historyBottomBtn = historyBottomRoot?.querySelector("#historyNavBtn");
+  const historyBottomMenu = historyBottomRoot?.querySelector("#historyNavMenu");
 
   function setProfileOpen(open) {
     if (!profileBtn || !profileMenu) return;
@@ -42,11 +48,32 @@ document.querySelectorAll("form[data-loading]").forEach((form) => {
     modelsBtn.setAttribute("aria-expanded", open ? "true" : "false");
   }
 
+  function setHistoryTopOpen(open) {
+    if (!historyTopBtn || !historyTopMenu) return;
+    historyTopMenu.hidden = !open;
+    historyTopBtn.setAttribute("aria-expanded", open ? "true" : "false");
+  }
+
+  function setHistoryBottomOpen(open) {
+    if (!historyBottomBtn || !historyBottomMenu) return;
+    historyBottomMenu.hidden = !open;
+    historyBottomBtn.setAttribute("aria-expanded", open ? "true" : "false");
+  }
+
+  function closeAllMenus() {
+    setProfileOpen(false);
+    setModelsOpen(false);
+    setHistoryTopOpen(false);
+    setHistoryBottomOpen(false);
+  }
+
   if (profileBtn && profileMenu) {
     profileBtn.addEventListener("click", function (event) {
       event.stopPropagation();
       const next = profileMenu.hidden;
       setModelsOpen(false);
+      setHistoryTopOpen(false);
+      setHistoryBottomOpen(false);
       setProfileOpen(next);
     });
   }
@@ -56,20 +83,43 @@ document.querySelectorAll("form[data-loading]").forEach((form) => {
       event.stopPropagation();
       const next = modelsMenu.hidden;
       setProfileOpen(false);
+      setHistoryTopOpen(false);
+      setHistoryBottomOpen(false);
       setModelsOpen(next);
+    });
+  }
+
+  if (historyTopBtn && historyTopMenu) {
+    historyTopBtn.addEventListener("click", function (event) {
+      event.stopPropagation();
+      const next = historyTopMenu.hidden;
+      setProfileOpen(false);
+      setModelsOpen(false);
+      setHistoryBottomOpen(false);
+      setHistoryTopOpen(next);
+    });
+  }
+
+  if (historyBottomBtn && historyBottomMenu) {
+    historyBottomBtn.addEventListener("click", function (event) {
+      event.stopPropagation();
+      const next = historyBottomMenu.hidden;
+      setProfileOpen(false);
+      setModelsOpen(false);
+      setHistoryTopOpen(false);
+      setHistoryBottomOpen(next);
     });
   }
 
   document.addEventListener("click", function (event) {
     if (profileRoot && !profileRoot.contains(event.target)) setProfileOpen(false);
     if (modelsRoot && !modelsRoot.contains(event.target)) setModelsOpen(false);
+    if (historyTopRoot && !historyTopRoot.contains(event.target)) setHistoryTopOpen(false);
+    if (historyBottomRoot && !historyBottomRoot.contains(event.target)) setHistoryBottomOpen(false);
   });
 
   document.addEventListener("keydown", function (event) {
-    if (event.key === "Escape") {
-      setProfileOpen(false);
-      setModelsOpen(false);
-    }
+    if (event.key === "Escape") closeAllMenus();
   });
 
   const logoutForm = document.getElementById("logoutForm");

@@ -17,6 +17,10 @@ ml/models/variant/
 ml/reports/*.log
 ml/reports/train_main_*.log
 
+# Local Python virtualenvs (never commit)
+.venv/
+**/.venv/
+
 # Python caches
 __pycache__/
 *.py[cod]
