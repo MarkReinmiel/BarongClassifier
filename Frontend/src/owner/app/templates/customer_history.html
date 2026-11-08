@@ -4,7 +4,7 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/shared.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/topnav.css') }}?v=21">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/history.css') }}?v=9">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/customer-history.css') }}?v=16">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/customer-history.css') }}?v=17">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-app.css') }}?v=16">
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <meta name="review-api-base" content="{{ request.script_root }}/api/classifications">
@@ -405,12 +405,7 @@
     <div class="ch-modal-grid ch-modal-grid--preview">
       <div class="ch-modal-media">
         <img id="reviewImage" src="" alt="Classification preview">
-        <p id="reviewNoImage" class="ch-thumb-empty" hidden>No Cloudinary image is stored for this record.</p>
-        <div class="ch-preview-actions" id="previewActions">
-          <button type="button" class="ch-btn ch-btn--ok" id="approveBtn">Approve</button>
-          <button type="button" class="ch-btn ch-btn--bad" id="rejectBtn">Reject</button>
-        </div>
-        <p class="ch-form-error" id="reviewError" hidden></p>
+        <p id="reviewNoImage" class="ch-thumb-empty" hidden>No image available for this record.</p>
       </div>
       <div class="ch-modal-side">
         <dl class="ch-dl">
@@ -425,6 +420,11 @@
           <h3>Review history</h3>
           <ul id="reviewEvents"></ul>
         </div>
+        <div class="ch-preview-actions" id="previewActions">
+          <button type="button" class="ch-btn ch-btn--ok" id="approveBtn">Approve</button>
+          <button type="button" class="ch-btn ch-btn--bad" id="rejectBtn">Reject</button>
+        </div>
+        <p class="ch-form-error" id="reviewError" hidden></p>
       </div>
     </div>
   </form>
@@ -432,5 +432,5 @@
 {% endblock %}
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/navbar.js') }}"></script>
-<script src="{{ url_for('static', filename='js/customer-history.js') }}?v=12"></script>
+<script src="{{ url_for('static', filename='js/customer-history.js') }}?v=13"></script>
 {% endblock %}

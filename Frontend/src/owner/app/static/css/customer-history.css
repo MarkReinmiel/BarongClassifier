@@ -192,6 +192,14 @@
   font-weight: 600;
 }
 
+.ch-thumb-empty[hidden],
+#reviewNoImage[hidden],
+#reviewImage[hidden],
+.ch-preview-actions[hidden],
+.ch-form-error[hidden] {
+  display: none !important;
+}
+
 .ch-badge {
   position: absolute;
   left: 10px;
@@ -390,18 +398,19 @@
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  justify-content: center;
-  margin-top: 14px;
+  justify-content: stretch;
+  margin-top: 16px;
   width: 100%;
 }
 
 .ch-preview-actions .ch-btn {
-  min-width: 140px;
+  flex: 1 1 140px;
+  min-width: 120px;
 }
 
-.ch-modal-media .ch-form-error {
+.ch-modal-side .ch-form-error {
   margin-top: 10px;
-  text-align: center;
+  text-align: left;
 }
 
 @media (max-width: 700px) {
