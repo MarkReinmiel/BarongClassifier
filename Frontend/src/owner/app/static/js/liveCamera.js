@@ -338,10 +338,6 @@
         stopCamera();
         showCameraNotice("");
         applyCapturedFile(capturedFile);
-      },
-      "image/webp",
-      0.9
-    );
   });
 
   window.addEventListener("pagehide", stopCamera);

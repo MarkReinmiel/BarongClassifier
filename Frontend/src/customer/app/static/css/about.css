@@ -352,76 +352,78 @@ main.shell:has(.about-page) {
   scroll-margin-top: 88px;
 }
 
-/* Desktop: fit viewport, no scrollbar */
+/* Desktop: roomy cards + scrollable page (Team section needs space) */
 @media (min-width: 900px) {
   html:has(.about-page),
   body:has(.about-page) {
-    overflow: hidden;
-    height: 100%;
-    max-height: 100dvh;
+    overflow-x: clip;
+    overflow-y: auto;
+    height: auto;
+    max-height: none;
   }
 
   body:has(.about-page) {
-    min-height: 0;
+    min-height: 100dvh;
     padding-top: 72px;
   }
 
   main.shell:has(.about-page) {
-    height: calc(100dvh - 72px);
-    max-height: calc(100dvh - 72px);
-    overflow: hidden;
+    height: auto;
+    max-height: none;
+    overflow: visible;
   }
 
   .about-page {
-    height: 100%;
-    max-height: 100%;
-    overflow: hidden;
+    height: auto;
+    max-height: none;
+    overflow: visible;
     display: flex;
     flex-direction: column;
-    padding: 14px 28px 16px;
+    padding: 24px 28px 48px;
   }
 
   .about-hero {
-    margin-bottom: 12px;
+    margin-bottom: 20px;
   }
 
   .about-hero h1 {
-    margin: 0 0 6px;
-    font-size: clamp(36px, 4vw, 48px);
+    margin: 0 0 10px;
+    font-size: clamp(40px, 4.5vw, 52px);
   }
 
   .about-lead {
-    font-size: 14px;
-    line-height: 1.45;
+    font-size: 15px;
+    line-height: 1.55;
   }
 
   .about-columns {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 16px;
-    margin-bottom: 14px;
-    flex: 1 1 auto;
+    gap: 18px;
+    margin-bottom: 18px;
+    flex: none;
     min-height: 0;
+    align-items: stretch;
   }
 
   .about-columns > .about-float {
-    height: 100%;
-    min-height: 0;
-    overflow: hidden;
+    height: auto;
+    min-height: 420px;
+    overflow: visible;
   }
 
   .about-float {
-    padding: 20px 18px 16px;
-    gap: 14px;
+    padding: 22px 20px 18px;
+    gap: 16px;
     border-radius: 22px;
   }
 
   .about-float-head h2 {
-    font-size: 24px;
+    font-size: 26px;
   }
 
   .about-float-head p {
     font-size: 14px;
-    line-height: 1.45;
+    line-height: 1.5;
   }
 
   .about-chip-grid,
@@ -432,13 +434,13 @@ main.shell:has(.about-page) {
   }
 
   .about-chip {
-    padding: 0 18px;
+    padding: 16px 18px;
     gap: 16px;
   }
 
   .about-chip img {
-    width: 58px;
-    height: 58px;
+    width: 56px;
+    height: 56px;
   }
 
   .about-chip span {
@@ -446,7 +448,7 @@ main.shell:has(.about-page) {
   }
 
   .about-info-card {
-    padding: 0 16px;
+    padding: 14px 16px;
     gap: 14px;
   }
 
@@ -461,20 +463,20 @@ main.shell:has(.about-page) {
 
   .about-info-card strong,
   .about-info-card strong.num {
-    font-size: 19px;
+    font-size: 18px;
   }
 
   .about-stat {
-    padding: 12px 10px;
+    padding: 22px 14px;
   }
 
   .about-stat strong,
   .about-stat strong.num {
-    font-size: clamp(30px, 3vw, 40px);
+    font-size: clamp(32px, 3.2vw, 42px);
   }
 
   .about-contact {
-    padding: 14px 18px;
+    padding: 18px 22px;
     height: auto !important;
     flex: 0 0 auto;
   }
@@ -485,11 +487,134 @@ main.shell:has(.about-page) {
   }
 
   .about-contact-card {
-    padding: 12px 14px;
+    padding: 14px 16px;
   }
 
   .about-contact-email {
-    font-size: 15px;
+    font-size: 16px;
+  }
+
+  .about-team {
+    margin-top: 0;
+    flex: none;
+  }
+}
+
+/* Team — Developer / Documenter cards (customer cream / terracotta) */
+.about-team {
+  margin-top: 16px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow:
+    0 16px 40px var(--shadow),
+    0 1px 0 rgba(255, 255, 255, 0.65) inset;
+}
+
+.about-team .about-index {
+  background: var(--ink);
+  color: #fff;
+}
+
+.about-team .about-float-head h2 {
+  color: var(--ink);
+}
+
+.about-team .about-float-head p {
+  color: var(--ink2);
+}
+
+.about-team-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.about-person {
+  padding: 18px 16px;
+  border-radius: 16px;
+  background: var(--soft);
+  border: 1px solid var(--line);
+  box-sizing: border-box;
+}
+
+.about-person-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.about-person-avatar {
+  flex: none;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #fff;
+  background: var(--accent);
+}
+
+.about-person-top h3 {
+  margin: 0 0 4px;
+  font-family: var(--serif);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.2;
+}
+
+.about-person-top p {
+  margin: 0;
+  font-family: var(--sans);
+  font-size: 13px;
+  color: var(--ink2);
+}
+
+.about-person-fields {
+  display: grid;
+  gap: 12px;
+}
+
+.about-person-label {
+  display: block;
+  margin-bottom: 4px;
+  font-family: var(--sans);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink2);
+}
+
+.about-person-field strong {
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.about-person-field a {
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+  text-decoration: none;
+  word-break: break-word;
+  transition: color 0.2s ease;
+}
+
+.about-person-field a:hover {
+  color: var(--accent);
+}
+
+@media (max-width: 900px) {
+  .about-team-grid {
+    grid-template-columns: 1fr;
   }
 }
 

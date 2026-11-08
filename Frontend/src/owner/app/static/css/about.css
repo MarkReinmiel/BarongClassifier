@@ -41,14 +41,17 @@
 }
 
 .about-float {
-  margin: 0 auto 12px;
-  padding: 16px 16px 14px;
+  margin: 0 auto 16px;
+  padding: 20px 18px 16px;
   border-radius: 18px;
   background: var(--surface, #F3EBE3);
   border: 1px solid rgba(51, 24, 50, 0.08);
   box-shadow:
     0 14px 36px rgba(51, 24, 50, 0.1),
     0 2px 0 rgba(255, 255, 255, 0.55) inset;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
 }
 
 .about-float-head {
@@ -91,18 +94,19 @@
 /* Dataset chips */
 .about-chip-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
 }
 
 .about-chip {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
+  gap: 12px;
+  padding: 14px 16px;
   border-radius: 14px;
   background: rgba(217, 197, 178, 0.45);
   border: 1px solid rgba(51, 24, 50, 0.06);
+  box-sizing: border-box;
 }
 
 .about-chip--wide {
@@ -110,9 +114,9 @@
 }
 
 .about-chip img {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
   object-fit: cover;
   flex: none;
   background: #fff;
@@ -120,7 +124,7 @@
 
 .about-chip span {
   font-family: "DM Sans", Arial, sans-serif;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--midnight, #331832);
 }
@@ -128,19 +132,19 @@
 /* Model info cards */
 .about-info-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
 }
 
 .about-info-card {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding: 14px;
+  gap: 8px;
+  padding: 16px;
   border-radius: 16px;
   background: rgba(217, 197, 178, 0.4);
   border: 1px solid rgba(51, 24, 50, 0.06);
-  min-height: 110px;
+  min-height: 120px;
   box-sizing: border-box;
 }
 
@@ -190,16 +194,17 @@
 /* Performance stats */
 .about-stat-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
 }
 
 .about-stat {
   text-align: center;
-  padding: 20px 12px;
+  padding: 22px 14px;
   border-radius: 16px;
   background: rgba(217, 197, 178, 0.4);
   border: 1px solid rgba(51, 24, 50, 0.06);
+  box-sizing: border-box;
 }
 
 .about-stat strong {
@@ -217,6 +222,123 @@
   font-size: 12px;
   font-weight: 500;
   color: var(--ink-soft, #5A4063);
+}
+
+/* Team — Developer / Documenter cards (match customer cream / terracotta) */
+.about-team {
+  background: #FBF9F4;
+  border: 1px solid #D4CDBB;
+  box-shadow:
+    0 16px 40px rgba(31, 34, 50, 0.12),
+    0 1px 0 rgba(255, 255, 255, 0.65) inset;
+}
+
+.about-team .about-index {
+  background: #1F2232;
+  color: #fff;
+}
+
+.about-team .about-float-head h2 {
+  color: #1F2232;
+}
+
+.about-team .about-float-head p {
+  color: #596475;
+}
+
+.about-team-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.about-person {
+  padding: 18px 16px;
+  border-radius: 16px;
+  background: #E8E3D6;
+  border: 1px solid #D4CDBB;
+  box-sizing: border-box;
+}
+
+.about-person-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.about-person-avatar {
+  flex: none;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-family: "DM Sans", Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #fff;
+  background: #C84630;
+}
+
+.about-person-top h3 {
+  margin: 0 0 4px;
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #1F2232;
+  line-height: 1.2;
+}
+
+.about-person-top p {
+  margin: 0;
+  font-family: "DM Sans", Arial, sans-serif;
+  font-size: 13px;
+  color: #596475;
+}
+
+.about-person-fields {
+  display: grid;
+  gap: 12px;
+}
+
+.about-person-label {
+  display: block;
+  margin-bottom: 4px;
+  font-family: "DM Sans", Arial, sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #596475;
+}
+
+.about-person-field strong {
+  font-family: "DM Sans", Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: #1F2232;
+}
+
+.about-person-field a {
+  font-family: "DM Sans", Arial, sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: #1F2232;
+  text-decoration: none;
+  word-break: break-word;
+  transition: color 0.2s ease;
+}
+
+.about-person-field a:hover {
+  color: #C84630;
+}
+
+@media (max-width: 900px) {
+  .about-team-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 700px) {

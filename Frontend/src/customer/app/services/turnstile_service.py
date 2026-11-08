@@ -7,6 +7,8 @@ import logging
 import httpx
 from flask import current_app, request
 
+from app.utils.http_ssl import httpx_verify
+
 logger = logging.getLogger("customer.turnstile")
 
 SITEVERIFY_URL = "https://challenges.cloudflare.com/turnstile/v0/siteverify"
@@ -66,11 +68,11 @@ def verify_turnstile(token: str | None) -> None:
         "remoteip": request.headers.get("CF-Connecting-IP") or request.remote_addr or "",
     }
     try:
-        with httpx.Client(timeout=10.0) as client:
+        with httpx.Client(timeout=10.0, verify=httpx_verify()) as client:
             result = client.post(SITEVERIFY_URL, data=payload)
             data = result.json()
     except Exception as error:
-        logger.warning("Turnstile verification request failed.")
+        logger.warning("Turnstile verification request failed: %s", error)
         raise TurnstileError("Human verification could not be checked. Try again.") from error
 
     if data.get("success"):

@@ -3,7 +3,7 @@
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/shared.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/topnav.css') }}?v=16">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/about.css') }}?v=3">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/about.css') }}?v=8">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-app.css') }}?v=9">
 {% endblock %}
 {% block body %}
@@ -101,6 +101,78 @@
       <article class="about-stat">
         <strong class="num">{{ stats.classifications_total }}</strong>
         <span>Images classified (system)</span>
+      </article>
+    </div>
+  </section>
+
+  <section class="about-float about-team reveal reveal-delay-3" aria-labelledby="about-team-title">
+    <div class="about-float-head">
+      <span class="about-index" aria-hidden="true">04</span>
+      <div>
+        <h2 id="about-team-title">Team</h2>
+        <p>The people behind Barongcognition.</p>
+      </div>
+    </div>
+
+    <div class="about-team-grid">
+      <article class="about-person">
+        <div class="about-person-top">
+          <span class="about-person-avatar" aria-hidden="true">LL</span>
+          <div>
+            <h3>Louis Leonard Laguna</h3>
+            <p>System Developer, Barongcognition</p>
+          </div>
+        </div>
+        <div class="about-person-fields">
+          <div class="about-person-field">
+            <span class="about-person-label">School or Organization</span>
+            <strong>Laguna University</strong>
+          </div>
+          <div class="about-person-field">
+            <span class="about-person-label">Email</span>
+            <a href="mailto:louisleonardlaguna@gmail.com">louisleonardlaguna@gmail.com</a>
+          </div>
+        </div>
+      </article>
+
+      <article class="about-person">
+        <div class="about-person-top">
+          <span class="about-person-avatar" aria-hidden="true">MR</span>
+          <div>
+            <h3>Mark Reinmiel Lapiz</h3>
+            <p>System Developer, Barongcognition</p>
+          </div>
+        </div>
+        <div class="about-person-fields">
+          <div class="about-person-field">
+            <span class="about-person-label">School or Organization</span>
+            <strong>Laguna University</strong>
+          </div>
+          <div class="about-person-field">
+            <span class="about-person-label">Email</span>
+            <a href="mailto:markreinmiellapiz@gmail.com">markreinmiellapiz@gmail.com</a>
+          </div>
+        </div>
+      </article>
+
+      <article class="about-person">
+        <div class="about-person-top">
+          <span class="about-person-avatar" aria-hidden="true">RC</span>
+          <div>
+            <h3>Rema Lane Camat</h3>
+            <p>System Researcher, Barongcognition</p>
+          </div>
+        </div>
+        <div class="about-person-fields">
+          <div class="about-person-field">
+            <span class="about-person-label">School or Organization</span>
+            <strong>Laguna University</strong>
+          </div>
+          <div class="about-person-field">
+            <span class="about-person-label">Email</span>
+            <a href="mailto:remalanecamat@gmail.com">remalanecamat@gmail.com</a>
+          </div>
+        </div>
       </article>
     </div>
   </section>

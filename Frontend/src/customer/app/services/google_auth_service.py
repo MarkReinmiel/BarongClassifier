@@ -13,6 +13,7 @@ from app.extensions import db
 from app.models import CustomerUser, utcnow
 from app.services.auth_service import AuthError
 from app.services.directory_service import find_public_user_by_email
+from app.utils.http_ssl import httpx_verify
 from app.utils.security import is_owner_role
 from app.utils.validators import is_valid_email, normalize_email
 
@@ -57,7 +58,13 @@ def fetch_supabase_user(access_token: str) -> dict:
                 "apikey": key,
             },
             timeout=12.0,
+            verify=httpx_verify(),
         )
+    except FileNotFoundError as exc:
+        raise AuthError(
+            "Google sign-in cannot verify HTTPS on this computer (missing SSL certificates).",
+            503,
+        ) from exc
     except httpx.HTTPError as exc:
         raise AuthError("Could not reach Google sign-in. Try again.", 503) from exc
 

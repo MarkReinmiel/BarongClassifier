@@ -20,6 +20,16 @@ ml/reports/train_main_*.log
 # Local Python virtualenvs (never commit)
 .venv/
 **/.venv/
+.venv_run/
+**/.venv_run/
+.venv.broken.*/
+**/.venv.broken.*/
+
+# Local Flask / server logs
+*.log
+*.log.err
+flask*.err
+flask*.out
 
 # Python caches
 __pycache__/
