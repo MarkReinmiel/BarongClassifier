@@ -1,9 +1,9 @@
 """Stage B: prepare main 3-class dataset without modifying originals.
 
-Rules (user decisions 2026-10-24, updated 2026-11-04):
-- pia_silk / pina_silk: folded into main Piña class (Piña Silk variant feature removed).
-- pia_2 + pia_2.1: accepted as ordinary Piña for main classifier (provisional user acceptance).
-- cocoon-2 → cocoon; jusi_2 → jusi.
+Rules (user decisions 2026-10-24, updated 2026-11-08):
+- pia_silk / pina_silk: removed from training data (not folded into Piña).
+- Expansion packs stay within their textile only (never cross-labeled):
+  cocoon_2/cocoon_3 → cocoon; jusi_2/jusi_3 → jusi; pina_2/pina_2.1/pina_3 → pina.
 - Exact duplicates (sha256) excluded from prepared training copies (recorded in manifest).
 - Originals under dataset/ and staging ZIPs are never deleted/renamed.
 """
@@ -77,14 +77,18 @@ def probe(path: Path) -> dict:
 
 def collect_sources() -> list[dict]:
     """Build candidate rows with provisional main_class assignments."""
+    # Priority within each textile: *3 packs first, then originals, then older expansions.
     sources: list[tuple[str, Path, str, str]] = [
+        ("staging/cocoon_3", STAGING / "cocoon_3", "cocoon", "user_accepted_expansion_v3"),
+        ("staging/jusi_3", STAGING / "jusi_3", "jusi", "user_accepted_expansion_v3"),
+        ("staging/pina_3", STAGING / "pina_3", "pina", "user_accepted_expansion_v3"),
         ("Backend/dataset/cocoon", DATASET / "cocoon", "cocoon", "original_verified_folder"),
         ("Backend/dataset/jusi", DATASET / "jusi", "jusi", "original_verified_folder"),
         ("Backend/dataset/pina", DATASET / "pina", "pina", "original_verified_folder"),
-        ("staging/cocoon-2", STAGING / "cocoon-2", "cocoon", "user_accepted_expansion"),
+        ("staging/cocoon_2", STAGING / "cocoon_2", "cocoon", "user_accepted_expansion"),
         ("staging/jusi_2", STAGING / "jusi_2", "jusi", "user_accepted_expansion"),
-        ("staging/pia_2", STAGING / "pia_2", "pina", "user_accepted_as_pina"),
-        ("staging/pia_2.1", STAGING / "pia_2.1", "pina", "user_accepted_as_pina"),
+        ("staging/pina_2", STAGING / "pina_2", "pina", "user_accepted_as_pina"),
+        ("staging/pina_2_1", STAGING / "pina_2_1", "pina", "user_accepted_as_pina"),
     ]
     rows = []
     for source_folder, root, main_class, status in sources:
@@ -103,43 +107,6 @@ def collect_sources() -> list[dict]:
                     "height": info["height"],
                     "readable": info["readable"],
                     "notes": info["error"],
-                    "include_in_main_train": info["readable"],
-                }
-            )
-    return rows
-
-
-def collect_silk_as_pina() -> list[dict]:
-    """Former Piña Silk images — included in main Piña training (variant removed)."""
-    roots = [
-        ("staging/pia_silk", STAGING / "pia_silk"),
-        (
-            "variant_classifier/pina_silk",
-            ROOT / "ml" / "data" / "variant_classifier" / "pina_silk",
-        ),
-    ]
-    rows = []
-    seen: set[str] = set()
-    for source_folder, root in roots:
-        for path in iter_images(root):
-            info = probe(path)
-            digest = sha256_file(path) if info["readable"] else ""
-            if digest and digest in seen:
-                continue
-            if digest:
-                seen.add(digest)
-            rows.append(
-                {
-                    "source_folder": source_folder,
-                    "source_path": str(path),
-                    "main_class": "pina",
-                    "variant_label": "",
-                    "label_verification_status": "merged_into_pina",
-                    "sha256": digest,
-                    "width": info["width"],
-                    "height": info["height"],
-                    "readable": info["readable"],
-                    "notes": "Former Piña Silk; folded into main Piña class (variant removed).",
                     "include_in_main_train": info["readable"],
                 }
             )
@@ -166,9 +133,17 @@ def mark_duplicates(rows: list[dict]) -> None:
             ) + f"exact duplicate of {first_of[digest]}"
 
 
-def prepare_copies(rows: list[dict]) -> None:
+def clear_prepared_classes() -> None:
+    """Wipe prepared class folders so old balance copies / retired packs do not linger."""
     for class_name in CLASSES:
-        (MAIN / class_name).mkdir(parents=True, exist_ok=True)
+        folder = MAIN / class_name
+        if folder.exists():
+            shutil.rmtree(folder)
+        folder.mkdir(parents=True, exist_ok=True)
+
+
+def prepare_copies(rows: list[dict]) -> None:
+    clear_prepared_classes()
 
     used_names: set[str] = set()
     for index, row in enumerate(rows, start=1):
@@ -239,7 +214,7 @@ def main() -> int:
     REPORTS.mkdir(parents=True, exist_ok=True)
     MAIN.mkdir(parents=True, exist_ok=True)
 
-    main_rows = collect_sources() + collect_silk_as_pina()
+    main_rows = collect_sources()
     mark_duplicates(main_rows)
     prepare_copies(main_rows)
     assign_splits(main_rows)
@@ -279,12 +254,6 @@ def main() -> int:
         "main_excluded_duplicates_or_unreadable": sum(
             1 for r in main_rows if not r.get("include_in_main_train")
         ),
-        "silk_merged_into_pina": sum(
-            1
-            for r in main_rows
-            if r.get("label_verification_status") == "merged_into_pina"
-            and r.get("include_in_main_train")
-        ),
         "prepared_class_counts": {
             c: sum(
                 1
@@ -307,8 +276,8 @@ def main() -> int:
         },
         "limitations": [
             "physical_sample_id is unknown for most images; grouping uses IMG_* stem or filename stem.",
-            "pia_2 / pia_2.1 accepted as Piña by user decision (provisional), not lab-verified.",
-            "Former Piña Silk images are trained as Piña; variant classifier is retired.",
+            "Expansion packs (2 / 2.1 / 3) accepted into their own textile only; no cross-class mixing.",
+            "Piña Silk dataset removed; not included in main Piña training.",
             "Exact sha256 duplicates excluded from prepared training copies.",
         ],
     }

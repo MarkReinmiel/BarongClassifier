@@ -835,11 +835,38 @@ def list_recent_classifications(
 
 
 def delete_classification(classification_id: str) -> None:
-    """Owner history: delete any classification row by id."""
+    """Owner history: delete any classification row by id (and Cloudinary image)."""
     row_id = str(classification_id or "").strip()
     if not row_id:
         raise UsersError("Missing classification id.")
     try:
+        existing = db.session.execute(
+            text(
+                """
+                select id::text as id, image_path, file_name
+                from public.classifications
+                where id = cast(:id as uuid)
+                """
+            ),
+            {"id": row_id},
+        ).mappings().first()
+        if existing is None:
+            raise UsersError("That classification was not found.")
+
+        # Best-effort Cloudinary cleanup before removing the DB row.
+        try:
+            from app.services.cloudinary_service import delete_classification_image
+
+            delete_classification_image(
+                image_path=existing.get("image_path"),
+                classification_id=existing.get("id") or row_id,
+                filename=existing.get("file_name"),
+            )
+        except Exception:
+            current_app.logger.exception(
+                "cloudinary_delete_ignored classification_id=%s", row_id
+            )
+
         result = db.session.execute(
             text(
                 """

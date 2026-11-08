@@ -137,6 +137,20 @@ def delete_for_user(user: CustomerUser, classification_id: str) -> None:
     )
     if row is None:
         raise HistoryError("That classification was not found.", 404)
+
+    # Remove Cloudinary asset first (best-effort); DB delete still proceeds on failure.
+    try:
+        from app.services.cloudinary_service import delete_classification_image
+
+        delete_classification_image(
+            image_path=getattr(row, "image_path", None),
+            classification_id=row_id,
+            filename=getattr(row, "file_name", None) or getattr(row, "image_name", None),
+        )
+    except Exception:
+        # Never block history delete on Cloudinary errors.
+        pass
+
     try:
         db.session.delete(row)
         db.session.commit()

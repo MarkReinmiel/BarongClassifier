@@ -113,3 +113,114 @@ def upload_classification_image(
         len(content),
     )
     return str(url)
+
+
+def public_id_from_url(url: str | None) -> str | None:
+    """Extract Cloudinary public_id from a secure_url (no credentials)."""
+    raw = str(url or "").strip()
+    if not raw.startswith("https://") or "cloudinary.com" not in raw or "/upload/" not in raw:
+        return None
+    after = raw.split("/upload/", 1)[1].split("?", 1)[0]
+    segments = [s for s in after.split("/") if s]
+    while segments:
+        seg = segments[0]
+        if "," in seg:
+            segments = segments[1:]
+            continue
+        if seg.startswith("v") and seg[1:].isdigit():
+            segments = segments[1:]
+            break
+        break
+    if not segments:
+        return None
+    public_path = "/".join(segments)
+    leaf = public_path.rsplit("/", 1)[-1]
+    if "." in leaf:
+        public_path = public_path.rsplit(".", 1)[0]
+    return public_path or None
+
+
+def delete_classification_image(
+    *,
+    image_path: str | None,
+    classification_id: str | None = None,
+    filename: str | None = None,
+) -> bool:
+    """Delete one classification image from Cloudinary. Returns True on success.
+
+    Never raises to callers — history DB delete should still proceed.
+    Never logs API secrets.
+    """
+    if not configured():
+        logger.info(
+            "cloudinary_delete_skip reason=missing_env classification_id=%s",
+            classification_id or "",
+        )
+        return False
+
+    public_id = public_id_from_url(image_path)
+    if not public_id and classification_id:
+        public_id = f"barong/classifications/{classification_id}_{_safe_name(filename or 'photo')}"
+        if "." in public_id.rsplit("/", 1)[-1]:
+            public_id = public_id.rsplit(".", 1)[0]
+
+    if not public_id:
+        logger.info(
+            "cloudinary_delete_skip reason=no_public_id classification_id=%s",
+            classification_id or "",
+        )
+        return False
+
+    try:
+        import cloudinary
+        import cloudinary.uploader
+    except ImportError:
+        logger.error(
+            "cloudinary_delete_skip reason=package_missing classification_id=%s",
+            classification_id or "",
+        )
+        return False
+
+    cloud_name = _cfg("CLOUDINARY_CLOUD_NAME")
+    api_key = _cfg("CLOUDINARY_API_KEY")
+    api_secret = _cfg("CLOUDINARY_API_SECRET")
+    cloudinary.config(
+        cloud_name=cloud_name,
+        api_key=api_key,
+        api_secret=api_secret,
+        secure=True,
+    )
+
+    try:
+        result = cloudinary.uploader.destroy(public_id, resource_type="image", invalidate=True)
+    except Exception as error:
+        msg = str(error)
+        for secret in (api_secret, api_key):
+            if secret and secret in msg:
+                msg = msg.replace(secret, "[redacted]")
+        logger.error(
+            "cloudinary_delete_failed classification_id=%s public_id=%s error_type=%s error=%s",
+            classification_id or "",
+            public_id,
+            type(error).__name__,
+            msg[:300],
+        )
+        return False
+
+    status = str((result or {}).get("result") or "")
+    ok = status in {"ok", "not found"}
+    if ok:
+        logger.info(
+            "cloudinary_delete_ok classification_id=%s public_id=%s result=%s",
+            classification_id or "",
+            public_id,
+            status,
+        )
+    else:
+        logger.warning(
+            "cloudinary_delete_unexpected classification_id=%s public_id=%s result=%s",
+            classification_id or "",
+            public_id,
+            status[:80],
+        )
+    return ok

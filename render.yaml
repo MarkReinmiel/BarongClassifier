@@ -1,0 +1,56 @@
+# Render Blueprint — Customer + Owner web services.
+# Datasets (Backend/dataset, ml/data) are gitignored; only .keras models ship.
+#
+# After first deploy, set secrets in the Render dashboard (do not put them here):
+# SECRET_KEY, DATABASE_URL or DB_*, CLOUDINARY_*, MAIL_*, SUPABASE_*, TURNSTILE_*
+
+services:
+  - type: web
+    name: barong-customer
+    runtime: python
+    plan: starter
+    rootDir: Frontend/src/customer
+    buildCommand: pip install -r requirements-ml.txt
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120
+    envVars:
+      - key: PYTHONPATH
+        value: /opt/render/project/src
+      - key: APP_ENV
+        value: production
+      - key: DEBUG
+        value: "false"
+      - key: USE_HTTPS
+        value: "false"
+      - key: MODEL_PATH
+        value: models/barong_model.keras
+      - key: CLASSIFY_SERVER_URL
+        value: ""
+      - key: RELEVANCE_GATE_ENABLED
+        value: "false"
+      - key: PYTHON_VERSION
+        value: "3.12.8"
+
+  - type: web
+    name: barong-owner
+    runtime: python
+    plan: starter
+    rootDir: Frontend/src/owner
+    buildCommand: pip install -r requirements-ml.txt
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120
+    envVars:
+      - key: PYTHONPATH
+        value: /opt/render/project/src
+      - key: APP_ENV
+        value: production
+      - key: DEBUG
+        value: "false"
+      - key: USE_HTTPS
+        value: "false"
+      - key: MODEL_PATH
+        value: models/barong_model.keras
+      - key: CLASSIFY_SERVER_URL
+        value: ""
+      - key: RELEVANCE_GATE_ENABLED
+        value: "false"
+      - key: PYTHON_VERSION
+        value: "3.12.8"

@@ -1,0 +1,31 @@
+# Secrets / local env
+.env
+.env.*
+!.env.example
+
+# Dependencies
+node_modules/
+
+# Training datasets (local only — not needed on Render)
+# Runtime classify uses Frontend/*/models/barong_model.keras instead.
+Backend/dataset/
+ml/data/
+
+# Local training artifacts / old model backups (keep Frontend/*/models/*.keras tracked)
+ml/models/backups/
+ml/models/variant/
+ml/reports/*.log
+ml/reports/train_main_*.log
+
+# Python caches
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
