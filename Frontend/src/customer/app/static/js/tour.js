@@ -66,13 +66,27 @@
         mode: "auto",
       },
       {
-        target: '[data-tour="classify-gallery"], #chooseSourceBtn, #galBtn',
-        title: "Choose an image",
-        body: "On mobile, pick Gallery or Live Camera. On desktop, upload a photo from your files.",
-        mode: "demo-then-user",
-        userPrompt: "Tap Choose image (or Upload from Gallery) to continue.",
-        allowNavigate: false,
-        allowNative: true,
+        /* Desktop upload control */
+        target: "#galBtn, .classify-source-desktop",
+        title: "Upload from Gallery",
+        body: "Choose a clear JPG or PNG photo of the Barong textile from your files.",
+        mode: "auto",
+        desktopOnly: true,
+      },
+      {
+        /* Mobile gallery — customer picks Gallery or Camera */
+        target: '#galBtnMobile, [data-tour="classify-gallery"].classify-source-mobile',
+        title: "Gallery",
+        body: "Tap Gallery to pick an existing textile photo from your phone.",
+        mode: "auto",
+        mobileOnly: true,
+      },
+      {
+        target: '#openCamera, [data-tour="classify-camera"]',
+        title: "Camera",
+        body: "Tap Camera to take a live photo of the textile. Use whichever option you prefer — Gallery or Camera.",
+        mode: "auto",
+        mobileOnly: true,
       },
       {
         target: '[data-tour="classify-tips"], .classify-tips',
@@ -153,6 +167,10 @@
     return el.getClientRects().length > 0;
   }
 
+  function isMobileTourView() {
+    return window.matchMedia("(max-width: 899px)").matches;
+  }
+
   function resolveTarget(selector) {
     if (!selector) return null;
     const parts = String(selector).split(",");
@@ -166,6 +184,13 @@
       }
     }
     return fallback;
+  }
+
+  function stepAllowed(step) {
+    if (!step) return false;
+    if (step.mobileOnly && !isMobileTourView()) return false;
+    if (step.desktopOnly && isMobileTourView()) return false;
+    return !!resolveTarget(step.target);
   }
 
   /* ===================== State manager ===================== */
@@ -241,7 +266,7 @@
 
   /* ===================== Runner ===================== */
   function createRunner(sectionId, steps) {
-    const list = (steps || []).filter((step) => resolveTarget(step.target));
+    const list = (steps || []).filter(stepAllowed);
     if (!list.length) return null;
 
     let index = 0;
@@ -357,7 +382,7 @@
       cursorEl = null;
       rippleEl = null;
 
-      /* Description card with Skip inside */
+      /* Description card with Next inside (advances; does not exit the tour) */
       tip = document.createElement("div");
       tip.className = "tour-tip";
       tip.setAttribute("role", "status");
@@ -367,13 +392,13 @@
         '<p class="tour-tip-body"></p>' +
         '<p class="tour-tip-nudge" hidden></p>' +
         '<div class="tour-tip-actions">' +
-        '<button type="button" class="tour-skip" aria-label="Skip tutorial">Skip</button>' +
+        '<button type="button" class="tour-skip tour-next" aria-label="Next step">Next</button>' +
         "</div>";
       skipBtn = tip.querySelector(".tour-skip");
       onSkipClick = function (event) {
         event.preventDefault();
         event.stopPropagation();
-        skipTour();
+        goNext();
       };
       skipBtn.addEventListener("click", onSkipClick);
 
@@ -421,9 +446,20 @@
       const titleEl = tip.querySelector(".tour-tip-title");
       const bodyEl = tip.querySelector(".tour-tip-body");
       const nudgeEl = tip.querySelector(".tour-tip-nudge");
+      const nextEl = tip.querySelector(".tour-skip");
+      const isLast = index >= list.length - 1;
+      const requireClick = step.mode === "user-navigate";
       if (stepEl) stepEl.textContent = "Step " + (index + 1) + " of " + list.length;
       if (titleEl) titleEl.textContent = step.title || "Guided tour";
       if (bodyEl) bodyEl.textContent = step.body || "";
+      if (nextEl) {
+        nextEl.hidden = !!requireClick;
+        nextEl.textContent = isLast ? "Done" : "Next";
+        nextEl.setAttribute(
+          "aria-label",
+          isLast ? "Finish tutorial step" : "Next step"
+        );
+      }
       if (nudgeEl) {
         const nudge = step.userPrompt || "";
         nudgeEl.textContent = nudge;
@@ -552,6 +588,19 @@
       running = false;
       teardownChrome();
       TourState.persist(sectionId, true);
+      setReplay(false);
+    }
+
+    /** Advance to the next tip (Next / Done). Does not exit the tour early. */
+    function goNext() {
+      if (!running) return;
+      const step = list[index];
+      if (step && step.mode === "user-navigate") return;
+      clearTimers();
+      clearLiveTarget();
+      document.body.classList.remove("tour-user-phase");
+      if (hitProxy) hitProxy.hidden = true;
+      advanceOrFinish();
     }
 
     /** Persist section, then go to Classify Textile (/classify). */
@@ -559,6 +608,10 @@
       running = false;
       const target = href || "/classify";
       teardownChrome();
+      /* Keep replay flag so /classify tour still launches for returning users. */
+      if (isReplay() && sectionId === "main") {
+        setReplay(true);
+      }
       const go = function () {
         window.location.assign(target);
       };
@@ -649,10 +702,7 @@
 
     function runAutoStep(step, el) {
       beginSpotlightStep(step, el, function () {
-        later(1600, function () {
-          if (!running) return;
-          advanceOrFinish();
-        });
+        /* Wait for Next / Done — no auto-advance timer */
       });
     }
 
@@ -697,6 +747,7 @@
       running = false;
       teardownChrome();
       TourState.persist(sectionId, false);
+      clearReplayAfterSection(sectionId);
     }
 
     function start() {
@@ -716,13 +767,58 @@
 
   let activeRunner = null;
 
-  function startSection(sectionId) {
-    if (!TourState.needs(sectionId)) return;
+  const REPLAY_KEY = "bc_tour_replay";
+
+  function isReplay() {
+    try {
+      return sessionStorage.getItem(REPLAY_KEY) === "1";
+    } catch (err) {
+      return false;
+    }
+  }
+
+  function setReplay(on) {
+    try {
+      if (on) sessionStorage.setItem(REPLAY_KEY, "1");
+      else sessionStorage.removeItem(REPLAY_KEY);
+    } catch (err) {
+      /* private mode */
+    }
+  }
+
+  function startSection(sectionId, force) {
+    if (!force && !isReplay() && !TourState.needs(sectionId)) return;
     if (activeRunner) return;
     const steps = SECTION_STEPS[sectionId];
     if (!steps) return;
     const runner = createRunner(sectionId, steps);
     if (runner) runner.start();
+  }
+
+  function clearReplayAfterSection(sectionId) {
+    /* Main continues into classify during replay; stop the flag after that. */
+    if (sectionId === "classify" || sectionId === "textile" || sectionId === "history" || sectionId === "profile") {
+      setReplay(false);
+    }
+  }
+
+  /** Start the guided tour again for returning users (from the ? button). */
+  function replayTutorial() {
+    if (activeRunner) return;
+    setReplay(true);
+    const pageHost = document.getElementById("onboarding-tour");
+    const section = pageHost
+      ? pageHost.getAttribute("data-section") || ""
+      : "";
+    if (section === "main") {
+      startSection("main", true);
+      return;
+    }
+    const helpBtn = document.getElementById("tourHelpBtn");
+    const homeUrl =
+      (helpBtn && helpBtn.getAttribute("data-home-url")) || "/";
+    const join = homeUrl.indexOf("?") >= 0 ? "&" : "?";
+    window.location.assign(homeUrl + join + "tour_replay=1");
   }
 
   /**
@@ -733,13 +829,30 @@
    * textile  → first visit to /textiletypes
    * history  → first visit to /history
    * profile  → first click on profile button
+   * help ?   → replayTutorial (force, even if already completed)
    */
   function bindTriggers() {
     const pageHost = document.getElementById("onboarding-tour");
-    if (pageHost && pageHost.getAttribute("data-launch") === "1") {
+    let forceLaunch = false;
+    try {
+      const params = new URLSearchParams(window.location.search || "");
+      if (params.get("tour_replay") === "1") {
+        setReplay(true);
+        forceLaunch = true;
+        params.delete("tour_replay");
+        const next = params.toString();
+        const clean =
+          window.location.pathname + (next ? "?" + next : "") + window.location.hash;
+        window.history.replaceState({}, "", clean);
+      }
+    } catch (err) {
+      /* ignore */
+    }
+
+    if (pageHost && (pageHost.getAttribute("data-launch") === "1" || forceLaunch || isReplay())) {
       const section = pageHost.getAttribute("data-section") || "main";
       window.setTimeout(function () {
-        startSection(section);
+        startSection(section, forceLaunch || isReplay());
       }, 450);
     }
 
@@ -751,14 +864,23 @@
       profileBtn.addEventListener(
         "click",
         function (event) {
-          if (!TourState.needs("profile")) return;
+          if (!TourState.needs("profile") && !isReplay()) return;
           if (activeRunner) return;
           event.preventDefault();
           event.stopPropagation();
-          startSection("profile");
+          startSection("profile", isReplay());
         },
         true
       );
+    }
+
+    const helpBtn = document.getElementById("tourHelpBtn");
+    if (helpBtn) {
+      helpBtn.addEventListener("click", function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+        replayTutorial();
+      });
     }
   }
 
@@ -775,6 +897,7 @@
 
   window.BarongTour = {
     startSection: startSection,
+    replay: replayTutorial,
     state: TourState,
     sections: SECTION_STEPS,
   };

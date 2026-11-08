@@ -125,7 +125,25 @@ button,input,select{font-family:var(--sans)}
 .fab{display:none!important}
 .nav.hide-desktop{display:flex}
 
-.profile{position:relative;display:flex;align-items:center;margin-left:8px}
+.top-actions{display:flex;align-items:center;gap:6px;margin-left:8px;flex:none}
+.tour-help-btn{
+  width:36px;height:36px;padding:0;border-radius:50%;
+  border:1px solid rgba(255,255,255,.35);
+  background:rgba(255,255,255,.08);color:#fff;
+  font-family:var(--sans,"DM Sans",Arial,sans-serif);
+  font-size:18px;font-weight:700;line-height:1;
+  display:inline-grid;place-items:center;cursor:pointer;
+  transition:background .2s ease,transform .2s ease,box-shadow .2s ease,border-color .2s ease;
+}
+.tour-help-btn:hover,.tour-help-btn:focus-visible{
+  background:rgba(255,255,255,.18);
+  border-color:rgba(255,255,255,.55);
+  transform:translateY(-1px) scale(1.05);
+  box-shadow:0 6px 16px rgba(0,0,0,.22);
+  outline:none;
+}
+.tour-help-btn:active{transform:translateY(0) scale(.96)}
+.profile{position:relative;display:flex;align-items:center;margin-left:0}
 .avatar-btn{
   display:inline-flex;align-items:center;gap:10px;max-width:min(260px,42vw);
   min-height:40px;padding:4px 8px 4px 4px;border:none;border-radius:999px;

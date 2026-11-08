@@ -196,15 +196,16 @@ body.tour-user-phase .tour-block {
   margin-top: 4px;
 }
 
-.tour-skip {
+.tour-skip,
+.tour-next {
   pointer-events: auto;
   min-height: 40px;
   min-width: 72px;
-  padding: 8px 14px;
+  padding: 8px 16px;
   border-radius: 999px;
-  border: 1.5px solid var(--line, #d4cdbb);
-  background: transparent;
-  color: var(--ink2, #596475);
+  border: 1.5px solid var(--accent, #c84630);
+  background: var(--accent, #c84630);
+  color: #fff;
   font-family: var(--sans, "DM Sans", sans-serif);
   font-size: 13px;
   font-weight: 700;
@@ -214,11 +215,19 @@ body.tour-user-phase .tour-block {
 }
 
 .tour-skip:hover,
-.tour-skip:focus-visible {
-  color: var(--ink, #1f2232);
-  border-color: var(--ink2, #596475);
+.tour-skip:focus-visible,
+.tour-next:hover,
+.tour-next:focus-visible {
+  color: #fff;
+  border-color: var(--deep, #9a3424);
+  background: var(--deep, #9a3424);
   outline: 2px solid var(--accent, #c84630);
   outline-offset: 2px;
+}
+
+.tour-skip[hidden],
+.tour-next[hidden] {
+  display: none !important;
 }
 
 /* ---------------------------------------------------------
