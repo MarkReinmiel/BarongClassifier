@@ -23,7 +23,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
 from PIL import Image
-from sklearn.metrics import classification_report, confusion_matrix
+from sklearn.metrics import (
+    classification_report,
+    confusion_matrix,
+    roc_auc_score,
+)
+from sklearn.preprocessing import label_binarize
 from sklearn.utils.class_weight import compute_class_weight
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -158,6 +163,47 @@ def subset(x, y, splits, name):
     return x[idx], y[idx]
 
 
+def multiclass_roc_auc(y_true: np.ndarray, probs: np.ndarray) -> dict:
+    """One-vs-rest + one-vs-one multiclass ROC AUC on softmax probabilities."""
+    labels = list(range(len(CLASSES)))
+    y_bin = label_binarize(y_true, classes=labels)
+    # Guard: need at least one positive sample per class for OVR.
+    present = sorted({int(v) for v in y_true.tolist()})
+    out: dict = {
+        "roc_auc_ovr_macro": None,
+        "roc_auc_ovo_macro": None,
+        "roc_auc_per_class": {},
+        "note": "ovr=one-vs-rest; ovo=one-vs-one; macro average over classes",
+    }
+    if len(present) < 2:
+        out["note"] = "ROC AUC undefined: fewer than 2 classes present in test set."
+        return out
+    try:
+        out["roc_auc_ovr_macro"] = float(
+            roc_auc_score(y_true, probs, multi_class="ovr", average="macro", labels=labels)
+        )
+    except ValueError as error:
+        out["note"] = f"ovr ROC AUC skipped: {error}"
+    try:
+        out["roc_auc_ovo_macro"] = float(
+            roc_auc_score(y_true, probs, multi_class="ovo", average="macro", labels=labels)
+        )
+    except ValueError as error:
+        out["note"] = (out.get("note") or "") + f"; ovo ROC AUC skipped: {error}"
+    # Per-class OVR AUCs when that class appears in y_true.
+    for i, name in enumerate(CLASSES):
+        if i not in present:
+            out["roc_auc_per_class"][name] = None
+            continue
+        try:
+            out["roc_auc_per_class"][name] = float(
+                roc_auc_score(y_bin[:, i], probs[:, i])
+            )
+        except ValueError:
+            out["roc_auc_per_class"][name] = None
+    return out
+
+
 def build_model():
     base = tf.keras.applications.MobileNetV2(
         input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3),
@@ -255,6 +301,7 @@ def main() -> int:
     pred = probs.argmax(axis=1)
     acc = float((pred == y_te).mean())
     matrix = confusion_matrix(y_te, pred, labels=[0, 1, 2])
+    roc_auc = multiclass_roc_auc(y_te, probs)
     report = classification_report(
         y_te,
         pred,
@@ -276,6 +323,9 @@ def main() -> int:
         "image_size": IMAGE_SIZE,
         "seed": SEED,
         "test_accuracy": acc,
+        "test_roc_auc_ovr_macro": roc_auc.get("roc_auc_ovr_macro"),
+        "test_roc_auc_ovo_macro": roc_auc.get("roc_auc_ovo_macro"),
+        "test_roc_auc_per_class": roc_auc.get("roc_auc_per_class"),
         "test_images": int(len(y_te)),
         "train_images": int(len(y_tr)),
         "val_images": int(len(y_va)),
@@ -295,9 +345,22 @@ def main() -> int:
                 f"- Version: `{version}`",
                 f"- Artifact: `{model_path}`",
                 f"- Test accuracy: **{acc:.3f}** on {len(y_te)} images",
+                (
+                    f"- Multiclass ROC AUC (OVR macro): "
+                    f"**{roc_auc['roc_auc_ovr_macro']:.3f}**"
+                    if roc_auc.get("roc_auc_ovr_macro") is not None
+                    else "- Multiclass ROC AUC (OVR macro): n/a"
+                ),
+                (
+                    f"- Multiclass ROC AUC (OVO macro): "
+                    f"**{roc_auc['roc_auc_ovo_macro']:.3f}**"
+                    if roc_auc.get("roc_auc_ovo_macro") is not None
+                    else "- Multiclass ROC AUC (OVO macro): n/a"
+                ),
+                f"- Per-class ROC AUC: `{roc_auc.get('roc_auc_per_class')}`",
                 f"- Train / val / test images: {len(y_tr)} / {len(y_va)} / {len(y_te)}",
                 f"- Data source: {'balanced folders (300/class)' if use_folder else 'source_manifest.csv'}",
-                "- Piña Silk variant: **retired** — silk images folded into Piña.",
+                "- Piña Silk removed from training data; not folded into Piña.",
                 "- Deployed to Customer/Owner: **no** (pending activation gate).",
                 "",
                 "## Classification report",
@@ -312,8 +375,8 @@ def main() -> int:
                 "",
                 "## Limitations",
                 "- physical_sample_id mostly unknown; splits use filename/IMG groups.",
-                "- pia_2 / pia_2.1 included under user provisional acceptance.",
-                "- Former pia_silk / pina_silk images trained as Piña.",
+                "- Expansion packs accepted into their own textile only.",
+                "- ROC AUC uses one-vs-rest / one-vs-one on softmax scores (not thresholded labels).",
             ]
         ),
         encoding="utf-8",
@@ -335,6 +398,11 @@ def main() -> int:
 
     print(report)
     print(f"Test accuracy: {acc:.3f}")
+    if roc_auc.get("roc_auc_ovr_macro") is not None:
+        print(f"Multiclass ROC AUC (OVR macro): {roc_auc['roc_auc_ovr_macro']:.3f}")
+    if roc_auc.get("roc_auc_ovo_macro") is not None:
+        print(f"Multiclass ROC AUC (OVO macro): {roc_auc['roc_auc_ovo_macro']:.3f}")
+    print(f"Per-class ROC AUC: {roc_auc.get('roc_auc_per_class')}")
     print(f"Saved: {model_path}")
     print("NOT deployed to Customer/Owner — run activate script only after review.")
     return 0

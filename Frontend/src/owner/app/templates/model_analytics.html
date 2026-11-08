@@ -5,7 +5,7 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/topnav.css') }}?v=16">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}?v=11">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-app.css') }}?v=9">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/model-analytics.css') }}?v=13">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/model-analytics.css') }}?v=14">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js" defer></script>
 {% endblock %}
 {% block body %}
@@ -98,6 +98,27 @@
     </div>
 
     {% if p.available %}
+    {% set roc_ovr = p.get('roc_auc_ovr_macro') %}
+    {% set roc_ovo = p.get('roc_auc_ovo_macro') %}
+    <div class="ma-metric-grid ma-metric-grid--3">
+      <div class="ma-metric">
+        <span class="ma-label">ROC AUC · OVR macro</span>
+        <strong>{% if roc_ovr is not none %}{{ '%.3f'|format(roc_ovr) }}{% else %}—{% endif %}</strong>
+        <small>One-vs-rest</small>
+      </div>
+      <div class="ma-metric">
+        <span class="ma-label">ROC AUC · OVO macro</span>
+        <strong>{% if roc_ovo is not none %}{{ '%.3f'|format(roc_ovo) }}{% else %}—{% endif %}</strong>
+        <small>One-vs-one</small>
+      </div>
+      <div class="ma-metric">
+        <span class="ma-label">Test accuracy</span>
+        <strong>{% if p.accuracy_pct is not none %}{{ '%.1f'|format(p.accuracy_pct) }}%{% else %}—{% endif %}</strong>
+        <small>{% if p.test_images is not none %}n={{ p.test_images }}{% else %}Held-out split{% endif %}</small>
+      </div>
+    </div>
+    <p class="ma-note">{{ p.get('roc_auc_note') or 'Multiclass ROC AUC from held-out softmax probabilities when present in metrics.json.' }}</p>
+
     <div class="ma-perf-split">
     <div class="ma-chart-card ma-chart-card--metrics">
       <div class="ma-chart-card-meta">
@@ -120,20 +141,23 @@
             <th scope="col">Precision</th>
             <th scope="col">Recall</th>
             <th scope="col">F1-score</th>
+            <th scope="col">ROC AUC</th>
             <th scope="col">Support</th>
           </tr>
         </thead>
         <tbody>
           {% for row in p.per_class %}
+          {% set row_auc = row.get('roc_auc') %}
           <tr>
             <th scope="row">{{ row.label }}</th>
             <td>{% if row.precision_pct is not none %}{{ '%.1f'|format(row.precision_pct) }}%{% else %}—{% endif %}</td>
             <td>{% if row.recall_pct is not none %}{{ '%.1f'|format(row.recall_pct) }}%{% else %}—{% endif %}</td>
             <td>{% if row.f1_pct is not none %}{{ '%.1f'|format(row.f1_pct) }}%{% else %}—{% endif %}</td>
+            <td>{% if row_auc is not none %}{{ '%.3f'|format(row_auc) }}{% else %}—{% endif %}</td>
             <td>{{ row.support if row.support is not none else '—' }}</td>
           </tr>
           {% else %}
-          <tr><td colspan="5">No per-class metrics available.</td></tr>
+          <tr><td colspan="6">No per-class metrics available.</td></tr>
           {% endfor %}
         </tbody>
         <tfoot>
@@ -142,6 +166,7 @@
             <td>{% if p.macro.precision_pct is not none %}{{ '%.1f'|format(p.macro.precision_pct) }}%{% else %}—{% endif %}</td>
             <td>{% if p.macro.recall_pct is not none %}{{ '%.1f'|format(p.macro.recall_pct) }}%{% else %}—{% endif %}</td>
             <td>{% if p.macro.f1_pct is not none %}{{ '%.1f'|format(p.macro.f1_pct) }}%{% else %}—{% endif %}</td>
+            <td>{% if roc_ovr is not none %}{{ '%.3f'|format(roc_ovr) }}{% else %}—{% endif %}</td>
             <td>{{ p.test_images or '—' }}</td>
           </tr>
           <tr>
@@ -149,6 +174,7 @@
             <td>{% if p.weighted.precision_pct is not none %}{{ '%.1f'|format(p.weighted.precision_pct) }}%{% else %}—{% endif %}</td>
             <td>{% if p.weighted.recall_pct is not none %}{{ '%.1f'|format(p.weighted.recall_pct) }}%{% else %}—{% endif %}</td>
             <td>{% if p.weighted.f1_pct is not none %}{{ '%.1f'|format(p.weighted.f1_pct) }}%{% else %}—{% endif %}</td>
+            <td>—</td>
             <td>{{ p.test_images or '—' }}</td>
           </tr>
         </tfoot>
@@ -315,6 +341,7 @@
             <th>Architecture</th>
             <th>Created</th>
             <th>Accuracy</th>
+            <th>ROC AUC (OVR)</th>
             <th>Size</th>
             <th>Status</th>
           </tr>
@@ -335,11 +362,15 @@
               <span class="ma-muted">{{ v.evaluation.note or 'No eval report' }}</span>
               {% endif %}
             </td>
+            <td>
+              {% set v_roc = v.evaluation.get('roc_auc_ovr_macro') if v.evaluation else none %}
+              {% if v_roc is not none %}{{ '%.3f'|format(v_roc) }}{% else %}—{% endif %}
+            </td>
             <td>{% if v.file_size_mb is not none %}{{ v.file_size_mb }} MB{% else %}—{% endif %}</td>
             <td><span class="ma-status ma-status--{{ (v.status or 'unknown')|lower|replace(' ', '-') }}">{{ v.status }}</span></td>
           </tr>
           {% else %}
-          <tr><td colspan="6">No registry revisions discovered.</td></tr>
+          <tr><td colspan="7">No registry revisions discovered.</td></tr>
           {% endfor %}
         </tbody>
       </table>
@@ -419,5 +450,5 @@
 </main>
 {% endblock %}
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/model-analytics.js') }}?v=2"></script>
+<script src="{{ url_for('static', filename='js/model-analytics.js') }}?v=3"></script>
 {% endblock %}

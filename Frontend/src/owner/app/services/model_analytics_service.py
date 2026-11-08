@@ -505,6 +505,9 @@ def _version_entry_from_registry(row: dict[str, Any]) -> dict[str, Any]:
             "weighted_f1_pct": (scored.get("weighted") or {}).get("f1_pct"),
             "precision_pct": (scored.get("macro") or {}).get("precision_pct"),
             "recall_pct": (scored.get("macro") or {}).get("recall_pct"),
+            "roc_auc_ovr_macro": metrics.get("test_roc_auc_ovr_macro"),
+            "roc_auc_ovo_macro": metrics.get("test_roc_auc_ovo_macro"),
+            "roc_auc_per_class": metrics.get("test_roc_auc_per_class"),
             "test_images": metrics.get("test_images") or scored.get("support_total"),
             "dataset_note": (
                 f"Snapshot {row.get('dataset_snapshot_id')}"
@@ -588,6 +591,9 @@ def list_model_versions() -> list[dict[str, Any]]:
                     "weighted_f1_pct": (scored.get("weighted") or {}).get("f1_pct"),
                     "precision_pct": (scored.get("macro") or {}).get("precision_pct"),
                     "recall_pct": (scored.get("macro") or {}).get("recall_pct"),
+                    "roc_auc_ovr_macro": metrics.get("test_roc_auc_ovr_macro"),
+                    "roc_auc_ovo_macro": metrics.get("test_roc_auc_ovo_macro"),
+                    "roc_auc_per_class": metrics.get("test_roc_auc_per_class"),
                     "test_images": metrics.get("test_images") or scored.get("support_total"),
                     "dataset_note": "Held-out test split from main training run",
                 },
@@ -648,6 +654,13 @@ def build_analytics(*, measure_latency: bool = False) -> dict[str, Any]:
             )
         per_class = merged
 
+    roc_per_class = metrics.get("test_roc_auc_per_class") or {}
+    if per_class:
+        for row in per_class:
+            key = row.get("key")
+            auc = roc_per_class.get(key) if isinstance(roc_per_class, dict) else None
+            row["roc_auc"] = auc
+
     history = epoch_history(metrics)
     deploy = _safe_json(active_dir() / "deploy_log.json")
     if production:
@@ -697,6 +710,8 @@ def build_analytics(*, measure_latency: bool = False) -> dict[str, Any]:
         "registry_backed": bool(production),
     }
 
+    roc_ovr = metrics.get("test_roc_auc_ovr_macro")
+    roc_ovo = metrics.get("test_roc_auc_ovo_macro")
     performance = {
         "available": bool(metrics.get("test_accuracy") is not None or cm),
         "averaging_note": "Macro and weighted averages shown; headline cards use macro precision/recall/F1 and held-out test accuracy.",
@@ -705,6 +720,15 @@ def build_analytics(*, measure_latency: bool = False) -> dict[str, Any]:
         "precision_pct": (scored.get("macro") or {}).get("precision_pct"),
         "recall_pct": (scored.get("macro") or {}).get("recall_pct"),
         "f1_pct": (scored.get("macro") or {}).get("f1_pct"),
+        "roc_auc_available": roc_ovr is not None or roc_ovo is not None,
+        "roc_auc_ovr_macro": roc_ovr,
+        "roc_auc_ovo_macro": roc_ovo,
+        "roc_auc_per_class": metrics.get("test_roc_auc_per_class") or {},
+        "roc_auc_note": (
+            "One-vs-rest (OVR) and one-vs-one (OVO) macro ROC AUC from softmax probabilities on the held-out test set."
+            if (roc_ovr is not None or roc_ovo is not None)
+            else "ROC AUC is computed at train time and stored in metrics.json. Retrain to populate this section."
+        ),
         "macro": scored.get("macro") or {},
         "weighted": scored.get("weighted") or {},
         "per_class": per_class,
@@ -786,6 +810,10 @@ def build_analytics(*, measure_latency: bool = False) -> dict[str, Any]:
         limitations.append(
             "Fewer than two evaluated revisions are available for numeric comparison; "
             "revisions without evaluation reports cannot be ranked by accuracy."
+        )
+    if roc_ovr is None and roc_ovo is None and metrics:
+        limitations.append(
+            "Multiclass ROC AUC is not in this revision’s metrics.json yet — retrain to record OVR/OVO AUC."
         )
 
     return {
