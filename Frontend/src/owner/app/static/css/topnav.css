@@ -290,11 +290,28 @@ body {
   cursor: pointer;
   overflow: visible;
   font: inherit;
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .avatar-btn:hover,
+.avatar-btn:focus-visible {
+  background: rgba(255, 255, 255, 0.14);
+  transform: translateY(-1px) scale(1.04);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.22);
+}
+
+.avatar-btn:active {
+  transform: translateY(0) scale(0.97);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+}
+
 .avatar-btn[aria-expanded="true"] {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.14);
+  transform: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
 }
 
 .avatar {
@@ -307,6 +324,12 @@ body {
   background: #fff;
   padding: 2px;
   box-sizing: border-box;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.avatar-btn:hover .avatar,
+.avatar-btn:focus-visible .avatar {
+  box-shadow: 0 0 0 2px rgba(232, 201, 138, 0.85);
 }
 
 .profile-name {
@@ -570,6 +593,27 @@ body {
 
 .nav.hide-desktop {
   display: flex;
+}
+
+/* Mobile: icon-only profile control */
+@media (max-width: 899px) {
+  .profile-name,
+  .profile-caret {
+    display: none;
+  }
+
+  .avatar-btn {
+    max-width: none;
+    min-width: 40px;
+    min-height: 40px;
+    padding: 3px;
+    justify-content: center;
+  }
+
+  .avatar {
+    width: 32px;
+    height: 32px;
+  }
 }
 
 @media (min-width: 900px) {
