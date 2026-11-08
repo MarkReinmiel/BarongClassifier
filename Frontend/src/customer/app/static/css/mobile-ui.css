@@ -111,6 +111,11 @@
     color: #1F2232;
   }
 
+  .nb[data-tone="about"].on {
+    background: #EDE8F0;
+    color: #5A4063;
+  }
+
   /* —— Dashboard —— */
   .dash-welcome .eyebrow {
     margin-bottom: 6px;

@@ -3,7 +3,7 @@
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/shared.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/topnav.css') }}?v=16">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/classify.css') }}?v=19">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/classify.css') }}?v=20">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/camera.css') }}?v=8">
 {% endblock %}
 {% block body %}
@@ -35,10 +35,9 @@
   <div class="classify-header reveal">
     <p class="eyebrow">Barong Tagalog Textile Classifier</p>
     <h2>Classify Textile</h2>
-    <hr class="stitch-divider" aria-hidden="true">
   </div>
 
-  <form id="classifyForm" class="classify-layout" method="post" enctype="multipart/form-data" action="{{ url_for('classify.classify_submit') }}">
+  <form id="classifyForm" class="classify-panel classify-layout" method="post" enctype="multipart/form-data" action="{{ url_for('classify.classify_submit') }}">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
     <section class="classify-preview-card">
@@ -63,87 +62,137 @@
     </section>
 
     <aside class="classify-side">
-      <div class="classify-side-card">
-        <div class="classify-sources">
-          <label class="classify-source-btn" for="fileGal" id="galBtn">
-            <span class="classify-source-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10.5" r="1.5"/><path d="m21 16-5.5-5.5L9 17"/></svg>
-            </span>
-            <span>Gallery</span>
-          </label>
-          <button type="button" class="classify-source-btn mobile-only mobile-only-camera" id="openCamera">
-            <span class="classify-source-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-2h6l2 2h3v11H4V8z"/><circle cx="12" cy="13" r="3.5"/></svg>
-            </span>
-            <span>Camera</span>
-          </button>
-        </div>
-
-        <p id="cameraNotice" class="camera-notice mobile-only-camera" role="status" hidden></p>
-
-        <div id="cameraPanel" class="camera-panel mobile-only-camera" hidden>
-          <div class="camera-frame" id="cameraFrame">
-            <video id="cameraPreview" autoplay muted playsinline></video>
-            <div id="cameraGuide" class="camera-guide is-red" aria-hidden="true">
-              <span class="camera-guide-label">Fill with textile</span>
-            </div>
-            <pre id="cameraCalibration" class="camera-calibration" hidden></pre>
-          </div>
-
-          <button type="button" id="cameraGuidanceHeadline" class="camera-guidance-headline is-red" disabled>
-            Starting camera…
-          </button>
-
-          <ul id="cameraChecklist" class="camera-checklist">
-            <li data-check="distance"><span aria-hidden="true">…</span> Distance</li>
-            <li data-check="lighting"><span aria-hidden="true">…</span> Lighting</li>
-            <li data-check="focus"><span aria-hidden="true">…</span> Focus</li>
-            <li data-check="stability"><span aria-hidden="true">…</span> Stability</li>
-            <li data-check="glare" hidden><span aria-hidden="true">?</span> Glare</li>
-          </ul>
-
-          <div id="cameraZoomControls" class="camera-zoom" hidden>
-            <label for="cameraZoom">Zoom</label>
-            <input type="range" id="cameraZoom">
-          </div>
-          <p id="cameraZoomStatus" class="camera-zoom-status"></p>
-          <p class="camera-zoom-note">Browser zoom may be digital, not the same as optical Pro Mode zoom.</p>
-
-          <div class="camera-actions">
-            <button type="button" id="captureButton" class="capture-button" disabled>Capture Image</button>
-            <button type="button" id="closeCamera" class="remove-button">Close Camera</button>
-          </div>
-        </div>
-
-        <div class="classify-tips">
-          <p class="classify-tips-title">For best results</p>
-          <div class="classify-tips-grid">
-            <div class="classify-tip">
-              <span class="classify-tip-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
-              </span>
-              <span>Good light</span>
-            </div>
-            <div class="classify-tip">
-              <span class="classify-tip-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-              </span>
-              <span>Close up</span>
-            </div>
-            <div class="classify-tip">
-              <span class="classify-tip-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h16"/><path d="M8 4v16M16 4v16"/></svg>
-              </span>
-              <span>Flat fabric</span>
-            </div>
-          </div>
-        </div>
-
-        <input type="file" name="file" id="fileGal" accept="image/png,image/jpeg,image/jpg,image/jpe,image/bmp,image/webp,.jpg,.jpeg,.jpe,.png,.bmp,.webp" class="sr-file">
-        <button class="btn p classify-analyze" id="analyze" type="submit" disabled>Analyze Textile</button>
+      <div class="classify-side-copy">
+        <h3>Upload Textile Image</h3>
+        <p>Select a clear image in JPG or PNG format.</p>
       </div>
+
+      <div class="classify-sources">
+        <label class="classify-source-btn classify-source-desktop" for="fileGal" id="galBtn">
+          <span class="classify-source-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10.5" r="1.5"/><path d="m21 16-5.5-5.5L9 17"/></svg>
+          </span>
+          <span>Upload from Gallery</span>
+        </label>
+        <label class="classify-source-btn classify-source-mobile" for="fileGal" id="galBtnMobile">
+          <span class="classify-source-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10.5" r="1.5"/><path d="m21 16-5.5-5.5L9 17"/></svg>
+          </span>
+          <span>Gallery</span>
+        </label>
+        <button type="button" class="classify-source-btn classify-source-mobile mobile-only-camera" id="openCamera">
+          <span class="classify-source-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-2h6l2 2h3v11H4V8z"/><circle cx="12" cy="13" r="3.5"/></svg>
+          </span>
+          <span>Camera</span>
+        </button>
+      </div>
+
+      <p id="cameraNotice" class="camera-notice mobile-only-camera" role="status" hidden></p>
+
+      <div id="cameraPanel" class="camera-panel mobile-only-camera" hidden>
+        <div class="camera-frame" id="cameraFrame">
+          <video id="cameraPreview" autoplay muted playsinline></video>
+          <div id="cameraGuide" class="camera-guide is-red" aria-hidden="true">
+            <span class="camera-guide-label">Fill with textile</span>
+          </div>
+          <pre id="cameraCalibration" class="camera-calibration" hidden></pre>
+        </div>
+
+        <button type="button" id="cameraGuidanceHeadline" class="camera-guidance-headline is-red" disabled>
+          Starting camera…
+        </button>
+
+        <ul id="cameraChecklist" class="camera-checklist">
+          <li data-check="distance"><span aria-hidden="true">…</span> Distance</li>
+          <li data-check="lighting"><span aria-hidden="true">…</span> Lighting</li>
+          <li data-check="focus"><span aria-hidden="true">…</span> Focus</li>
+          <li data-check="stability"><span aria-hidden="true">…</span> Stability</li>
+          <li data-check="glare" hidden><span aria-hidden="true">?</span> Glare</li>
+        </ul>
+
+        <div id="cameraZoomControls" class="camera-zoom" hidden>
+          <label for="cameraZoom">Zoom</label>
+          <input type="range" id="cameraZoom">
+        </div>
+        <p id="cameraZoomStatus" class="camera-zoom-status"></p>
+        <p class="camera-zoom-note">Browser zoom may be digital, not the same as optical Pro Mode zoom.</p>
+
+        <div class="camera-actions">
+          <button type="button" id="captureButton" class="capture-button" disabled>Capture Image</button>
+          <button type="button" id="closeCamera" class="remove-button">Close Camera</button>
+        </div>
+      </div>
+
+      <div class="classify-tips">
+        <p class="classify-tips-title">For best results</p>
+        <div class="classify-tips-grid">
+          <div class="classify-tip">
+            <span class="classify-tip-icon" aria-hidden="true">&#9728;</span>
+            <span>Good light</span>
+          </div>
+          <div class="classify-tip">
+            <span class="classify-tip-icon" aria-hidden="true">&#8981;</span>
+            <span>Close up</span>
+          </div>
+          <div class="classify-tip">
+            <span class="classify-tip-icon" aria-hidden="true">&#9638;</span>
+            <span>Flat fabric</span>
+          </div>
+        </div>
+      </div>
+
+      <input type="file" name="file" id="fileGal" accept="image/png,image/jpeg,image/jpg,image/jpe,image/bmp,image/webp,.jpg,.jpeg,.jpe,.png,.bmp,.webp" class="sr-file">
+      <input type="file" id="fileCam" accept="image/*" capture="environment" class="sr-file">
+      <button class="btn p classify-analyze" id="analyze" type="submit" disabled>
+        <span class="classify-analyze-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        </span>
+        <span>Analyze Textile</span>
+      </button>
+      <p class="classify-help">Tap Analyze after the photo appears in the preview.</p>
     </aside>
   </form>
+
+  <section class="classify-latest" aria-label="Your latest results">
+    <div class="classify-latest-head">
+      <p class="classify-latest-label">Your latest results</p>
+      <a class="classify-latest-all" href="{{ url_for('dashboard.history') }}">Open history</a>
+    </div>
+    {% if recent %}
+    <div class="classify-latest-row">
+      {% for row in recent %}
+      {% set key = row.textile_key or '' %}
+      {% if 'jusi' in key %}
+        {% set thumb = url_for('static', filename='images/textiles/jusi.png') %}
+      {% elif 'cocoon' in key %}
+        {% set thumb = url_for('static', filename='images/textiles/cocoon.jpg') %}
+      {% elif 'pina' in key or 'seda' in key %}
+        {% set thumb = url_for('static', filename='images/textiles/pina.png') %}
+      {% else %}
+        {% set thumb = url_for('static', filename='images/barong.jpg') %}
+      {% endif %}
+      <a class="classify-latest-card" href="{{ url_for('dashboard.history') }}">
+        <div class="classify-latest-thumb" aria-hidden="true">
+          {% if row.image_path and row.image_path.startswith('https://') %}
+          <img src="{{ row.image_path }}" alt="" loading="lazy">
+          {% else %}
+          <img src="{{ thumb }}" alt="" loading="lazy">
+          {% endif %}
+        </div>
+        <div class="classify-latest-copy">
+          <strong>{{ row.label }}</strong>
+          <span>{{ row.created_label }}{% if row.created_label %} · {% endif %}{{ '%.0f'|format(row.confidence * 100) }}%</span>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="classify-latest-empty">
+      <p>No classifications yet. Analyze a textile to see it here and in <a href="{{ url_for('dashboard.history') }}">History</a>.</p>
+    </div>
+    {% endif %}
+  </section>
 </main>
 {% endblock %}
 {% block scripts %}

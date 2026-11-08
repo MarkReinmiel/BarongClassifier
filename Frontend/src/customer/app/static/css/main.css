@@ -121,6 +121,7 @@ button,input,select{font-family:var(--sans)}
 .nb[data-tone="types"].on{background:#E8EBEE;color:#596475}
 .nb[data-tone="classify"].on{background:#F8E8E4;color:#A33826}
 .nb[data-tone="history"].on{background:#EFEBE3;color:#1F2232}
+.nb[data-tone="about"].on{background:#EDE8F0;color:#5A4063}
 .fab{display:none!important}
 .nav.hide-desktop{display:flex}
 
