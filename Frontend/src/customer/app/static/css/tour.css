@@ -1,8 +1,8 @@
 /* =========================================================
-   First-login onboarding tour — auto-guided virtual cursor
-   - Physical mouse is blocked (capture layer + optional Pointer Lock)
-   - Spotlight + multi curved arrows stay for attention
-   - .tour-cursor is the fake pointer that the script animates
+   First-login onboarding tour
+   - Real mouse pointer stays visible on every step/page
+   - Clicks still blocked except hit-proxy / Next (required clicks kept)
+   - Laptop also shows an animated guide pointer on the spotlight
    ========================================================= */
 
 .tour-root {
@@ -12,13 +12,13 @@
   pointer-events: none;
 }
 
-/* Eats ALL real pointer/touch input for the duration of the step */
+/* Eats background clicks; real mouse cursor stays visible */
 .tour-block {
   position: fixed;
   inset: 0;
   z-index: 12000;
   pointer-events: auto;
-  cursor: none;
+  cursor: default;
   background: transparent;
   touch-action: none;
   user-select: none;
@@ -99,24 +99,28 @@
   filter: brightness(0.96);
 }
 
-/* Your-turn: real cursor for the hit-proxy; everything else stays blocked */
-body.tour-active.tour-user-phase {
-  cursor: auto !important;
+/* Required-click phase: shield stays, real mouse + pointer cursor on target */
+body.tour-active.tour-user-phase .tour-block {
+  pointer-events: auto !important;
+  cursor: default !important;
 }
 
 body.tour-active.tour-user-phase .tour-hit-proxy {
   cursor: pointer !important;
 }
 
-body.tour-user-phase .tour-block {
-  /* Keep shield active so non-highlighted UI cannot receive clicks */
-  pointer-events: auto !important;
-}
-
+/* Virtual guide pointer — laptop/desktop only (touch uses real finger) */
 .tour-cursor,
 .tour-cursor-ripple {
-  display: none !important;
+  display: none;
   pointer-events: none !important;
+}
+
+@media (min-width: 900px) {
+  body.tour-active .tour-cursor.is-visible,
+  body.tour-active .tour-cursor-ripple.is-visible {
+    display: block;
+  }
 }
 
 @keyframes tour-target-pulse {
@@ -408,11 +412,21 @@ body.tour-user-phase .tour-block {
 
 body.tour-active {
   overflow: hidden;
-  cursor: none !important;
+  /* Keep the real OS mouse pointer visible on every tour page/step */
+  cursor: auto !important;
 }
 
-body.tour-active * {
-  cursor: none !important;
+body.tour-active .tour-block {
+  cursor: default !important;
+}
+
+body.tour-active .tour-hit-proxy {
+  cursor: pointer !important;
+}
+
+body.tour-active .tour-skip,
+body.tour-active .tour-next {
+  cursor: pointer !important;
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -327,7 +327,7 @@ main.shell:has(.classify-shell) {
   }
 
   .classify-tips {
-    display: none;
+    display: block;
   }
 
   .classify-analyze {

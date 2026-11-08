@@ -13,7 +13,7 @@
   data-launch="{{ '1' if launch_history_tour|default(false) else '0' }}"
 ></div>
 <div class="history-page">
-  <header class="history-page-header">
+  <header class="history-page-header" data-tour="history-header">
     <p class="eyebrow">Barong Tagalog Textile Classifier</p>
     <h2>History</h2>
   </header>
@@ -151,6 +151,7 @@
                   type="button"
                   class="history-action-btn history-action-btn--preview"
                   data-history-preview
+                  {% if loop.first %}data-tour="history-preview"{% endif %}
                   data-preview-src="{{ preview }}"
                   data-preview-label="{{ row.display_name or row.predicted_label }}"
                 >Preview</button>
@@ -158,6 +159,7 @@
                   type="button"
                   class="history-action-btn history-action-btn--delete"
                   data-history-delete
+                  {% if loop.first %}data-tour="history-delete"{% endif %}
                   data-delete-url="{{ url_for('history.delete_history_item', classification_id=row.id) }}"
                   data-delete-label="{{ row.display_name or row.predicted_label }}"
                 >Delete</button>
